@@ -1,0 +1,867 @@
+"""FastAgent：双层循环 ReAct Agent（架构对齐 pi agent-loop.ts）。
+
+PI 映射：
+  FastAgent._context        → PI 的 AgentContext（messages/工具/系统提示）
+  FastAgent.run(goal)       → PI 的 agentLoop(prompts, context)
+  run() 内 new_session=False → PI 的 getFollowUpMessages() 注入已有 context
+  _react_loop()             → PI 的 runLoop() 内层
+  _drain_pending()          → PI 的 pendingMessages 处理 + transformContext（memory 注入）
+  capabilities              → PI 的 AgentLoopConfig 生命周期钩子
+  _build_result()           → PI 的 after_tool + finalize
+
+循环结构：
+  run(goal)
+    ├─ _ensure_context(goal)  — PI: 首次 = agentLoop，后续 = getFollowUpMessages
+    └─ _run_outer(state, ...) — PI: 外层 follow-up 循环
+         └─ _react_loop(state) — PI: 内层 tool-call + steering 循环
+              ① _drain_pending        — PI: pendingMessages + memory 注入
+              ② _llm_turn             — PI: streamAssistantResponse
+              ③ post_llm caps         — PI: 纯文本检测
+              ④ _execute_tools        — PI: executeToolCalls
+              ⑤ post_turn caps        — PI: prepareNextTurn + shouldStopAfterTurn
+         └─ _build_result             — PI: finalize
+
+v3 简化：砍 ToolExecutor + 5 个 Guard 类。
+v3.1 能力提取：每个 check 独立为 Capability 工具（自持状态、统一接口、可插拔）。
+v3.2 PI 架构对齐：统一 message building + memory 注入走 _drain_pending。
+"""
+from __future__ import annotations
+
+import logging
+import time
+from dataclasses import dataclass, field, replace
+from typing import TYPE_CHECKING, Any, Callable
+
+_log = logging.getLogger("fastaget.agent")
+
+from fastaget.agent.capabilities import (
+    ActionLoopDetector,
+    AssertFallback,
+    Capability,
+    CompleteVerify,
+    CompletionNudge,
+    CompletionSignal,
+    ErrorReflection,
+    FaultTolerance,
+    PlanFirst,
+    StagnationDetector,
+    ToolLoopDetector,
+    TurnSnapshot,
+)
+from fastaget.agent.compaction import compact
+from fastaget.agent.context import DeviceContext
+from fastaget.agent.hooks import AgentHook
+from fastaget.agent.prompts import (
+    load_domain_template as _load_domain_template,
+    load_feedback as _load_feedback,
+    load_prompt as _load_prompt,
+)
+from fastaget.agent.run_state import RunState
+from fastaget.agent.steering import NullSteering, SteeringSource
+from fastaget.agent.types import Step
+from fastaget.device.phonefast import PhonefastError
+from fastaget.device.screen_observer import ScreenObserver
+from fastaget.heal.retry import with_retry
+from fastaget.llm.delegate import NonRetryableLLMError
+from fastaget.llm.events import StreamEventType
+from fastaget.agent.memory import AgentMemory, append_to_last_user
+from fastaget.tools.context import ActionContext
+from fastaget.tools.registry import ActionResult, ToolRegistry
+
+if TYPE_CHECKING:
+    from fastaget.llm.delegate import LLMDelegate, LLMResponse
+
+
+
+@dataclass
+class AgentResult:
+    session_id: str
+    success: bool
+    summary: str
+    steps: int
+    total_cost_usd: float
+    steps_detail: list[Step]
+
+
+@dataclass
+class Capabilities:
+    """能力集——各相位的能力列表。None 表示用标准默认（capability 类自身默认值）。
+
+    Usage:
+        # 默认全部
+        FastAgent(llm, pf, registry)
+
+        # 自定义
+        FastAgent(llm, pf, registry,
+                  capabilities=Capabilities(
+                      post_turn=[StagnationDetector(window=2, limit=3)],
+                  ))
+
+        # 禁用某相位
+        FastAgent(llm, pf, registry,
+                  capabilities=Capabilities(post_llm=[]))
+    """
+
+    llm_failure: "list[Capability] | None" = None
+    pre_run: "list[Capability] | None" = None     # PreconditionGate（PI before_task）
+    pre_turn: "list[Capability] | None" = None    # 每轮 LLM 前（PI prepareNextTurn）
+    post_llm: "list[Capability] | None" = None
+    after_tool: "list[Capability] | None" = None
+    post_turn: "list[Capability] | None" = None
+    finalize: "list[Capability] | None" = None
+
+
+# ═══════════════════════════════════════════════════════════
+# FastAgent
+# ═══════════════════════════════════════════════════════════
+
+
+def _fmt_log_args(args: dict) -> str:
+    """格式化工具参数为日志友好字符串。"""
+    if not args:
+        return ""
+    items = []
+    for k, v in args.items():
+        s = str(v)
+        if len(s) > 30:
+            s = s[:27] + "..."
+        items.append(f"{k}={s}")
+    return ", ".join(items)
+
+
+def _or_default(
+    caps_list: "list[Capability] | None",
+    default: "type[Capability] | list[Capability] | None",
+) -> "list[Capability]":
+    """Capabilities wiring 辅助：caps 为 None 时用默认值，否则用 caps。"""
+    if caps_list is not None:
+        return caps_list
+    if default is None:
+        return []
+    if isinstance(default, list):
+        return default
+    return [default()]
+
+
+# ═══════════════════════════════════════════════════════════
+# FastAgent
+# ═══════════════════════════════════════════════════════════
+
+
+class FastAgent:
+    """双层循环 ReAct Agent。PI 对齐：
+
+    - _context (RunState): AgentContext——messages/工具/steps，跨 run() 共享
+    - caps (post_llm/post_turn/after_tool/finalize): AgentLoopConfig——生命周期钩子
+    - _drain_pending: pendingMessages + transformContext——memory 在此注入
+    - memory_dir: 持久化存储——跨 session 记住关键发现
+
+    多次 run() 自动复用 _context（等价 PI 同一个 runLoop 多个 follow-up）。
+    new_session=True 强制重置（跨 case 隔离）。
+    """
+
+    LLM_RETRIES: int = 2
+    LLM_RETRY_BASE_DELAY: float = 1.0
+    _TOOL_CHOICE_ANY: dict = {"type": "any"}
+
+    def __init__(
+        self,
+        llm: "LLMDelegate",
+        phonefast: Any,
+        registry: ToolRegistry,
+        *,
+        max_steps: int = 15,
+        system_prompt: str | None = None,
+        hooks: list[AgentHook] | None = None,
+        force_tool_use: bool = True,
+        capabilities: "Capabilities | None" = None,
+        memory_dir: str | None = None,
+        steering: "SteeringSource | None" = None,
+        credential_manager: Any = None,
+    ) -> None:
+        # ── PI: AgentContext 基础设施 ──
+        self.llm = llm
+        self.observer = ScreenObserver(phonefast)
+        self.registry = registry
+        self.ctx = ActionContext(phonefast=phonefast, credential_manager=credential_manager)
+
+        # ── AgentMemory：独立存储模块（PI/mobilerun 对齐）──
+        self.memory = AgentMemory()
+        ns = getattr(phonefast, "_serial", None) or "default"
+        self.ctx.set_agent_memory(self.memory, ns)  # 桥接：add_memory → memory.inject_text()
+        if memory_dir:
+            self.memory.set_dir(memory_dir, ns)
+
+        # ── PI: 持久化 context——同实例多次 run() 共享 messages + 能力基线 ──
+        self._context: RunState | None = None
+        self._session_id: str = ""
+
+        # ── 提示词 ──
+        self.system_prompt = system_prompt or _load_prompt("baseline")
+        if not self.system_prompt.strip():
+            raise ValueError("system_prompt 为空")
+
+        # ── 工具元数据 ──
+        self._tools = registry.definitions()
+        self._action_tools = registry.action_tool_names()
+        self._assert_tools = registry.expect_tool_names()
+        self._no_retry_tools = registry.no_retry_tool_names()
+
+        # ── sandbox ref ──
+        try:
+            from fastaget.tools.sandbox_ref import generate_sandbox_reference
+            ref = generate_sandbox_reference()
+            if ref:
+                self.system_prompt += "\n\n" + ref
+        except ImportError:
+            pass
+
+        # ── 参数 ──
+        self.max_steps = max_steps
+        self._force_tool_use = force_tool_use
+        self._tool_choice = self._TOOL_CHOICE_ANY if force_tool_use else None
+
+        # ── PI: AgentLoopConfig（生命周期钩子 = capabilities）──
+        caps = capabilities if capabilities is not None else Capabilities()
+        _d = _or_default
+        self.llm_failure_caps: list[Capability] = _d(caps.llm_failure, FaultTolerance)
+        self.precondition_caps: list[Capability] = _d(caps.pre_run, None)
+        self.pre_turn_caps: list[Capability] = _d(caps.pre_turn, PlanFirst)
+        self.post_llm_caps: list[Capability] = _d(caps.post_llm, CompletionNudge)
+        self.after_tool_caps: list[Capability] = _d(caps.after_tool, lambda: CompleteVerify(
+            action_tools=frozenset(registry.action_tool_names())))
+        self.post_turn_caps: list[Capability] = _d(caps.post_turn, [
+            CompletionSignal(action_tools=frozenset(registry.action_tool_names())),
+            StagnationDetector(),
+            ToolLoopDetector(),
+            ActionLoopDetector(),
+            ErrorReflection(),
+        ])
+        self.finalize_caps: list[Capability] = _d(caps.finalize, AssertFallback)
+
+        # ── Hook ──
+        self._hooks = hooks or []
+
+        # ── Steering ──
+        self.steering: SteeringSource = steering or NullSteering()
+
+    # ═══════════════════════════════════════════════════
+    # PI: 主入口——task message → context → runLoop
+    # ═══════════════════════════════════════════════════
+
+    def run(
+        self, goal: str,
+        *,
+        follow_up: Callable[[AgentResult], "str | None"] | None = None,
+        new_session: bool = False,
+    ) -> AgentResult:
+        """执行一个目标。PI 对齐：
+
+        - 首次 run() → PI 的 agentLoop(prompts, context)：构建新 context
+        - 同实例再次 run()（无 new_session）→ PI 的 getFollowUpMessages()
+          注入同一个 context——第二个 run 自动看到第一个 run 的全部执行历史
+        - new_session=True → 强制重置 context（跨 case 隔离）
+        """
+        state, cost_before, steps_before = self._ensure_context(goal, new_session)
+        return self._run_outer(state, follow_up, cost_before, steps_before)
+
+    # ═══════════════════════════════════════════════════
+    # PI: context 管理——首次构建 vs 续跑注入
+    # ═══════════════════════════════════════════════════
+
+    def _ensure_context(
+        self, goal: str, new_session: bool,
+    ) -> tuple[RunState, float, int]:
+        """PI: 确保 context 就绪。
+
+        - new_session / 无已有 context → _new_context(goal)：PI 的 agentLoop()
+        - 已有 context → _continue_context(goal)：PI 的 getFollowUpMessages()
+        """
+        if new_session or self._context is None:
+            state = self._new_context(goal)
+            self._session_id = state.session_id
+            return state, 0.0, 0
+        else:
+            state = self._continue_context(self._context, goal)
+            # 基线必须读自返回的 state——_continue_context 已重置
+            # step_count=0/steps=[]，读旧 context 会让 _build_result 的
+            # 增量计算恒为 0（与 _run_outer 的 follow-up 分支保持一致）
+            return state, state.cost_usd, state.step_count
+
+    def _run_outer(
+        self, state: RunState,
+        follow_up: Callable[[AgentResult], "str | None"] | None,
+        cost_before: float, steps_before: int,
+    ) -> AgentResult:
+        """PI: 外层 follow-up 循环——terminal 后回调询问下一个 goal。"""
+        while True:
+            state = self._react_loop(state)
+            result = self._build_result(state, cost_before, steps_before)
+            self._context = state
+            if follow_up is None:
+                return result
+            next_goal = follow_up(result)
+            if not next_goal:
+                return result
+            state = self._continue_context(state, next_goal)
+            cost_before = state.cost_usd
+            steps_before = state.step_count
+
+    def _react_loop(self, state: RunState) -> RunState:
+        """内层循环（吸收 pi runLoop 内层）：steering → LLM → post_llm caps → 工具 → post_turn caps。"""
+        _log.info("run_start | goal=%s max_steps=%d model=%s",
+                  state.goal, self.max_steps, getattr(self.llm, "model", "?"))
+
+        if state.terminal:
+            _log.warning("run_skip | reason=precondition_failed summary=%s", state.summary[:80])
+            return state
+
+        # 运行时引用：set once before loop（self.memory 不随 turn 变化）
+        # 使用 object.__setattr__ 显式标记为非状态字段赋值，不参与 replace() 模式
+        object.__setattr__(state, '_memory_ref', self.memory)
+
+        while (not state.terminal
+               and state.turn_count < self.max_steps
+               and state.step_count < self.max_steps):
+            state.turn_count += 1
+
+            for cap in self.pre_turn_caps:
+                state = cap(state, TurnSnapshot(phase="pre_turn"))
+            if state.terminal:
+                break
+
+            state = self._drain_pending(state)
+
+            if state.turn_count % 3 == 1:
+                compacted = compact(state.messages, self.llm)
+                if compacted is not None:
+                    state = replace(state, messages=compacted)
+                    _log.debug("compaction | turn=%d before=%d after=%d",
+                               state.turn_count, len(state.messages), len(compacted))
+
+            cost_before = state.cost_usd
+            _log.debug("turn_begin | turn=%d messages=%d pending_fb=%d",
+                       state.turn_count, len(state.messages), len(state.pending_feedback))
+            state = self._llm_turn(state)
+            if state.terminal:
+                break
+
+            if not self._last_is_assistant(state):
+                _log.warning("llm_no_response | turn=%d summary=%s", state.turn_count, state.summary[:80])
+                continue
+
+            # ── ③ post_llm 能力（CompletionNudge 等）──
+            tool_uses = self._parse_tool_uses(state)
+            has_tc = bool(tool_uses)
+            snap = TurnSnapshot(phase="post_llm", llm_has_tool_calls=has_tc)
+            for cap in self.post_llm_caps:
+                state = cap(state, snap)
+            if state.terminal:
+                break
+            if not has_tc:
+                continue  # 纯文本催促已写 pending，下轮注入
+
+            # ── ④ 工具执行 ──
+            turn_cost = state.cost_usd - cost_before
+            state = self._execute_tools(state, turn_cost, tool_uses)
+            if state.terminal:
+                break
+
+            # ── ⑤ post_turn 能力（StagnationDetector 等）──
+            snap = TurnSnapshot(phase="post_turn",
+                               fingerprint=self.observer.fingerprint or "",
+                               element_count=self.observer.element_count,
+                               last_tool=state.last_tool)
+            for cap in self.post_turn_caps:
+                before_fb = len(state.pending_feedback)
+                state = cap(state, snap)
+                after_fb = len(state.pending_feedback)
+                if after_fb > before_fb:
+                    cap_name = type(cap).__name__
+                    for fb in state.pending_feedback[before_fb:]:
+                        _log.info("capability | %s injected: %s",
+                                  cap_name, fb[:80].replace("\n", " "))
+
+        return state
+
+    # ═══════════════════════════════════════════════════
+    # mobilerun 对齐：每轮注入 memory + device state 到最后一条 user msg
+    # ═══════════════════════════════════════════════════
+
+    def _drain_pending(self, state: RunState) -> RunState:
+        """mobilerun 对齐：每轮追加 memory 到最后一条 user message。
+
+        mobilerun fast_agent.py:314-319 模式 + _drain_pending 统一注入点。
+        """
+        # ── mobilerun: 每轮 memory 追加到最后一条 user msg ──
+        mem_text = self.memory.inject_text()
+        if mem_text:
+            append_to_last_user(state.messages, mem_text)
+
+        # ── steering: 外部消息源 ──
+        try:
+            steered = self.steering.poll()
+        except Exception:
+            import logging
+            logging.getLogger(__name__).warning("steering.poll() failed", exc_info=True)
+            steered = []
+        for sm in steered:
+            state.messages.append({"role": "user", "content": [
+                {"type": "text", "text": sm.text}]})
+            self._emit("on_steering", source=sm.source, text=sm.text)
+
+        # ── capability feedback: 内部信号（停滞/催促）──
+        for fb in state.pending_feedback:
+            state.messages.append({"role": "user", "content": [
+                {"type": "text", "text": fb}]})
+            self._emit("on_steering", source="feedback", text=fb.split("\n")[0])
+        state.pending_feedback.clear()
+        return state
+
+    # ═══════════════════════════════════════════════════
+    # PI: context 生命周期——new（agentLoop）vs continue（getFollowUpMessages）
+    # ═══════════════════════════════════════════════════
+
+    def _new_context(self, goal: str) -> RunState:
+        """PI: 构建新 context（等价 PI 的 agentLoop(prompts, context)）。
+
+        创建 RunState → reset 有状态能力 → observe 屏幕 → 喂入能力基线 → 构造首条 task message。
+        """
+        # reset caps——new_session=True 复用 FastAgent 实例时清掉上 case 的计数器
+        # （_continue_context 已 reset，这里补 new_session 路径的对称性）
+        self._reset_caps()
+        state = RunState(goal=goal)
+
+        # observe 初始屏幕
+        screen_text, el_count = self._observe_and_refresh(self.observer.initial)
+        self._emit("on_auto_observe", element_count=el_count,
+                    screen_text=screen_text or "", image_b64="")
+
+        # PI: before_task 检查（PreconditionGate）
+        if self.precondition_caps:
+            snap = TurnSnapshot(phase="pre_run",
+                               fingerprint=self.observer.fingerprint or "",
+                               element_count=el_count)
+            for cap in self.precondition_caps:
+                state = cap(state, snap)
+            if state.terminal:
+                return state
+
+        # PI: 初始指纹基线（StagnationDetector 等 post_turn 能力需要）
+        fp = self.observer.fingerprint or ""
+        for cap in self.post_turn_caps:
+            if hasattr(cap, "feed_initial"):
+                cap.feed_initial(fp, el_count)
+
+        # 首条消息：goal + device context + domain + screen
+        state.messages = [self._build_task_message(goal, screen_text, "Test Goal")]
+        return state
+
+    def _continue_context(self, state: RunState, new_goal: str) -> RunState:
+        """PI: 已有 context 中注入新 task（等价 PI 的 getFollowUpMessages()）。
+
+        重置能力状态 + 终止位 + 计数器，注入新 goal 消息。messages 保留全部历史。
+        """
+        self._reset_caps()
+
+        screen_text, el_count = self._observe_and_refresh(self.observer.initial)
+        fp = self.observer.fingerprint or ""
+        for cap in self.post_turn_caps:
+            if hasattr(cap, "feed_initial"):
+                cap.feed_initial(fp, el_count)
+
+        state.messages.append(
+            self._build_task_message(new_goal, screen_text, "New Goal"))
+
+        return replace(state,
+            goal=new_goal, terminal=False, success=False, summary="",
+            turn_count=0, step_count=0, steps=[],  # 新 goal 全新计数，防跨 goal 污染
+        )
+
+    def _build_task_message(
+        self, goal: str, screen_text: str, prefix: str,
+    ) -> dict:
+        """构造单条 task 消息。goal + device context + domain + current screen。
+
+        memory 不在此注入——走 _drain_pending 每轮追加（mobilerun 模式）。
+        """
+        dev_ctx = DeviceContext.from_phonefast(self.observer.phonefast, goal=goal)
+        domain_text = _load_domain_template(goal)
+
+        parts = [f"{prefix}: {goal}"]
+        if (dev_text := dev_ctx.to_prompt_text()):
+            parts.append(dev_text)
+        if domain_text:
+            parts.append(f"## Domain Knowledge\n{domain_text}")
+        parts.append(f"Current screen:\n{screen_text or '(observe failed)'}")
+        return {"role": "user", "content": [
+            {"type": "text", "text": "\n\n".join(parts)}]}
+
+    def _reset_caps(self) -> None:
+        """PI: 续跑时重置有状态的能力（StagnationDetector 指纹窗口等）+ steering。"""
+        for caps in [self.llm_failure_caps, self.precondition_caps, self.pre_turn_caps,
+                     self.post_llm_caps, self.post_turn_caps, self.after_tool_caps,
+                     self.finalize_caps]:
+            for cap in caps:
+                if hasattr(cap, "reset"):
+                    cap.reset()
+        # steering 也可能自持轮次计数（KnowledgeSteering._turn）
+        if hasattr(self.steering, "reset"):
+            self.steering.reset()
+
+    # ═══════════════════════════════════════════════════
+    # Phase 1: LLM 调用
+    # ═══════════════════════════════════════════════════
+
+    def _llm_turn(self, state: RunState) -> RunState:
+        t_start = time.perf_counter()
+        self._emit("on_llm_start", call_index=state.step_count,
+                    message_count=len(state.messages))
+
+        try:
+            resp = with_retry(
+                lambda: self._stream_collect(state, self._tool_choice),
+                retries=self.LLM_RETRIES,
+                base_delay=self.LLM_RETRY_BASE_DELAY,
+                # 确定性失败（4xx 请求错误）重试必复现——直接放行，
+                # 不烧重试预算、保留真实状态码归因
+                should_retry=lambda e: not isinstance(e, NonRetryableLLMError),
+            )
+        except Exception as e:
+            # LLM 调用失败：委托 llm_failure 能力（计数/反馈/超限终止）
+            snap = TurnSnapshot(phase="llm_failure")
+            for cap in self.llm_failure_caps:
+                state = cap(state, snap)
+            # 记录真实错误到 state（供 trace/debug）
+            state.summary = f"LLM 失败: {e}"
+            return state
+
+        elapsed = time.perf_counter() - t_start
+        state.cost_usd += resp.cost_usd or 0.0
+
+        # LLM 调用日志
+        _log.debug("llm_call | turn=%d elapsed=%.2fs cost=%.6f tokens_in=%d tokens_out=%d tools=%d stop=%s",
+                   state.turn_count, elapsed, resp.cost_usd or 0,
+                   (resp.raw or {}).get("usage", {}).get("input_tokens", 0) if resp.raw else 0,
+                   (resp.raw or {}).get("usage", {}).get("output_tokens", 0) if resp.raw else 0,
+                   len(resp.tool_calls), resp.stop_reason or "")
+
+        # 截断处理：stop_reason=max_tokens 时 tool_use 参数可能不完整
+        # 不追加（可能损坏的）assistant 消息，注入反馈让 LLM 重试
+        # 但先发 llm_success——LLM 确实应答了，重置 FaultTolerance 防烧钱循环
+        if resp.stop_reason == "max_tokens":
+            snap_ok = TurnSnapshot(phase="llm_success")
+            for cap in self.llm_failure_caps:
+                state = cap(state, snap_ok)
+            fb = _load_feedback("output_truncated")
+            if fb:
+                state.pending_feedback.append(fb)
+            return state
+
+        # LLM 成功 → 发 llm_success 相位给 llm_failure_caps（FaultTolerance 重置计数）
+        snap_ok = TurnSnapshot(phase="llm_success")
+        for cap in self.llm_failure_caps:
+            state = cap(state, snap_ok)
+
+        self._emit("on_llm_end", call_index=state.step_count,
+                    text=resp.text or "", tool_count=len(resp.tool_calls),
+                    elapsed=elapsed, cost_usd=resp.cost_usd,
+                    response=resp, stop_reason=resp.stop_reason,
+                    messages=state.messages, tools=self._tools)
+
+        # 空响应防护：无 text 无 tool_calls 时不得追加空 assistant 消息——
+        # API 拒绝 content=[] → 下次调用 HTTP 400 杀 run。
+        # 与 max_tokens 同策略：注入反馈（llm_success 已发，FaultTolerance 不计数），
+        # 主循环 _last_is_assistant 检查跳过本轮，下轮 _drain_pending 送达反馈
+        if not resp.text and not resp.tool_calls:
+            fb = _load_feedback("empty_response")
+            if fb:
+                state.pending_feedback.append(fb)
+            return state
+
+        # 组装 assistant 消息
+        content: list[dict] = []
+        if resp.text:
+            content.append({"type": "text", "text": resp.text})
+        for tc in resp.tool_calls:
+            content.append({"type": "tool_use", "id": tc.id, "name": tc.name, "input": tc.input})
+        state.messages.append({"role": "assistant", "content": content})
+
+        return state
+
+    def _stream_collect(self, state: RunState, tool_choice: "dict | None") -> "LLMResponse":
+        """消费 stream() 事件流（吸收 pi streamAssistantResponse）。
+
+        采样面不动：传给 llm.stream 的参数与原 complete 调用逐字段一致。
+        thinking/text delta → on_llm_stream hook（trace）；DONE → 返回
+        final LLMResponse；ERROR/流异常 → raise（走 with_retry + 失败分支，
+        重试语义与原 complete 路径一致）。
+
+        向后兼容：duck-typed delegate（无 stream 方法，如测试 ScriptedLLM）
+        直接回退 complete()——与改造前调用路径完全一致。
+        """
+        stream_fn = getattr(self.llm, "stream", None)
+        if stream_fn is None:
+            return self.llm.complete(
+                self.system_prompt, state.messages, self._tools,
+                vision=False, tool_choice=tool_choice,
+            )
+
+        final: "LLMResponse | None" = None
+        for ev in stream_fn(
+            self.system_prompt, state.messages, self._tools,
+            vision=False, tool_choice=tool_choice,
+        ):
+            if ev.type in (StreamEventType.THINKING_DELTA, StreamEventType.TEXT_DELTA):
+                self._emit("on_llm_stream", kind=ev.type.value, delta=ev.delta,
+                           call_index=state.step_count)
+            elif ev.type == StreamEventType.DONE:
+                final = ev.final
+            elif ev.type == StreamEventType.ERROR:
+                raise RuntimeError(ev.error or "stream error")
+        if final is None:
+            raise RuntimeError("stream ended without done event")
+        return final
+
+    # ═══════════════════════════════════════════════════
+    # 辅助
+    # ═══════════════════════════════════════════════════
+
+    def _last_is_assistant(self, state: RunState) -> bool:
+        """最后一条 message 是否为 assistant——区分"LLM 失败"与"纯文本"。"""
+        return bool(state.messages) and state.messages[-1].get("role") == "assistant"
+
+    # ═══════════════════════════════════════════════════
+    # Phase 3: 工具执行
+    # ═══════════════════════════════════════════════════
+
+    def _execute_tools(self, state: RunState, turn_cost_usd: float,
+                       tool_uses: list[dict]) -> RunState:
+        """逐工具执行（tool_uses 由调用方 _react_loop 预解析传入，避免二次遍历）。"""
+        if not tool_uses:
+            return state
+
+        results: list[dict] = []
+        observed = False
+        observed_text = ""  # ← 改动点：收集工具带回的屏幕文本（批次末注入 messages）
+        action_after_observe = False  # ← 改动点：最后一次观察之后是否有动作工具执行
+        any_action_failed = False
+
+        for i, tc in enumerate(tool_uses):
+            tname: str = tc["name"]
+            tinput: dict = tc.get("input", {})
+            state.last_tool = tname
+            state.step_count += 1
+
+            self._emit("on_tool_start", step_index=state.step_count, name=tname, args=tinput)
+            t_start = time.perf_counter()
+
+            # LLM 成本归到批次首个工具，其余为 0——避免 3 个工具各记一轮 LLM 成本
+            step_cost = turn_cost_usd if i == 0 else 0.0
+            step, ar = self._execute_one(tname, tinput, state.step_count, step_cost)
+            elapsed = time.perf_counter() - t_start
+            state.steps.append(step)
+
+            self._emit("on_tool_end", step_index=state.step_count, name=tname,
+                        result=step.result, elapsed=elapsed, success=step.success,
+                        action_result=ar)
+            self._emit("on_step", step=step)
+
+            # ── mobilerun: 记录每次工具执行到 memory（action_history + outcome）──
+            self.memory.record(state.step_count, tname, tinput, step.success, step.result)
+
+            # 工具执行日志
+            _log.info("tool | step=%d %s(%s) success=%s elapsed=%.3fs result=%s",
+                      state.step_count, tname, _fmt_log_args(tinput),
+                      step.success, elapsed, ar.summary[:60] if ar else "n/a")
+
+            # ── 效果：观察 → 同步指纹 + 收集屏幕文本（批次末注入 messages）──
+            if step.success and (obs := ar.observation_data) is not None:
+                observed = True
+                text, count = obs
+                changed = self.observer.note_observed(text, count)
+                if changed:
+                    observed_text = text
+                else:
+                    # 指纹未变=屏幕相同 → 不注入全量文本（去重），但给简短确认
+                    # 避免 v1.13 死循环：LLM 看到空注入以为 observe 失败
+                    observed_text = ""  # 标记"已观察但去重"，_inject_batch_screen 做简短确认
+                action_after_observe = False  # 观察是本批次最新信息（key(enter) 的观察在按键之后）
+                self._emit("on_screen", source="observe_tool",
+                            screen_text=text, image_b64=None,
+                            element_count=count, step_index=state.step_count)
+
+            # 追踪本批次操作类工具的成败（供 after_tool 能力判定）
+            # elif：观察与动作互斥——key(enter) 等"动作+观察"工具不算"观察后有动作"
+            elif tname in self._action_tools:
+                if not step.success:
+                    any_action_failed = True
+                action_after_observe = True  # 动作发生在最后一次观察之后 → 屏幕可能已变
+
+            results.append(self._tool_result(tc["id"], step))
+
+            # ── after_tool 能力（CompleteVerify 等：complete 覆盖判定）──
+            snap = TurnSnapshot(phase="after_tool", tool_name=tname,
+                               action_result=ar, any_action_failed=any_action_failed)
+            for cap in self.after_tool_caps:
+                state = cap(state, snap)
+                # ── PI afterToolCall 对齐：cap 可返回 enrichment 丰富工具结果 ──
+                enrich_fn = getattr(cap, "enrich", None)
+                if enrich_fn is not None:
+                    enrichment = enrich_fn(snap)
+                    if enrichment:
+                        results[-1]["content"] += "\n" + enrichment
+            if state.terminal:
+                # 补齐批次内未执行 tool_use 的占位 result——否则 API 报
+                # 'tool_use without tool_result'（续跑时 400）
+                for remaining in tool_uses[len(results):]:
+                    results.append({
+                        "type": "tool_result",
+                        "tool_use_id": remaining["id"],
+                        "content": "[SKIPPED] batch terminated early",
+                        "is_error": True,
+                    })
+                state.messages.append({"role": "user", "content": results})
+                return state
+
+        state.messages.append({"role": "user", "content": results})
+        return self._inject_batch_screen(state, observed, action_after_observe, observed_text)
+
+    def _inject_batch_screen(
+        self, state: RunState, observed: bool,
+        action_after_observe: bool, observed_text: str,
+    ) -> RunState:
+        """批次末屏幕注入：LLM 必须看到最新屏幕才能决策。
+
+        三种路径：
+        1. 观察类工具带回屏幕 + 无后续动作 → 注入工具带回的文本
+        2. 无观察 → auto-observe 取最新屏幕
+        3. 批次末是动作工具（如 [observe, tap]）→ auto-observe 取最新屏幕
+        """
+        if observed and not action_after_observe:
+            if observed_text:
+                state.messages.append({"role": "user", "content": [
+                    {"type": "text", "text": self.observer.format_observation(observed_text)}]})
+            else:
+                # 屏幕去重——显式 observe 返回了元素但指纹相同，给简短确认避免
+                # LLM 看不到注入以为 observe 失败（v1.13 死循环根因）
+                state.messages.append({"role": "user", "content": [
+                    {"type": "text", "text": _load_feedback("screen_unchanged")}]})
+        else:
+            screen_text, _ = self._observe_and_refresh(
+                lambda: (self.observer.after_action(action_hit=True), 0))
+            if screen_text:
+                state.messages.append({"role": "user", "content": [
+                    {"type": "text", "text": screen_text}]})
+        return state
+
+    def _execute_one(
+        self, name: str, inputs: dict, step_idx: int, cost: float,
+    ) -> tuple[Step, ActionResult]:
+        """执行单个工具。含设备 I/O 自愈，一切异常转 ActionResult。"""
+        t0 = time.perf_counter()
+
+        def attempt() -> ActionResult:
+            return self.registry.execute(name, inputs, self.ctx)
+
+        try:
+            # 操作类工具（tap/type/key/launch 等）不重试——非幂等，重试会双执行
+            # 感知类工具（observe/shell/assert）可重试——幂等
+            if name in self._no_retry_tools or name in self._action_tools:
+                ar = attempt()
+            else:
+                ar = with_retry(attempt, retries=2, base_delay=0.5)
+        except PhonefastError:
+            try:
+                # L1 设备恢复：daemon 整体重启（UI 子进程失联时 warmup 无效——
+                # full_0813 评测 19:33 后 observe 132 连败即此根因），
+                # restart_daemon 不可用时回退 warmup
+                pf = self.observer.phonefast
+                if hasattr(pf, "restart_daemon"):
+                    pf.restart_daemon()
+                else:
+                    if hasattr(pf, "_warmed"):
+                        pf._warmed = False
+                    if hasattr(pf, "warmup"):
+                        pf.warmup()
+                self._observe_and_refresh(self.observer.initial)
+                ar = attempt()
+            except Exception as e:
+                ar = ActionResult.fail(f"device recovery failed: {e}")
+        except Exception as e:
+            ar = ActionResult.fail(f"{name} failed: {e}")
+
+        elapsed = time.perf_counter() - t0
+        step = Step(index=step_idx, thought="", action=name, args=inputs,
+                     result=ar.to_llm_text(), success=ar.success,
+                     elapsed=elapsed, cost_usd=cost)
+        return step, ar
+
+    def _observe_and_refresh(self, observe_fn: Callable[[], tuple[str | None, int]]) -> tuple[str, int]:
+        """observe → 若有 UI 则刷新 ctx。统一 4 处 observe-then-refresh 模式。
+
+        observe_fn: observer.initial / lambda wrapping after_action
+        返回 (screen_text, element_count)。
+        """
+        screen_text, el_count = observe_fn()
+        if self.observer.last_ui is not None:
+            self.ctx.refresh(self.observer.last_ui)
+        return screen_text or "", el_count
+
+    def _parse_tool_uses(self, state: RunState) -> list[dict]:
+        last = state.messages[-1]
+        if last.get("role") != "assistant":
+            return []
+        return [b for b in last.get("content", []) if b.get("type") == "tool_use"]
+
+    @staticmethod
+    def _tool_result(tool_use_id: str, step: Step) -> dict:
+        return {"type": "tool_result", "tool_use_id": tool_use_id,
+                "content": step.result, "is_error": not step.success}
+
+    # ═══════════════════════════════════════════════════
+    # 结果组装
+    # ═══════════════════════════════════════════════════
+
+    def _build_result(self, state: RunState, cost_before: float = 0.0, steps_before: int = 0) -> AgentResult:
+        # finalize 能力（AssertFallback 等）
+        snap = TurnSnapshot(phase="finalize", assert_tools=self._assert_tools)
+        for cap in self.finalize_caps:
+            state = cap(state, snap)
+
+        # ── 持久化 agent memory（每 run 结束自动 save，下 run 自动 load）──
+        try:
+            self.memory.save()
+        except Exception:
+            import logging
+            logging.getLogger(__name__).warning("memory.save() failed", exc_info=True)
+
+        summary = state.summary or ("未完成（达到步数上限）" if not state.success else "")
+        # session state 共享时，使用增量 cost/steps（避免累积值重复计入 Session 统计）
+        result = AgentResult(
+            session_id=state.session_id, success=state.success, summary=summary,
+            steps=max(0, state.step_count - steps_before),
+            total_cost_usd=max(0.0, state.cost_usd - cost_before),
+            steps_detail=state.steps[steps_before:],
+        )
+        self._emit("on_finish", result=result)
+        _log.info("run_end | goal=%s success=%s steps=%d cost=%.6f",
+                  state.goal, state.success, result.steps, result.total_cost_usd)
+        return result
+
+    # ═══════════════════════════════════════════════════
+    # Hook
+    # ═══════════════════════════════════════════════════
+
+    def _emit(self, method: str, **kwargs: Any) -> None:
+        """字符串事件分发——v3 保留向后兼容，后续可改 Enum。"""
+        for h in self._hooks:
+            m = getattr(h, method, None)
+            if m is None:
+                continue
+            try:
+                m(**kwargs)
+            except Exception:
+                import logging
+                logging.getLogger(__name__).warning(
+                    f"hook {type(h).__name__}.{method} failed", exc_info=True)

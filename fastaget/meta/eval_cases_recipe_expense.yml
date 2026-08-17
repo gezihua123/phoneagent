@@ -1,0 +1,1408 @@
+cases:
+- goal: 'Add the following expenses into the arduia pro expense: Lunch 15.50, Coffee
+    4.00'
+  initialize:
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "CREATE
+      TABLE IF NOT EXISTS expense (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT,
+      amount INTEGER, category INTEGER, note TEXT, created_date INTEGER, modified_date
+      INTEGER);" 2>/dev/null || true
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "DELETE
+      FROM expense;"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Coffee',400,4,'Morning
+      coffee',1697385600000,1697385600000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Taxi
+      Ride',2500,7,'Airport transfer',1697385600000,1697385600000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Dinner
+      Out',4200,3,'Date night',1697385600000,1697385600000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Groceries',8950,3,'Weekly
+      shopping',1697385600000,1697385600000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Gas
+      Station',5500,7,'Fill up tank',1697385600000,1697385600000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Concert
+      Tickets',15000,5,'Birthday gift',1697385600000,1697385600000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Monthly
+      Rent',150000,4,'Due on 1st',1697385600000,1697385600000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Doctor
+      Visit',3000,9,'Annual checkup',1697385600000,1697385600000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Programming
+      Book',4999,10,'Python reference',1697385600000,1697385600000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Taxi
+      Ride',2500,7,'Airport transfer',1697385600000,1697385600000);"
+  max_steps: 25
+  name: AW-ExpenseAddMultiple
+  tags:
+  - M
+  - expense
+  - T4
+  verify:
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "SELECT
+      COUNT(*) FROM expense WHERE name IN ('Lunch','Coffee');"
+    expect_re: '[1-9][0-9]*'
+- goal: Add the expenses from expenses.jpg in Simple Gallery Pro to pro expense.
+  initialize:
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "DELETE
+      FROM expense;"
+  - command: 'echo ''expenses_placeholder Dinner Out 42.00
+
+      Coffee 4.00
+
+      Taxi Ride 25.00'' > /sdcard/DCIM/expenses.jpg 2>/dev/null || true'
+  - command: echo 'old_expense_0' > /sdcard/DCIM/old_expenses_0.jpg 2>/dev/null ||
+      true
+  - command: echo 'old_expense_1' > /sdcard/DCIM/old_expenses_1.jpg 2>/dev/null ||
+      true
+  - command: echo 'old_expense_2' > /sdcard/DCIM/old_expenses_2.jpg 2>/dev/null ||
+      true
+  - command: echo 'old_expense_3' > /sdcard/DCIM/old_expenses_3.jpg 2>/dev/null ||
+      true
+  - command: echo 'old_expense_4' > /sdcard/DCIM/old_expenses_4.jpg 2>/dev/null ||
+      true
+  - command: echo 'old_expense_5' > /sdcard/DCIM/old_expenses_5.jpg 2>/dev/null ||
+      true
+  - command: echo 'old_expense_6' > /sdcard/DCIM/old_expenses_6.jpg 2>/dev/null ||
+      true
+  - command: echo 'old_expense_7' > /sdcard/DCIM/old_expenses_7.jpg 2>/dev/null ||
+      true
+  - command: echo 'old_expense_8' > /sdcard/DCIM/old_expenses_8.jpg 2>/dev/null ||
+      true
+  - command: echo 'old_expense_9' > /sdcard/DCIM/old_expenses_9.jpg 2>/dev/null ||
+      true
+  max_steps: 20
+  name: AW-ExpenseAddMultipleFromGallery
+  tags:
+  - H
+  - expense
+  - T4
+  verify:
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "SELECT
+      COUNT(*) FROM expense;"
+    expect_re: '[2-9][0-9]*'
+- goal: Go through the transactions in my_expenses.txt in Markor. Log the reimbursable
+    transactions in the arduia pro expense.
+  initialize:
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "DELETE
+      FROM expense;"
+  - command: 'echo ''Dinner Out,42.00,Restaurant,Reimbursable. Date night
+
+      Taxi Ride,25.00,Transportation,Reimbursable. Airport transfer
+
+      '' > /sdcard/Documents/Markor/my_expenses.txt 2>/dev/null || true'
+  - command: pm grant net.gsantner.markor android.permission.WRITE_EXTERNAL_STORAGE
+      2>/dev/null || true
+  max_steps: 30
+  name: AW-ExpenseAddMultipleFromMarkor
+  tags:
+  - H
+  - expense
+  - T4
+  verify:
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "SELECT
+      COUNT(*) FROM expense;"
+    expect_re: '[1-9][0-9]*'
+- goal: 'Add the following expenses into the arduia pro expense: Lunch 15.50'
+  initialize:
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "DELETE
+      FROM expense;"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Coffee',400,4,'Morning
+      coffee',1697385600000,1697385600000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Taxi
+      Ride',2500,7,'Airport transfer',1697385600000,1697385600000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Dinner
+      Out',4200,3,'Date night',1697385600000,1697385600000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Groceries',8950,3,'Weekly
+      shopping',1697385600000,1697385600000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Gas
+      Station',5500,7,'Fill up tank',1697385600000,1697385600000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Concert
+      Tickets',15000,5,'Birthday gift',1697385600000,1697385600000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Monthly
+      Rent',150000,4,'Due on 1st',1697385600000,1697385600000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Doctor
+      Visit',3000,9,'Annual checkup',1697385600000,1697385600000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Programming
+      Book',4999,10,'Python reference',1697385600000,1697385600000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Taxi
+      Ride',2500,7,'Airport transfer',1697385600000,1697385600000);"
+  max_steps: 25
+  name: AW-ExpenseAddSingle
+  tags:
+  - E
+  - expense
+  - T2
+  verify:
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "SELECT
+      COUNT(*) FROM expense WHERE name='Lunch';"
+    expect_re: '[1-9][0-9]*'
+- goal: Delete all but one of any expenses in arduia pro expense that are exact duplicates,
+    ensuring at least one instance of each unique expense remains.
+  initialize:
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "DELETE
+      FROM expense;"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Coffee',400,4,'Morning
+      coffee',1697385600000,1697385600000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Taxi
+      Ride',2500,7,'Airport transfer',1697385600000,1697385600000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Dinner
+      Out',4200,3,'Date night',1697385600000,1697385600000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Groceries',8950,3,'Weekly
+      shopping',1697385600000,1697385600000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Gas
+      Station',5500,7,'Fill up tank',1697385600000,1697385600000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Lunch',1550,3,'Team
+      lunch',1697385600000,1697385600000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Lunch',1550,3,'Team
+      lunch',1697385600000,1697385600000);"
+  max_steps: 12
+  name: AW-ExpenseDeleteDuplicates
+  tags:
+  - M
+  - expense
+  - T4
+  verify:
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "SELECT
+      COUNT(*) FROM expense WHERE name='Lunch';"
+    expect: '1'
+- goal: Delete all but one of any expenses in arduia pro expense that are exact duplicates,
+    ensuring at least one instance of each unique expense remains.
+  initialize:
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "DELETE
+      FROM expense;"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Coffee',400,4,'Morning
+      coffee',1697385601000,1697385601000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Taxi
+      Ride',2500,7,'Airport transfer',1697385602000,1697385602000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Dinner
+      Out',4200,3,'Date night',1697385603000,1697385603000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Groceries',8950,3,'Weekly
+      shopping',1697385604000,1697385604000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Gas
+      Station',5500,7,'Fill up tank',1697385605000,1697385605000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Concert
+      Tickets',15000,5,'Birthday gift',1697385606000,1697385606000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Monthly
+      Rent',150000,4,'Due on 1st',1697385607000,1697385607000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Programming
+      Book',4999,10,'Python reference',1697385608000,1697385608000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Coffee',400,4,'Morning
+      coffee',1697385609000,1697385609000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Taxi
+      Ride',2500,7,'Airport transfer',1697385610000,1697385610000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Dinner
+      Out',4200,3,'Date night',1697385611000,1697385611000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Groceries',8950,3,'Weekly
+      shopping',1697385612000,1697385612000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Gas
+      Station',5500,7,'Fill up tank',1697385613000,1697385613000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Concert
+      Tickets',15000,5,'Birthday gift',1697385614000,1697385614000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Monthly
+      Rent',150000,4,'Due on 1st',1697385615000,1697385615000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Programming
+      Book',4999,10,'Python reference',1697385616000,1697385616000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Coffee',400,4,'Morning
+      coffee',1697385617000,1697385617000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Taxi
+      Ride',2500,7,'Airport transfer',1697385618000,1697385618000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Dinner
+      Out',4200,3,'Date night',1697385619000,1697385619000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Groceries',8950,3,'Weekly
+      shopping',1697385620000,1697385620000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Gas
+      Station',5500,7,'Fill up tank',1697385621000,1697385621000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Concert
+      Tickets',15000,5,'Birthday gift',1697385622000,1697385622000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Monthly
+      Rent',150000,4,'Due on 1st',1697385623000,1697385623000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Programming
+      Book',4999,10,'Python reference',1697385624000,1697385624000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Coffee',400,4,'Morning
+      coffee',1697385625000,1697385625000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Taxi
+      Ride',2500,7,'Airport transfer',1697385626000,1697385626000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Dinner
+      Out',4200,3,'Date night',1697385627000,1697385627000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Groceries',8950,3,'Weekly
+      shopping',1697385628000,1697385628000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Gas
+      Station',5500,7,'Fill up tank',1697385629000,1697385629000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Concert
+      Tickets',15000,5,'Birthday gift',1697385630000,1697385630000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Monthly
+      Rent',150000,4,'Due on 1st',1697385631000,1697385631000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Programming
+      Book',4999,10,'Python reference',1697385632000,1697385632000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Coffee',400,4,'Morning
+      coffee',1697385633000,1697385633000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Taxi
+      Ride',2500,7,'Airport transfer',1697385634000,1697385634000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Dinner
+      Out',4200,3,'Date night',1697385635000,1697385635000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Groceries',8950,3,'Weekly
+      shopping',1697385636000,1697385636000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Gas
+      Station',5500,7,'Fill up tank',1697385637000,1697385637000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Concert
+      Tickets',15000,5,'Birthday gift',1697385638000,1697385638000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Monthly
+      Rent',150000,4,'Due on 1st',1697385639000,1697385639000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Programming
+      Book',4999,10,'Python reference',1697385640000,1697385640000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Lunch',1550,3,'Team
+      lunch',1697385600000,1697385600000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Lunch',1550,3,'Team
+      lunch',1697385600000,1697385600000);"
+  max_steps: 18
+  name: AW-ExpenseDeleteDuplicates2
+  tags:
+  - M
+  - expense
+  - T4
+  verify:
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "SELECT
+      COUNT(*) FROM expense WHERE name='Lunch';"
+    expect: '1'
+- goal: 'Delete the following expenses from arduia pro expense: Lunch 15.50, Coffee
+    4.00.'
+  initialize:
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "DELETE
+      FROM expense;"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Lunch',1550,3,'Team
+      lunch',1697385600000,1697385600000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Coffee',400,4,'Morning
+      coffee',1697385600000,1697385600000);"
+  max_steps: 15
+  name: AW-ExpenseDeleteMultiple
+  tags:
+  - E
+  - expense
+  - T4
+  verify:
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "SELECT
+      COUNT(*) FROM expense WHERE name IN ('Lunch','Coffee');"
+    expect: '0'
+- goal: 'Delete the following expenses from arduia pro expense: Lunch 15.50, Coffee
+    4.00.'
+  initialize:
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "DELETE
+      FROM expense;"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Dinner
+      Out',4200,3,'Date night',1697385601000,1697385601000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Groceries',8950,3,'Weekly
+      shopping',1697385602000,1697385602000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Gas
+      Station',5500,7,'Fill up tank',1697385603000,1697385603000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Concert
+      Tickets',15000,5,'Birthday gift',1697385604000,1697385604000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Monthly
+      Rent',150000,4,'Due on 1st',1697385605000,1697385605000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Doctor
+      Visit',3000,9,'Annual checkup',1697385606000,1697385606000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Programming
+      Book',4999,10,'Python reference',1697385607000,1697385607000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Taxi
+      Ride',2500,7,'Airport transfer',1697385608000,1697385608000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Dinner
+      Out',4200,3,'Date night',1697385609000,1697385609000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Groceries',8950,3,'Weekly
+      shopping',1697385610000,1697385610000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Gas
+      Station',5500,7,'Fill up tank',1697385611000,1697385611000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Concert
+      Tickets',15000,5,'Birthday gift',1697385612000,1697385612000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Monthly
+      Rent',150000,4,'Due on 1st',1697385613000,1697385613000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Doctor
+      Visit',3000,9,'Annual checkup',1697385614000,1697385614000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Programming
+      Book',4999,10,'Python reference',1697385615000,1697385615000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Taxi
+      Ride',2500,7,'Airport transfer',1697385616000,1697385616000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Dinner
+      Out',4200,3,'Date night',1697385617000,1697385617000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Groceries',8950,3,'Weekly
+      shopping',1697385618000,1697385618000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Gas
+      Station',5500,7,'Fill up tank',1697385619000,1697385619000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Concert
+      Tickets',15000,5,'Birthday gift',1697385620000,1697385620000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Monthly
+      Rent',150000,4,'Due on 1st',1697385621000,1697385621000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Doctor
+      Visit',3000,9,'Annual checkup',1697385622000,1697385622000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Programming
+      Book',4999,10,'Python reference',1697385623000,1697385623000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Taxi
+      Ride',2500,7,'Airport transfer',1697385624000,1697385624000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Dinner
+      Out',4200,3,'Date night',1697385625000,1697385625000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Groceries',8950,3,'Weekly
+      shopping',1697385626000,1697385626000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Gas
+      Station',5500,7,'Fill up tank',1697385627000,1697385627000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Concert
+      Tickets',15000,5,'Birthday gift',1697385628000,1697385628000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Monthly
+      Rent',150000,4,'Due on 1st',1697385629000,1697385629000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Doctor
+      Visit',3000,9,'Annual checkup',1697385630000,1697385630000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Programming
+      Book',4999,10,'Python reference',1697385631000,1697385631000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Taxi
+      Ride',2500,7,'Airport transfer',1697385632000,1697385632000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Dinner
+      Out',4200,3,'Date night',1697385633000,1697385633000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Groceries',8950,3,'Weekly
+      shopping',1697385634000,1697385634000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Gas
+      Station',5500,7,'Fill up tank',1697385635000,1697385635000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Concert
+      Tickets',15000,5,'Birthday gift',1697385636000,1697385636000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Monthly
+      Rent',150000,4,'Due on 1st',1697385637000,1697385637000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Doctor
+      Visit',3000,9,'Annual checkup',1697385638000,1697385638000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Programming
+      Book',4999,10,'Python reference',1697385639000,1697385639000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Taxi
+      Ride',2500,7,'Airport transfer',1697385640000,1697385640000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Lunch',1550,3,'Team
+      lunch',1697385600000,1697385600000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Coffee',400,4,'Morning
+      coffee',1697385600000,1697385600000);"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Taxi
+      Ride',2500,7,'Airport transfer',1697385600000,1697385600000);"
+  max_steps: 34
+  name: AW-ExpenseDeleteMultiple2
+  tags:
+  - H
+  - expense
+  - T4
+  verify:
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "SELECT
+      COUNT(*) FROM expense WHERE name IN ('Lunch','Coffee','Taxi Ride');"
+    expect: '0'
+- goal: 'Delete the following expenses from arduia pro expense: Lunch 15.50.'
+  initialize:
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "DELETE
+      FROM expense;"
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "INSERT
+      INTO expense(name,amount,category,note,created_date,modified_date) VALUES('Lunch',1550,3,'Team
+      lunch',1697385600000,1697385600000);"
+  max_steps: 9
+  name: AW-ExpenseDeleteSingle
+  tags:
+  - E
+  - expense
+  - T4
+  verify:
+  - command: sqlite3 /data/data/com.arduia.expense/databases/accounting.db "SELECT
+      COUNT(*) FROM expense WHERE name='Lunch';"
+    expect: '0'
+- goal: What quantity of salt do I need for the recipe 'Test Recipe gae' in the Joplin
+    app? Express your answer in the format <amount> <unit> without using abbreviations.
+  initialize:
+  - command: if [ ! -f /data/data/net.cozic.joplin/databases/joplin.sqlite ]; then
+      am start -a android.intent.action.MAIN -c android.intent.category.LAUNCHER net.cozic.joplin
+      2>/dev/null; sleep 3; am force-stop net.cozic.joplin 2>/dev/null; fi
+  - command: pm grant net.cozic.joplin android.permission.ACCESS_COARSE_LOCATION 2>/dev/null
+      || true
+  - command: pm grant net.cozic.joplin android.permission.ACCESS_FINE_LOCATION 2>/dev/null
+      || true
+  - command: sqlite3 /data/data/net.cozic.joplin/databases/joplin.sqlite "DELETE FROM
+      notes;" 2>/dev/null || echo 'joplin_db_cleared'
+  max_steps: 6
+  name: AW-NotesRecipeIngredientCount
+  tags:
+  - E
+  - joplin
+  - T4
+  verify:
+  - command: dumpsys activity activities | grep topResumedActivity
+    expect_re: .
+- goal: 'Add the following recipes into the Broccoli app: Chocolate Cake, Chicken
+    Soup, Pasta Primavera'
+  initialize:
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "DELETE
+      FROM recipes;"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Chocolate Cake','A rich and moist chocolate cake for special occasions.','8
+      servings','45 mins','','flour, cocoa, sugar, eggs, butter','Mix dry ingredients.
+      Add wet ingredients. Bake at 350F for 30 mins.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Chicken Soup','A hearty soup perfect for cold winter days.','6 servings','60
+      mins','','chicken, carrots, celery, onion, broth','Boil chicken, add vegetables,
+      simmer for 45 mins. Add salt to taste.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Pasta Primavera','A light pasta dish loaded with fresh seasonal vegetables.','4
+      servings','25 mins','','pasta, bell peppers, zucchini, cherry tomatoes, olive
+      oil','Cook pasta. Sauté vegetables. Toss together with olive oil and Parmesan.',0);"
+  - command: am force-stop com.flauschcode.broccoli 2>/dev/null || true
+  max_steps: 25
+  name: AW-RecipeAddMultipleRecipes
+  tags:
+  - M
+  - broccoli
+  - T4
+  verify:
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "SELECT
+      COUNT(*) FROM recipes WHERE title IN ('Chocolate Cake','Chicken Soup','Pasta
+      Primavera');"
+    expect_re: '[1-9][0-9]*'
+- goal: Add the recipes from recipes.jpg in Simple Gallery Pro to the Broccoli recipe
+    app.
+  initialize:
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "DELETE
+      FROM recipes;"
+  - command: echo 'recipe_base64_placeholder' > /sdcard/DCIM/recipes.jpg 2>/dev/null
+      || true
+  - command: am force-stop com.flauschcode.broccoli 2>/dev/null || true
+  max_steps: 26
+  name: AW-RecipeAddMultipleRecipesFromImage
+  tags:
+  - H
+  - broccoli
+  - T4
+  verify:
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "SELECT
+      COUNT(*) FROM recipes;"
+    expect_re: '[1-9][0-9]*'
+- goal: Add the recipes from recipes.txt in Markor to the Broccoli recipe app.
+  initialize:
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "DELETE
+      FROM recipes;"
+  - command: 'echo ''Chocolate Cake: A rich dessert (45 mins, 8 servings)
+
+      Chicken Soup: Hearty soup with vegetables (60 mins, 6 servings)
+
+      Pasta Primavera: Light pasta dish (25 mins, 4 servings)'' > /sdcard/Documents/Markor/recipes.txt
+      2>/dev/null || true'
+  - command: pm grant net.gsantner.markor android.permission.WRITE_EXTERNAL_STORAGE
+      2>/dev/null || true
+  - command: am force-stop com.flauschcode.broccoli 2>/dev/null || true
+  max_steps: 40
+  name: AW-RecipeAddMultipleRecipesFromMarkor
+  tags:
+  - H
+  - broccoli
+  - T4
+  verify:
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "SELECT
+      COUNT(*) FROM recipes;"
+    expect_re: '[1-9][0-9]*'
+- goal: Add the recipes from recipes.txt in Markor that take 30 to prepare into the
+    Broccoli recipe app.
+  initialize:
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "DELETE
+      FROM recipes;"
+  - command: 'echo ''Chocolate Cake: A rich dessert (45 mins, 8 servings)
+
+      Chicken Soup: Hearty soup with vegetables (60 mins, 6 servings)
+
+      Pasta Primavera: Light pasta dish (25 mins, 4 servings)'' > /sdcard/Documents/Markor/recipes.txt
+      2>/dev/null || true'
+  - command: pm grant net.gsantner.markor android.permission.WRITE_EXTERNAL_STORAGE
+      2>/dev/null || true
+  - command: am force-stop com.flauschcode.broccoli 2>/dev/null || true
+  max_steps: 40
+  name: AW-RecipeAddMultipleRecipesFromMarkor2
+  tags:
+  - H
+  - broccoli
+  - T4
+  verify:
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "SELECT
+      COUNT(*) FROM recipes;"
+    expect_re: '[1-9][0-9]*'
+- goal: 'Add the following recipes into the Broccoli app: Spicy Tuna Wraps: Ingredients
+    - varies'
+  initialize:
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "DELETE
+      FROM recipes;"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Greek Salad Pita Pockets','An ideal recipe for experimenting with different
+      flavors and ingredients.','3-4 servings','30 mins','','to preference','Fill
+      pita pockets with lettuce, cucumber, tomato, feta, olives, and Greek dressing.
+      Feel free to substitute with ingredients you have on hand.',0);"
+  max_steps: 25
+  name: AW-RecipeAddSingleRecipe
+  tags:
+  - E
+  - broccoli
+  - T4
+  verify:
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "SELECT
+      COUNT(*) FROM recipes WHERE title='Spicy Tuna Wraps';"
+    expect_re: '[1-9][0-9]*'
+- goal: Delete all but one of any recipes in the Broccoli app that are exact duplicates,
+    ensuring at least one instance of each unique recipe remains
+  initialize:
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "DELETE
+      FROM recipes;"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Avocado Toast with Egg','A delicious and healthy choice for any time
+      of the day.','1 serving','10 mins','','as per recipe','Toast bread, top with
+      mashed avocado, a fried egg, salt, pepper, and chili flakes. Garnish with fresh
+      herbs for a more vibrant taste.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Greek Salad Pita Pockets','An ideal recipe for experimenting with different
+      flavors and ingredients.','3-4 servings','30 mins','','to preference','Fill
+      pita pockets with lettuce, cucumber, tomato, feta, olives, and Greek dressing.
+      Feel free to substitute with ingredients you have on hand.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Chocolate Cake','A rich and moist chocolate cake for special occasions.','8
+      servings','45 mins','','flour, cocoa, sugar, eggs, butter','Mix dry ingredients.
+      Add wet ingredients. Bake at 350F for 30 mins.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Chicken Soup','A hearty soup perfect for cold winter days.','6 servings','60
+      mins','','chicken, carrots, celery, onion, broth','Boil chicken, add vegetables,
+      simmer for 45 mins. Add salt to taste.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Pasta Primavera','A light pasta dish loaded with fresh seasonal vegetables.','4
+      servings','25 mins','','pasta, bell peppers, zucchini, cherry tomatoes, olive
+      oil','Cook pasta. Sauté vegetables. Toss together with olive oil and Parmesan.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Spicy Tuna Wraps','A quick and easy meal, perfect for busy weekdays.','2
+      servings','20 mins','','varies','Mix canned tuna with mayo and sriracha. Spread
+      on tortillas, add lettuce and cucumber slices, roll up. Try adding a pinch of
+      your favorite spices for extra flavor.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Spicy Tuna Wraps','A quick and easy meal, perfect for busy weekdays.','2
+      servings','20 mins','','varies','Mix canned tuna with mayo and sriracha. Spread
+      on tortillas, add lettuce and cucumber slices, roll up. Try adding a pinch of
+      your favorite spices for extra flavor.',0);"
+  - command: am force-stop com.flauschcode.broccoli 2>/dev/null || true
+  max_steps: 12
+  name: AW-RecipeDeleteDuplicateRecipes
+  tags:
+  - E
+  - broccoli
+  - T4
+  verify:
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "SELECT
+      COUNT(*) FROM recipes WHERE title='Spicy Tuna Wraps';"
+    expect: '1'
+- goal: Delete all but one of any recipes in the Broccoli app that are exact duplicates,
+    ensuring at least one instance of each unique recipe remains
+  initialize:
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "DELETE
+      FROM recipes;"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Avocado Toast with Egg','A delicious and healthy choice for any time
+      of the day.','1 serving','10 mins','','as per recipe','Toast bread, top with
+      mashed avocado, a fried egg, salt, pepper, and chili flakes. Garnish with fresh
+      herbs for a more vibrant taste.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Greek Salad Pita Pockets','An ideal recipe for experimenting with different
+      flavors and ingredients.','3-4 servings','30 mins','','to preference','Fill
+      pita pockets with lettuce, cucumber, tomato, feta, olives, and Greek dressing.
+      Feel free to substitute with ingredients you have on hand.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Chocolate Cake','A rich and moist chocolate cake for special occasions.','8
+      servings','45 mins','','flour, cocoa, sugar, eggs, butter','Mix dry ingredients.
+      Add wet ingredients. Bake at 350F for 30 mins.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Chicken Soup','A hearty soup perfect for cold winter days.','6 servings','60
+      mins','','chicken, carrots, celery, onion, broth','Boil chicken, add vegetables,
+      simmer for 45 mins. Add salt to taste.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Pasta Primavera','A light pasta dish loaded with fresh seasonal vegetables.','4
+      servings','25 mins','','pasta, bell peppers, zucchini, cherry tomatoes, olive
+      oil','Cook pasta. Sauté vegetables. Toss together with olive oil and Parmesan.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Banana Bread','A classic quick bread made with ripe bananas.','8 servings','50
+      mins','','bananas, flour, sugar, eggs, baking soda','Mash bananas. Mix all ingredients.
+      Bake at 350F for 45 mins.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Avocado Toast with Egg','A delicious and healthy choice for any time
+      of the day.','1 serving','10 mins','','as per recipe','Toast bread, top with
+      mashed avocado, a fried egg, salt, pepper, and chili flakes. Garnish with fresh
+      herbs for a more vibrant taste.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Greek Salad Pita Pockets','An ideal recipe for experimenting with different
+      flavors and ingredients.','3-4 servings','30 mins','','to preference','Fill
+      pita pockets with lettuce, cucumber, tomato, feta, olives, and Greek dressing.
+      Feel free to substitute with ingredients you have on hand.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Chocolate Cake','A rich and moist chocolate cake for special occasions.','8
+      servings','45 mins','','flour, cocoa, sugar, eggs, butter','Mix dry ingredients.
+      Add wet ingredients. Bake at 350F for 30 mins.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Chicken Soup','A hearty soup perfect for cold winter days.','6 servings','60
+      mins','','chicken, carrots, celery, onion, broth','Boil chicken, add vegetables,
+      simmer for 45 mins. Add salt to taste.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Pasta Primavera','A light pasta dish loaded with fresh seasonal vegetables.','4
+      servings','25 mins','','pasta, bell peppers, zucchini, cherry tomatoes, olive
+      oil','Cook pasta. Sauté vegetables. Toss together with olive oil and Parmesan.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Banana Bread','A classic quick bread made with ripe bananas.','8 servings','50
+      mins','','bananas, flour, sugar, eggs, baking soda','Mash bananas. Mix all ingredients.
+      Bake at 350F for 45 mins.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Avocado Toast with Egg','A delicious and healthy choice for any time
+      of the day.','1 serving','10 mins','','as per recipe','Toast bread, top with
+      mashed avocado, a fried egg, salt, pepper, and chili flakes. Garnish with fresh
+      herbs for a more vibrant taste.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Greek Salad Pita Pockets','An ideal recipe for experimenting with different
+      flavors and ingredients.','3-4 servings','30 mins','','to preference','Fill
+      pita pockets with lettuce, cucumber, tomato, feta, olives, and Greek dressing.
+      Feel free to substitute with ingredients you have on hand.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Chocolate Cake','A rich and moist chocolate cake for special occasions.','8
+      servings','45 mins','','flour, cocoa, sugar, eggs, butter','Mix dry ingredients.
+      Add wet ingredients. Bake at 350F for 30 mins.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Chicken Soup','A hearty soup perfect for cold winter days.','6 servings','60
+      mins','','chicken, carrots, celery, onion, broth','Boil chicken, add vegetables,
+      simmer for 45 mins. Add salt to taste.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Pasta Primavera','A light pasta dish loaded with fresh seasonal vegetables.','4
+      servings','25 mins','','pasta, bell peppers, zucchini, cherry tomatoes, olive
+      oil','Cook pasta. Sauté vegetables. Toss together with olive oil and Parmesan.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Banana Bread','A classic quick bread made with ripe bananas.','8 servings','50
+      mins','','bananas, flour, sugar, eggs, baking soda','Mash bananas. Mix all ingredients.
+      Bake at 350F for 45 mins.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Avocado Toast with Egg','A delicious and healthy choice for any time
+      of the day.','1 serving','10 mins','','as per recipe','Toast bread, top with
+      mashed avocado, a fried egg, salt, pepper, and chili flakes. Garnish with fresh
+      herbs for a more vibrant taste.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Greek Salad Pita Pockets','An ideal recipe for experimenting with different
+      flavors and ingredients.','3-4 servings','30 mins','','to preference','Fill
+      pita pockets with lettuce, cucumber, tomato, feta, olives, and Greek dressing.
+      Feel free to substitute with ingredients you have on hand.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Chocolate Cake','A rich and moist chocolate cake for special occasions.','8
+      servings','45 mins','','flour, cocoa, sugar, eggs, butter','Mix dry ingredients.
+      Add wet ingredients. Bake at 350F for 30 mins.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Chicken Soup','A hearty soup perfect for cold winter days.','6 servings','60
+      mins','','chicken, carrots, celery, onion, broth','Boil chicken, add vegetables,
+      simmer for 45 mins. Add salt to taste.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Pasta Primavera','A light pasta dish loaded with fresh seasonal vegetables.','4
+      servings','25 mins','','pasta, bell peppers, zucchini, cherry tomatoes, olive
+      oil','Cook pasta. Sauté vegetables. Toss together with olive oil and Parmesan.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Banana Bread','A classic quick bread made with ripe bananas.','8 servings','50
+      mins','','bananas, flour, sugar, eggs, baking soda','Mash bananas. Mix all ingredients.
+      Bake at 350F for 45 mins.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Avocado Toast with Egg','A delicious and healthy choice for any time
+      of the day.','1 serving','10 mins','','as per recipe','Toast bread, top with
+      mashed avocado, a fried egg, salt, pepper, and chili flakes. Garnish with fresh
+      herbs for a more vibrant taste.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Greek Salad Pita Pockets','An ideal recipe for experimenting with different
+      flavors and ingredients.','3-4 servings','30 mins','','to preference','Fill
+      pita pockets with lettuce, cucumber, tomato, feta, olives, and Greek dressing.
+      Feel free to substitute with ingredients you have on hand.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Chocolate Cake','A rich and moist chocolate cake for special occasions.','8
+      servings','45 mins','','flour, cocoa, sugar, eggs, butter','Mix dry ingredients.
+      Add wet ingredients. Bake at 350F for 30 mins.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Chicken Soup','A hearty soup perfect for cold winter days.','6 servings','60
+      mins','','chicken, carrots, celery, onion, broth','Boil chicken, add vegetables,
+      simmer for 45 mins. Add salt to taste.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Pasta Primavera','A light pasta dish loaded with fresh seasonal vegetables.','4
+      servings','25 mins','','pasta, bell peppers, zucchini, cherry tomatoes, olive
+      oil','Cook pasta. Sauté vegetables. Toss together with olive oil and Parmesan.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Banana Bread','A classic quick bread made with ripe bananas.','8 servings','50
+      mins','','bananas, flour, sugar, eggs, baking soda','Mash bananas. Mix all ingredients.
+      Bake at 350F for 45 mins.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Avocado Toast with Egg','A delicious and healthy choice for any time
+      of the day.','1 serving','10 mins','','as per recipe','Toast bread, top with
+      mashed avocado, a fried egg, salt, pepper, and chili flakes. Garnish with fresh
+      herbs for a more vibrant taste.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Greek Salad Pita Pockets','An ideal recipe for experimenting with different
+      flavors and ingredients.','3-4 servings','30 mins','','to preference','Fill
+      pita pockets with lettuce, cucumber, tomato, feta, olives, and Greek dressing.
+      Feel free to substitute with ingredients you have on hand.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Chocolate Cake','A rich and moist chocolate cake for special occasions.','8
+      servings','45 mins','','flour, cocoa, sugar, eggs, butter','Mix dry ingredients.
+      Add wet ingredients. Bake at 350F for 30 mins.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Chicken Soup','A hearty soup perfect for cold winter days.','6 servings','60
+      mins','','chicken, carrots, celery, onion, broth','Boil chicken, add vegetables,
+      simmer for 45 mins. Add salt to taste.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Pasta Primavera','A light pasta dish loaded with fresh seasonal vegetables.','4
+      servings','25 mins','','pasta, bell peppers, zucchini, cherry tomatoes, olive
+      oil','Cook pasta. Sauté vegetables. Toss together with olive oil and Parmesan.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Banana Bread','A classic quick bread made with ripe bananas.','8 servings','50
+      mins','','bananas, flour, sugar, eggs, baking soda','Mash bananas. Mix all ingredients.
+      Bake at 350F for 45 mins.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Avocado Toast with Egg','A delicious and healthy choice for any time
+      of the day.','1 serving','10 mins','','as per recipe','Toast bread, top with
+      mashed avocado, a fried egg, salt, pepper, and chili flakes. Garnish with fresh
+      herbs for a more vibrant taste.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Greek Salad Pita Pockets','An ideal recipe for experimenting with different
+      flavors and ingredients.','3-4 servings','30 mins','','to preference','Fill
+      pita pockets with lettuce, cucumber, tomato, feta, olives, and Greek dressing.
+      Feel free to substitute with ingredients you have on hand.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Chocolate Cake','A rich and moist chocolate cake for special occasions.','8
+      servings','45 mins','','flour, cocoa, sugar, eggs, butter','Mix dry ingredients.
+      Add wet ingredients. Bake at 350F for 30 mins.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Chicken Soup','A hearty soup perfect for cold winter days.','6 servings','60
+      mins','','chicken, carrots, celery, onion, broth','Boil chicken, add vegetables,
+      simmer for 45 mins. Add salt to taste.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Pasta Primavera','A light pasta dish loaded with fresh seasonal vegetables.','4
+      servings','25 mins','','pasta, bell peppers, zucchini, cherry tomatoes, olive
+      oil','Cook pasta. Sauté vegetables. Toss together with olive oil and Parmesan.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Banana Bread','A classic quick bread made with ripe bananas.','8 servings','50
+      mins','','bananas, flour, sugar, eggs, baking soda','Mash bananas. Mix all ingredients.
+      Bake at 350F for 45 mins.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Spicy Tuna Wraps','A quick and easy meal, perfect for busy weekdays.','2
+      servings','20 mins','','varies','Mix canned tuna with mayo and sriracha. Spread
+      on tortillas, add lettuce and cucumber slices, roll up. Try adding a pinch of
+      your favorite spices for extra flavor.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Spicy Tuna Wraps','A quick and easy meal, perfect for busy weekdays.','2
+      servings','20 mins','','varies','Mix canned tuna with mayo and sriracha. Spread
+      on tortillas, add lettuce and cucumber slices, roll up. Try adding a pinch of
+      your favorite spices for extra flavor.',0);"
+  - command: am force-stop com.flauschcode.broccoli 2>/dev/null || true
+  max_steps: 22
+  name: AW-RecipeDeleteDuplicateRecipes2
+  tags:
+  - M
+  - broccoli
+  - T4
+  verify:
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "SELECT
+      COUNT(*) FROM recipes WHERE title='Spicy Tuna Wraps';"
+    expect: '1'
+- goal: Delete all but one of any recipes in the Broccoli app that are exact duplicates,
+    ensuring at least one instance of each unique recipe remains
+  initialize:
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "DELETE
+      FROM recipes;"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Avocado Toast with Egg','A delicious and healthy choice for any time
+      of the day.','1 serving','10 mins','','as per recipe','Toast bread, top with
+      mashed avocado, a fried egg, salt, pepper, and chili flakes. Garnish with fresh
+      herbs for a more vibrant taste.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Greek Salad Pita Pockets','An ideal recipe for experimenting with different
+      flavors and ingredients.','3-4 servings','30 mins','','to preference','Fill
+      pita pockets with lettuce, cucumber, tomato, feta, olives, and Greek dressing.
+      Feel free to substitute with ingredients you have on hand.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Chocolate Cake','A rich and moist chocolate cake for special occasions.','8
+      servings','45 mins','','flour, cocoa, sugar, eggs, butter','Mix dry ingredients.
+      Add wet ingredients. Bake at 350F for 30 mins.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Chicken Soup','A hearty soup perfect for cold winter days.','6 servings','60
+      mins','','chicken, carrots, celery, onion, broth','Boil chicken, add vegetables,
+      simmer for 45 mins. Add salt to taste.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Pasta Primavera','A light pasta dish loaded with fresh seasonal vegetables.','4
+      servings','25 mins','','pasta, bell peppers, zucchini, cherry tomatoes, olive
+      oil','Cook pasta. Sauté vegetables. Toss together with olive oil and Parmesan.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Banana Bread','A classic quick bread made with ripe bananas.','8 servings','50
+      mins','','bananas, flour, sugar, eggs, baking soda','Mash bananas. Mix all ingredients.
+      Bake at 350F for 45 mins.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Avocado Toast with Egg','A delicious and healthy choice for any time
+      of the day.','1 serving','10 mins','','as per recipe','Toast bread, top with
+      mashed avocado, a fried egg, salt, pepper, and chili flakes. Garnish with fresh
+      herbs for a more vibrant taste.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Greek Salad Pita Pockets','An ideal recipe for experimenting with different
+      flavors and ingredients.','3-4 servings','30 mins','','to preference','Fill
+      pita pockets with lettuce, cucumber, tomato, feta, olives, and Greek dressing.
+      Feel free to substitute with ingredients you have on hand.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Chocolate Cake','A rich and moist chocolate cake for special occasions.','8
+      servings','45 mins','','flour, cocoa, sugar, eggs, butter','Mix dry ingredients.
+      Add wet ingredients. Bake at 350F for 30 mins.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Chicken Soup','A hearty soup perfect for cold winter days.','6 servings','60
+      mins','','chicken, carrots, celery, onion, broth','Boil chicken, add vegetables,
+      simmer for 45 mins. Add salt to taste.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Pasta Primavera','A light pasta dish loaded with fresh seasonal vegetables.','4
+      servings','25 mins','','pasta, bell peppers, zucchini, cherry tomatoes, olive
+      oil','Cook pasta. Sauté vegetables. Toss together with olive oil and Parmesan.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Banana Bread','A classic quick bread made with ripe bananas.','8 servings','50
+      mins','','bananas, flour, sugar, eggs, baking soda','Mash bananas. Mix all ingredients.
+      Bake at 350F for 45 mins.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Avocado Toast with Egg','A delicious and healthy choice for any time
+      of the day.','1 serving','10 mins','','as per recipe','Toast bread, top with
+      mashed avocado, a fried egg, salt, pepper, and chili flakes. Garnish with fresh
+      herbs for a more vibrant taste.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Greek Salad Pita Pockets','An ideal recipe for experimenting with different
+      flavors and ingredients.','3-4 servings','30 mins','','to preference','Fill
+      pita pockets with lettuce, cucumber, tomato, feta, olives, and Greek dressing.
+      Feel free to substitute with ingredients you have on hand.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Chocolate Cake','A rich and moist chocolate cake for special occasions.','8
+      servings','45 mins','','flour, cocoa, sugar, eggs, butter','Mix dry ingredients.
+      Add wet ingredients. Bake at 350F for 30 mins.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Chicken Soup','A hearty soup perfect for cold winter days.','6 servings','60
+      mins','','chicken, carrots, celery, onion, broth','Boil chicken, add vegetables,
+      simmer for 45 mins. Add salt to taste.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Pasta Primavera','A light pasta dish loaded with fresh seasonal vegetables.','4
+      servings','25 mins','','pasta, bell peppers, zucchini, cherry tomatoes, olive
+      oil','Cook pasta. Sauté vegetables. Toss together with olive oil and Parmesan.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Banana Bread','A classic quick bread made with ripe bananas.','8 servings','50
+      mins','','bananas, flour, sugar, eggs, baking soda','Mash bananas. Mix all ingredients.
+      Bake at 350F for 45 mins.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Avocado Toast with Egg','A delicious and healthy choice for any time
+      of the day.','1 serving','10 mins','','as per recipe','Toast bread, top with
+      mashed avocado, a fried egg, salt, pepper, and chili flakes. Garnish with fresh
+      herbs for a more vibrant taste.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Greek Salad Pita Pockets','An ideal recipe for experimenting with different
+      flavors and ingredients.','3-4 servings','30 mins','','to preference','Fill
+      pita pockets with lettuce, cucumber, tomato, feta, olives, and Greek dressing.
+      Feel free to substitute with ingredients you have on hand.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Chocolate Cake','A rich and moist chocolate cake for special occasions.','8
+      servings','45 mins','','flour, cocoa, sugar, eggs, butter','Mix dry ingredients.
+      Add wet ingredients. Bake at 350F for 30 mins.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Chicken Soup','A hearty soup perfect for cold winter days.','6 servings','60
+      mins','','chicken, carrots, celery, onion, broth','Boil chicken, add vegetables,
+      simmer for 45 mins. Add salt to taste.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Pasta Primavera','A light pasta dish loaded with fresh seasonal vegetables.','4
+      servings','25 mins','','pasta, bell peppers, zucchini, cherry tomatoes, olive
+      oil','Cook pasta. Sauté vegetables. Toss together with olive oil and Parmesan.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Banana Bread','A classic quick bread made with ripe bananas.','8 servings','50
+      mins','','bananas, flour, sugar, eggs, baking soda','Mash bananas. Mix all ingredients.
+      Bake at 350F for 45 mins.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Avocado Toast with Egg','A delicious and healthy choice for any time
+      of the day.','1 serving','10 mins','','as per recipe','Toast bread, top with
+      mashed avocado, a fried egg, salt, pepper, and chili flakes. Garnish with fresh
+      herbs for a more vibrant taste.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Greek Salad Pita Pockets','An ideal recipe for experimenting with different
+      flavors and ingredients.','3-4 servings','30 mins','','to preference','Fill
+      pita pockets with lettuce, cucumber, tomato, feta, olives, and Greek dressing.
+      Feel free to substitute with ingredients you have on hand.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Chocolate Cake','A rich and moist chocolate cake for special occasions.','8
+      servings','45 mins','','flour, cocoa, sugar, eggs, butter','Mix dry ingredients.
+      Add wet ingredients. Bake at 350F for 30 mins.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Chicken Soup','A hearty soup perfect for cold winter days.','6 servings','60
+      mins','','chicken, carrots, celery, onion, broth','Boil chicken, add vegetables,
+      simmer for 45 mins. Add salt to taste.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Pasta Primavera','A light pasta dish loaded with fresh seasonal vegetables.','4
+      servings','25 mins','','pasta, bell peppers, zucchini, cherry tomatoes, olive
+      oil','Cook pasta. Sauté vegetables. Toss together with olive oil and Parmesan.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Banana Bread','A classic quick bread made with ripe bananas.','8 servings','50
+      mins','','bananas, flour, sugar, eggs, baking soda','Mash bananas. Mix all ingredients.
+      Bake at 350F for 45 mins.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Avocado Toast with Egg','A delicious and healthy choice for any time
+      of the day.','1 serving','10 mins','','as per recipe','Toast bread, top with
+      mashed avocado, a fried egg, salt, pepper, and chili flakes. Garnish with fresh
+      herbs for a more vibrant taste.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Greek Salad Pita Pockets','An ideal recipe for experimenting with different
+      flavors and ingredients.','3-4 servings','30 mins','','to preference','Fill
+      pita pockets with lettuce, cucumber, tomato, feta, olives, and Greek dressing.
+      Feel free to substitute with ingredients you have on hand.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Chocolate Cake','A rich and moist chocolate cake for special occasions.','8
+      servings','45 mins','','flour, cocoa, sugar, eggs, butter','Mix dry ingredients.
+      Add wet ingredients. Bake at 350F for 30 mins.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Chicken Soup','A hearty soup perfect for cold winter days.','6 servings','60
+      mins','','chicken, carrots, celery, onion, broth','Boil chicken, add vegetables,
+      simmer for 45 mins. Add salt to taste.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Pasta Primavera','A light pasta dish loaded with fresh seasonal vegetables.','4
+      servings','25 mins','','pasta, bell peppers, zucchini, cherry tomatoes, olive
+      oil','Cook pasta. Sauté vegetables. Toss together with olive oil and Parmesan.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Banana Bread','A classic quick bread made with ripe bananas.','8 servings','50
+      mins','','bananas, flour, sugar, eggs, baking soda','Mash bananas. Mix all ingredients.
+      Bake at 350F for 45 mins.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Avocado Toast with Egg','A delicious and healthy choice for any time
+      of the day.','1 serving','10 mins','','as per recipe','Toast bread, top with
+      mashed avocado, a fried egg, salt, pepper, and chili flakes. Garnish with fresh
+      herbs for a more vibrant taste.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Greek Salad Pita Pockets','An ideal recipe for experimenting with different
+      flavors and ingredients.','3-4 servings','30 mins','','to preference','Fill
+      pita pockets with lettuce, cucumber, tomato, feta, olives, and Greek dressing.
+      Feel free to substitute with ingredients you have on hand.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Chocolate Cake','A rich and moist chocolate cake for special occasions.','8
+      servings','45 mins','','flour, cocoa, sugar, eggs, butter','Mix dry ingredients.
+      Add wet ingredients. Bake at 350F for 30 mins.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Chicken Soup','A hearty soup perfect for cold winter days.','6 servings','60
+      mins','','chicken, carrots, celery, onion, broth','Boil chicken, add vegetables,
+      simmer for 45 mins. Add salt to taste.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Pasta Primavera','A light pasta dish loaded with fresh seasonal vegetables.','4
+      servings','25 mins','','pasta, bell peppers, zucchini, cherry tomatoes, olive
+      oil','Cook pasta. Sauté vegetables. Toss together with olive oil and Parmesan.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Banana Bread','A classic quick bread made with ripe bananas.','8 servings','50
+      mins','','bananas, flour, sugar, eggs, baking soda','Mash bananas. Mix all ingredients.
+      Bake at 350F for 45 mins.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Spicy Tuna Wraps','A quick and easy meal, perfect for busy weekdays.','2
+      servings','20 mins','','varies','Mix canned tuna with mayo and sriracha. Spread
+      on tortillas, add lettuce and cucumber slices, roll up. Try adding a pinch of
+      your favorite spices for extra flavor.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Spicy Tuna Wraps','A quick and easy meal, perfect for busy weekdays.','2
+      servings','20 mins','','varies','Mix canned tuna with mayo and sriracha. Spread
+      on tortillas, add lettuce and cucumber slices, roll up. Try adding a pinch of
+      your favorite spices for extra flavor.',0);"
+  - command: am force-stop com.flauschcode.broccoli 2>/dev/null || true
+  max_steps: 25
+  name: AW-RecipeDeleteDuplicateRecipes3
+  tags:
+  - M
+  - broccoli
+  - T4
+  verify:
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "SELECT
+      COUNT(*) FROM recipes WHERE title='Spicy Tuna Wraps';"
+    expect: '1'
+- goal: 'Delete the following recipes from Broccoli app: Spicy Tuna Wraps, Avocado
+    Toast with Egg.'
+  initialize:
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "DELETE
+      FROM recipes;"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Spicy Tuna Wraps','A quick and easy meal, perfect for busy weekdays.','2
+      servings','20 mins','','varies','Mix canned tuna with mayo and sriracha. Spread
+      on tortillas, add lettuce and cucumber slices, roll up. Try adding a pinch of
+      your favorite spices for extra flavor.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Avocado Toast with Egg','A delicious and healthy choice for any time
+      of the day.','1 serving','10 mins','','as per recipe','Toast bread, top with
+      mashed avocado, a fried egg, salt, pepper, and chili flakes. Garnish with fresh
+      herbs for a more vibrant taste.',0);"
+  - command: am force-stop com.flauschcode.broccoli 2>/dev/null || true
+  max_steps: 15
+  name: AW-RecipeDeleteMultipleRecipes
+  tags:
+  - E
+  - broccoli
+  - T4
+  verify:
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "SELECT
+      COUNT(*) FROM recipes WHERE title IN ('Spicy Tuna Wraps','Avocado Toast with
+      Egg');"
+    expect: '0'
+- goal: Delete the recipes from Broccoli app that use salt in the directions.
+  initialize:
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "DELETE
+      FROM recipes;"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Avocado Toast with Egg','A delicious and healthy choice for any time
+      of the day.','1 serving','10 mins','','as per recipe','Toast bread, top with
+      mashed avocado, a fried egg, salt, pepper, and chili flakes. Garnish with fresh
+      herbs for a more vibrant taste.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Greek Salad Pita Pockets','An ideal recipe for experimenting with different
+      flavors and ingredients.','3-4 servings','30 mins','','to preference','Fill
+      pita pockets with lettuce, cucumber, tomato, feta, olives, and Greek dressing.
+      Feel free to substitute with ingredients you have on hand.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Chocolate Cake','A rich and moist chocolate cake for special occasions.','8
+      servings','45 mins','','flour, cocoa, sugar, eggs, butter','Mix dry ingredients.
+      Add wet ingredients. Bake at 350F for 30 mins.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Chicken Soup','A hearty soup perfect for cold winter days.','6 servings','60
+      mins','','chicken, carrots, celery, onion, broth','Boil chicken, add vegetables,
+      simmer for 45 mins. Add salt to taste.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Spicy Tuna Wraps','A quick and easy meal, perfect for busy weekdays.','2
+      servings','20 mins','','varies','Mix canned tuna with mayo and sriracha. Spread
+      on tortillas, add lettuce and cucumber slices, roll up. Try adding a pinch of
+      your favorite spices for extra flavor.',0);"
+  - command: am force-stop com.flauschcode.broccoli 2>/dev/null || true
+  max_steps: 40
+  name: AW-RecipeDeleteMultipleRecipesWithConstraint
+  tags:
+  - H
+  - broccoli
+  - T4
+  verify:
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "SELECT
+      COUNT(*) FROM recipes WHERE directions LIKE '%salt%';"
+    expect: '0'
+- goal: 'Delete the following recipes from Broccoli app: Spicy Tuna Wraps, Avocado
+    Toast with Egg.'
+  initialize:
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "DELETE
+      FROM recipes;"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Greek Salad Pita Pockets','An ideal recipe for experimenting with different
+      flavors and ingredients.','3-4 servings','30 mins','','to preference','Fill
+      pita pockets with lettuce, cucumber, tomato, feta, olives, and Greek dressing.
+      Feel free to substitute with ingredients you have on hand.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Chocolate Cake','A rich and moist chocolate cake for special occasions.','8
+      servings','45 mins','','flour, cocoa, sugar, eggs, butter','Mix dry ingredients.
+      Add wet ingredients. Bake at 350F for 30 mins.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Chicken Soup','A hearty soup perfect for cold winter days.','6 servings','60
+      mins','','chicken, carrots, celery, onion, broth','Boil chicken, add vegetables,
+      simmer for 45 mins. Add salt to taste.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Pasta Primavera','A light pasta dish loaded with fresh seasonal vegetables.','4
+      servings','25 mins','','pasta, bell peppers, zucchini, cherry tomatoes, olive
+      oil','Cook pasta. Sauté vegetables. Toss together with olive oil and Parmesan.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Spicy Tuna Wraps','A quick and easy meal, perfect for busy weekdays.','2
+      servings','20 mins','','varies','Mix canned tuna with mayo and sriracha. Spread
+      on tortillas, add lettuce and cucumber slices, roll up. Try adding a pinch of
+      your favorite spices for extra flavor.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Avocado Toast with Egg','A delicious and healthy choice for any time
+      of the day.','1 serving','10 mins','','as per recipe','Toast bread, top with
+      mashed avocado, a fried egg, salt, pepper, and chili flakes. Garnish with fresh
+      herbs for a more vibrant taste.',0);"
+  - command: am force-stop com.flauschcode.broccoli 2>/dev/null || true
+  max_steps: 25
+  name: AW-RecipeDeleteMultipleRecipesWithNoise
+  tags:
+  - M
+  - broccoli
+  - T4
+  verify:
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "SELECT
+      COUNT(*) FROM recipes WHERE title IN ('Spicy Tuna Wraps','Avocado Toast with
+      Egg');"
+    expect: '0'
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "SELECT
+      COUNT(*) FROM recipes;"
+    expect_re: '[4-9]'
+- goal: 'Delete the following recipes from Broccoli app: Spicy Tuna Wraps.'
+  initialize:
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "DELETE
+      FROM recipes;"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Spicy Tuna Wraps','A quick and easy meal, perfect for busy weekdays.','2
+      servings','20 mins','','varies','Mix canned tuna with mayo and sriracha. Spread
+      on tortillas, add lettuce and cucumber slices, roll up. Try adding a pinch of
+      your favorite spices for extra flavor.',0);"
+  max_steps: 15
+  name: AW-RecipeDeleteSingleRecipe
+  tags:
+  - E
+  - broccoli
+  - T4
+  verify:
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "SELECT
+      COUNT(*) FROM recipes WHERE title='Spicy Tuna Wraps';"
+    expect: '0'
+- goal: 'Delete the following recipes from Broccoli app: Spicy Tuna Wraps.'
+  initialize:
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "DELETE
+      FROM recipes;"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Avocado Toast with Egg','A delicious and healthy choice for any time
+      of the day.','1 serving','10 mins','','as per recipe','Toast bread, top with
+      mashed avocado, a fried egg, salt, pepper, and chili flakes. Garnish with fresh
+      herbs for a more vibrant taste.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Greek Salad Pita Pockets','An ideal recipe for experimenting with different
+      flavors and ingredients.','3-4 servings','30 mins','','to preference','Fill
+      pita pockets with lettuce, cucumber, tomato, feta, olives, and Greek dressing.
+      Feel free to substitute with ingredients you have on hand.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Chocolate Cake','A rich and moist chocolate cake for special occasions.','8
+      servings','45 mins','','flour, cocoa, sugar, eggs, butter','Mix dry ingredients.
+      Add wet ingredients. Bake at 350F for 30 mins.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Chicken Soup','A hearty soup perfect for cold winter days.','6 servings','60
+      mins','','chicken, carrots, celery, onion, broth','Boil chicken, add vegetables,
+      simmer for 45 mins. Add salt to taste.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Pasta Primavera','A light pasta dish loaded with fresh seasonal vegetables.','4
+      servings','25 mins','','pasta, bell peppers, zucchini, cherry tomatoes, olive
+      oil','Cook pasta. Sauté vegetables. Toss together with olive oil and Parmesan.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Spicy Tuna Wraps','A quick and easy meal, perfect for busy weekdays.','2
+      servings','20 mins','','varies','Mix canned tuna with mayo and sriracha. Spread
+      on tortillas, add lettuce and cucumber slices, roll up. Try adding a pinch of
+      your favorite spices for extra flavor.',0);"
+  - command: am force-stop com.flauschcode.broccoli 2>/dev/null || true
+  max_steps: 15
+  name: AW-RecipeDeleteSingleWithRecipeWithNoise
+  tags:
+  - E
+  - broccoli
+  - T4
+  verify:
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "SELECT
+      COUNT(*) FROM recipes WHERE title='Spicy Tuna Wraps';"
+    expect: '0'
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "SELECT
+      COUNT(*) FROM recipes;"
+    expect: '5'

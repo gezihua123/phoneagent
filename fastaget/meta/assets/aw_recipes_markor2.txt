@@ -1,0 +1,14 @@
+title|description|servings|preparationTime|ingredients|directions
+Greek Salad Pita Pockets|An ideal recipe for experimenting with different flavors and ingredients.|3-4 servings|30 mins|to preference|Fill pita pockets with lettuce, cucumber, tomato, feta, olives, and Greek dressing. Feel free to substitute with ingredients you have on hand.
+Quinoa Veggie Bowl|A light and fresh bowl with quinoa and roasted vegetables.|3-4 servings|30 mins|as needed|Cook quinoa, roast vegetables, and toss together with a lemon vinaigrette.
+Teriyaki Salmon|A quick and easy meal, perfect for busy weekdays.|2 servings|30 mins|varies|Pan-sear salmon fillets, brush with teriyaki sauce, and serve with steamed rice.
+Spicy Tuna Wraps|A quick and easy meal, perfect for busy weekdays.|2 servings|20 mins|varies|Mix canned tuna with mayo and sriracha. Spread on tortillas, add lettuce and cucumber slices, roll up. Try adding a pinch of your favorite spices for extra flavor.
+Avocado Toast with Egg|A delicious and healthy choice for any time of the day.|1 serving|10 mins|as per recipe|Toast bread, top with mashed avocado, a fried egg, salt, pepper, and chili flakes. Garnish with fresh herbs for a more vibrant taste.
+Chocolate Cake|A rich and moist chocolate cake for special occasions.|8 servings|45 mins|flour, cocoa, sugar, eggs, butter|Mix dry ingredients. Add wet ingredients. Bake at 350F for 30 mins.
+Chicken Soup|A hearty soup perfect for cold winter days.|6 servings|60 mins|chicken, carrots, celery, onion, broth|Boil chicken, add vegetables, simmer for 45 mins. Add salt to taste.
+Pasta Primavera|A light pasta dish loaded with fresh seasonal vegetables.|4 servings|25 mins|pasta, bell peppers, zucchini, cherry tomatoes, olive oil|Cook pasta. Sauté vegetables. Toss together with olive oil and Parmesan.
+Banana Bread|A classic quick bread made with ripe bananas.|8 servings|50 mins|bananas, flour, sugar, eggs, baking soda|Mash bananas. Mix all ingredients. Bake at 350F for 45 mins.
+Spicy Tuna Wraps|A quick and easy meal, perfect for busy weekdays.|2 servings|20 mins|varies|Mix canned tuna with mayo and sriracha. Spread on tortillas, add lettuce and cucumber slices, roll up. Try adding a pinch of your favorite spices for extra flavor.
+Avocado Toast with Egg|A delicious and healthy choice for any time of the day.|1 serving|10 mins|as per recipe|Toast bread, top with mashed avocado, a fried egg, salt, pepper, and chili flakes. Garnish with fresh herbs for a more vibrant taste.
+Chocolate Cake|A rich and moist chocolate cake for special occasions.|8 servings|45 mins|flour, cocoa, sugar, eggs, butter|Mix dry ingredients. Add wet ingredients. Bake at 350F for 30 mins.
+Chicken Soup|A hearty soup perfect for cold winter days.|6 servings|60 mins|chicken, carrots, celery, onion, broth|Boil chicken, add vegetables, simmer for 45 mins. Add salt to taste.

@@ -1,0 +1,17 @@
+# fastaget 用例示例
+# 运行：fastaget run -f examples/cases.yaml --report-dir reports
+
+cases:
+  - name: 设置页验证
+    goal: 启动设置应用(com.android.settings)，确认进入了设置页面（看到设置标题或设置项），然后 complete
+    max_steps: 8
+    asserts:
+      - description: 进入设置主页面
+        expected: true
+
+  - name: 返回桌面验证
+    goal: 按 home 回到桌面，确认回到了桌面（看到应用图标或桌面元素），然后 complete
+    max_steps: 6
+    asserts:
+      - description: 回到桌面
+        expected: true

@@ -1,0 +1,101 @@
+# 通用应用安装流程：打开 Google Play → 搜索 → 安装 → 验证
+# 参数化设计：改 params 即可测试不同应用的安装
+# 防幻觉设计：用 {device.pkg_installed} 设备级事实交叉验证，不依赖屏幕文本
+name: install_app_via_google_play
+
+model: deepseek-v4-flash
+judge_model: deepseek-v4-flash
+
+tags: [install, smoke]
+
+# 参数化：改这里就能测不同应用
+params:
+  app_name: xiaohongshu        # 搜索关键词（拼音/英文，type 仅支持 ASCII）
+  app_pkg: com.xingin.xiaohongshu  # 应用包名
+  app_label: 小红书             # 应用中文名（用于结果验证）
+
+# 前置条件：屏幕可用 + 目标应用尚未安装（已装则跳过安装流程）
+precondition:
+  - description: 屏幕可用且能看到元素
+    check: "{screen.has_element:any}"
+    judge: rule
+    severity: critical
+    wait: 3
+  - description: 目标应用尚未安装（已装则无需安装）
+    check: "{device.not_pkg_installed:{var.app_pkg}}"
+    judge: rule
+    severity: warn  # warn：已装不跳过，继续走验证流程
+
+flow:
+  # 1. 打开 Google Play
+  - id: open_play
+    goal: |
+      打开 Google Play 商店（包名 com.android.vending），确认进入首页后 complete。
+    mode: autonomous
+    max_steps: 8
+    expect:
+      - description: 屏幕上出现 Google Play 相关内容
+        check: "{screen.has_text:Google Play}"
+        judge: hybrid
+        severity: critical
+        wait: 5
+        hints: ["Google Play", "Games", "Apps", "For you", "推荐"]
+      - description: 当前前台确实是 Google Play 应用
+        check: "{device.activity:com.android.vending}"
+        judge: rule
+        severity: critical
+
+  # 2. 搜索目标应用
+  - id: search_app
+    goal: |
+      在 Google Play 中搜索 {var.app_name}：点击搜索入口进入搜索框，
+      输入 {var.app_name} 并按 enter 触发搜索，等待搜索结果加载。
+    mode: autonomous
+    max_steps: 12
+
+  # 3. 进入详情页并安装
+  - id: install_app
+    goal: |
+      在搜索结果中找到 {var.app_label} 应用，点击进入详情页。
+      如果点进了截图预览页（全屏大图），用 back 回退到结果列表重选。
+      进入详情页后点击"安装"按钮（如有确认弹窗则继续确认）。
+      安装需要时间，点击安装后用 wait 等待，再用 check_package 查
+      {var.app_pkg} 是否已安装。确认安装成功后 complete。
+    mode: autonomous
+    max_steps: 20
+
+  # 4. 最终验证（设备级事实）
+  - id: verify
+    goal: |
+      用 check_package 工具查 {var.app_pkg} 是否已安装，确认后 complete。
+    mode: autonomous
+    max_steps: 4
+    expect:
+      - description: 设备包管理器确认应用已安装
+        check: "{device.pkg_installed:{var.app_pkg}}"
+        judge: rule
+        severity: critical
+
+  # 失败终止节点
+  - id: fail_end
+    goal: |
+      任务无法完成。调用 complete 工具，success=false，
+      result 描述失败原因。
+    mode: guided
+
+# 用例级预期：用设备级事实做最终判定
+expect:
+  - description: 设备包管理器确认 {var.app_label} 已安装
+    check: "{device.pkg_installed:{var.app_pkg}}"
+    judge: rule
+    severity: critical
+  - description: 没有出现错误提示
+    check: "{screen.not_has_text:Something went wrong}"
+    judge: rule
+    severity: warn
+
+# 清理：返回主页
+teardown:
+  - id: go_home
+    goal: 按 home 键回到桌面
+    mode: guided

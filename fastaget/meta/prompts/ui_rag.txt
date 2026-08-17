@@ -1,0 +1,85 @@
+## §U Interaction Patterns from Human Demonstrations [AITW stats]
+
+### Icon Button Semantics | #pull-on: icon,element,tap,observe,find
+- [ICON_MAGNIFYING_GLASS] = magnifier — search; usually top of page/toolbar
+- [ICON_THREE_DOTS] = ⋮ vertical dots — more options/menu; top-right
+- [ICON_THREE_BARS] = ☰ hamburger — navigation drawer; top-left
+- [ICON_PLAY] = ▶ triangle — play/launch. In app lists it is an app icon; in media UI a play control — check context
+- [ICON_SETTINGS] = ⚙ gear — settings/config; toolbar or menu
+- [ICON_X] = ✕ cross — close/clear/cancel; dialog top-right or inside search box
+- [ICON_ARROW_BACKWARD] = ← left arrow — back to previous page; top-left
+- [ICON_ARROW_UPWARD] = ↑ up arrow — expand panel / scroll up
+- [ICON_PLUS] = ＋ plus — create/add new; list bottom-right (FAB)
+- [ICON_SHOPPING_CART] = 🛒 cart — view shopping cart; e-commerce nav bar
+- [ICON_STAR] = ★ star — favorite/mark/rate; list item or detail page
+- [ICON_TAKE_PHOTO] = 📷 camera — photo/scan; bottom action bar
+- [ICON_V_FORWARD] = > chevron right — next page; nav or wizard flow
+- [ICON_V_BACKWARD] = < chevron left — previous page; nav or wizard flow
+- [ICON_V_DOWNWARD] = ▼ chevron down — expand menu / dropdown
+- [ICON_LAUNCH_APPS] = ⊞ grid — view all apps; bottom nav bar
+- [ICON_CHAT] = 💬 bubble — message/conversation; messaging apps
+- [ICON_LOCATION] = 📍 pin — location/map; map apps or nav bar
+- [ICON_NAV_BAR_CIRCLE] = ◉ circle — system Home button; bottom nav bar
+- [ICON_INFO] = ℹ circled i — details/help; settings or detail page
+- [ICON_EDIT] = ✎ pencil — edit; content detail or toolbar
+- [ICON_ASSISTANT] = assistant glyph — voice interaction; next to search bar
+- [ICON_UPLOAD] = ↑ upload arrow — upload/share file; file picker or editor
+- [ICON_ENVELOPE] = ✉ envelope — mail/message; communication apps
+- [ICON_MIC] = 🎤 microphone — voice input; search bar or keyboard
+- [ICON_GOOGLE] = Google 'G' — Google account/service entry
+
+### Frequently Tapped Elements | #pull-on: element,tap,find,list,scroll
+- [ICON_MAGNIFYING_GLASS] ×1,102
+- [ICON_PLAY] ×844
+- [ICON_SHOPPING_CART] ×826
+- Add to cart ×500
+- Search ×400
+- [ICON_X] ×358
+- Add to Cart ×336
+- Install ×333
+- Open ×314
+- Remove ×311
+- [ICON_ARROW_BACKWARD] ×297
+- Chrome ×251
+- [ICON_NAV_BAR_CIRCLE] ×212
+- [ICON_THREE_DOTS] ×178
+- ADD TO CART ×166
+- [ICON_V_DOWNWARD] ×142
+- Search or type web address ×136
+- Search for apps & games ×124
+- View in cart ×124
+- Photos ×117
+
+### Frequent Action Transitions | #pull-on: type,search,input,scroll,tap
+- STATUS_TASK_COMPLETE → STATUS_TASK_COMPLETE ×1,540
+- PRESS ENTER → STATUS_TASK_COMPLETE ×553
+- TYPE '' → PRESS ENTER ×140
+- PRESS HOME → PRESS HOME ×123
+- PRESS BACK → PRESS BACK ×89
+- PRESS HOME → STATUS_TASK_COMPLETE ×61
+- PRESS ENTER → PRESS ENTER ×52
+- TYPE 'costco.com' → PRESS ENTER ×48
+- TYPE 'ebay.com' → PRESS ENTER ×47
+- TYPE 'bestbuy.com' → PRESS ENTER ×42
+- TYPE '' → STATUS_TASK_COMPLETE ×41
+- TYPE 'target.com' → PRESS ENTER ×39
+- TYPE 'amazon.com' → PRESS ENTER ×36
+- TYPE 'walmart.com' → PRESS ENTER ×36
+- TYPE 'newegg.com' → PRESS ENTER ×35
+
+### Operating Principles | #pull-on: stuck,complete,verify,retry,timeout,error
+- Standard search pattern: tap search box → TYPE → ENTER (TYPE→ENTER is among the highest-frequency transitions)
+- HOME is the most common first action; BACK for short undo; 3+ BACKs in a row means lost → HOME and restart
+- Last action before completion is usually ENTER or tapping the target element — judge completion by meaningful screen change
+
+### Human Recovery Patterns | #pull-on: stuck,recover,mistake,retry,error
+> From 21,287 human trajectories containing correction (BACK after a wrong step).
+- Wrong step `TAP '[ICON_PLAY]'` → BACK → recovered with `TAP 'Search for apps & games'` ×882
+- Wrong step `TAP (unlabeled icon)` → BACK → recovered with `SWIPE_UP` ×620
+- Wrong step `SWIPE_UP` → BACK → recovered with `SCROLL_BROWSE` ×437
+- Wrong step `SWIPE_UP` → BACK → recovered with `HOME` ×437
+- Wrong step `TAP '[ICON_ARROW_BACKWARD]'` → BACK → recovered with `SWIPE_UP` ×373
+- Wrong step `TAP (unlabeled icon)` → BACK → recovered with `HOME` ×311
+- Wrong step `SCROLL_BROWSE` → BACK → recovered with `SWIPE_UP` ×298
+- Wrong step `SWIPE_UP` → BACK → recovered with `TAP (unlabeled icon)` ×278
+- Takeaway: when a tap lands on the wrong element, one BACK plus a re-targeted action is the human norm — do not keep tapping the same spot

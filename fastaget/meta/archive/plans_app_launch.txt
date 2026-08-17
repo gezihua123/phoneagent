@@ -1,0 +1,72 @@
+# keywords: 闹钟, 时钟, 计算器, 联系人, 通讯录, 短信, 信息, 浏览器, 日历, 文件, 下载, clock, calculator, contacts, sms, browser, calendar, files, settings, 设置, 相机, 照片, 音乐, 录音, 笔记, 地图, 画板, 食谱, 支出, 记账, 任务, 运动, 视频, 播放, markor, expense, recipe, retro, osmand, joplin, opentracks, vlc, tasks, calendar, draw, recorder, audio, camera, chrome
+
+## 任务类型：通用应用操作
+
+### 启动应用决策树（通用策略，不依赖设备）
+
+按优先级逐级尝试：
+
+**L1 — goal 明确给了包名**（如 `com.android.settings`、`com.google.android.deskclock`）→ 直接 `launch(package=包名)`。包名格式为 `com.xxx.xxx` —— goal 中出现这种格式的字符串就是包名，不要犹豫。
+
+**L2 — goal 提及了常用系统应用**（见下方映射表）→ 先用映射表的包名尝试 launch，失败再 L3。系统应用包名在 AOSP/Google 镜像上高度稳定，直接试比 shell 搜索快。
+
+**L3 — launch 失败或 goal 未指明包名** → `shell(pm list packages | grep -i <关键词>)` 搜索设备上实际安装的应用。关键词从下表的应用名/中文名中提取。
+
+**L4 — shell 搜到多个候选** → 选最匹配的包名 launch，优先选不含 vendor/transsion/miui 等厂商前缀的
+
+**L5 — shell 搜不到任何匹配** → 从桌面图标或应用抽屉寻找目标应用的图标，tap 启动
+
+**L6 — 所有方式都无法启动** → `check_package` 最终确认 → `complete(success=False)`，诚实报告应用未安装
+
+### 操作原则
+- 优先用 launch(package=包名) 而非 tap 桌面图标
+- **系统应用直接试包名再验证**（Settings/Clock/Camera/Chrome/Contacts/Phone/Dialer）——它们是预装的，99% 能启动
+- launch 后立刻 observe 确认应用已打开
+- 如果 observe 的 current_app 显示不是目标包名 → 等待 2s 再 observe 确认；可能被权限弹窗挡住 → 点 Allow/Grant 授权
+- **禁止硬编码包名重复尝试**：如果包名 launch 失败且 shell 搜不到，直接判定未安装，不要反复换包名猜测
+
+### 默认包名参考
+
+以下为 Google API 33 镜像 (Pixel 6) 上的实际包名。**优先直接用，失败再 shell 搜索**。
+
+| 应用 | 包名 | 验证 |
+|------|------|------|
+| 设置/Settings | `com.android.settings` | ✅ |
+| 时钟/闹钟/Clock | `com.google.android.deskclock` | ✅ |
+| 相机/Camera | `com.android.camera2` | ✅ |
+| Chrome/浏览器 | `com.android.chrome` | ✅ |
+| 联系人/通讯录/Contacts | `com.google.android.contacts` | ✅ |
+| 电话/Dialer | `com.google.android.dialer` | ✅ |
+| 文件/Files | `com.google.android.documentsui` | ✅ |
+| 日历/Calendar (AOSP) | `com.google.android.calendar` | — |
+| SMS/短信 (原生) | `com.google.android.apps.messaging` | — |
+
+### 第三方应用包名（AndroidWorld 评测专用）
+
+以下为 AndroidWorld 评测预装的第三方应用包名。
+
+| 应用 | 包名 |
+|------|------|
+| Simple Calendar Pro / 日历 | `com.simplemobiletools.calendar.pro` |
+| Simple SMS Messenger / 短信 | `com.simplemobiletools.smsmessenger` |
+| Simple Gallery Pro / 相册 | `com.simplemobiletools.gallery.pro` |
+| Simple Draw Pro / 画板 | `com.simplemobiletools.draw.pro` |
+| Markor / 笔记 | `net.gsantner.markor` |
+| Broccoli Recipe / 食谱 | `com.flauschcode.broccoli` |
+| Pro Expense / 支出记账 | `com.arduia.expense` |
+| Tasks / 任务 | `org.tasks` |
+| OpenTracks / 运动 | `de.dennisguse.opentracks` |
+| Joplin / 笔记 | `net.cozic.joplin` |
+| OsmAnd / 地图 | `net.osmand` |
+| Retro Music / 音乐 | `code.name.monkey.retromusic` |
+| VLC / 视频播放 | `org.videolan.vlc` |
+| Audio Recorder / 录音 | `com.dimowner.audiorecorder` |
+| Clipper / 剪切板 | `ca.zgrs.clipper` |
+| AndroidWorld | `com.example.androidworld` |
+
+### 通用首启/向导处理
+许多第三方应用在首次启动时显示欢迎引导页。如果观察到屏幕内容不是应用主界面，而是说明文字、图形插画和 NEXT/DONE/SKIP 按钮：
+- 快速连点 NEXT 按钮（通常右下角）直到出现 DONE/SKIP
+- 点 DONE/SKIP 进入主界面
+- 如有权限请求弹窗，点 ALLOW/OK 授权
+- 不要犹豫——向导只是装饰性引导，不影响功能

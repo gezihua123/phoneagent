@@ -1,0 +1,247 @@
+# meta/tools.yml — FastAgent 工具定义（声明式，可脱离 .py 编辑）
+#
+# 每个工具定义包含:
+#   name:        函数名后缀（action_<name>）
+#   description: 给 LLM 看的工具用途说明
+#   params:      参数定义（name/type/description/required）
+#   is_action:   是否为操作类工具（改变设备状态：tap/swipe/type/key/launch/back/home）
+#                agent 据此判断"最后操作是否失败"，感知/验证类工具不设此项
+#   deps:        设备能力依赖（声明式）。不声明 = 通用（任何设备都可用）。
+#                能力: a11y(无障碍树/元素索引), coordinate(坐标点击/滑动),
+#                      shell(adb), input(文本输入/按键), app_mgmt(应用管理)
+#                agent 根据设备 capabilities 自动 disable 不满足依赖的工具。
+#
+# 非开发人员可直接编辑此文件调优工具描述，无需改 Python 代码。
+
+tools:
+  - name: observe
+    description: "重新观察屏幕，刷新 UI 元素列表。当元素列表过时或找不到目标时调用。观察到的元素带 index 编号，后续用 tap_element(index=N) 点击。"
+
+  - name: tap
+    is_action: true
+    deps: [coordinate]
+    description: "按坐标 (x,y) 点击屏幕。仅在无法用 index 或 text 定位时作为最后手段。"
+    params:
+      - name: x
+        type: integer
+        description: "x 坐标"
+        required: true
+      - name: y
+        type: integer
+        description: "y 坐标"
+        required: true
+
+  - name: tap_element
+    is_action: true
+    deps: [a11y]
+    description: "按 index 或 text 点击元素。优先用 index（精确），结果打印 label 确认身份。典型流程：observe → 找到目标 text → 记下 index → tap_element(index=N)。如果元素列表中找不到目标文字（说明在屏幕下方不可见），立即换 scroll_to_find 滚动寻找，不要对看不见的 index 反复尝试。"
+    params:
+      - name: index
+        type: integer
+        description: "元素编号（来自 observe 输出的 [N]）"
+      - name: text
+        type: string
+        description: "元素文本（同名可能重复，工具会警告）"
+
+  - name: long_press
+    is_action: true
+    deps: [a11y]
+    description: "长按（按压并保持）指定元素。用于触发上下文菜单——复制/粘贴/卸载/分享/选择文字等。通过 index 定位元素，duration 默认 1000ms（1秒）。"
+    params:
+      - name: index
+        type: integer
+        description: "元素编号"
+        required: true
+      - name: duration_ms
+        type: integer
+        description: "长按持续时间（ms），默认 1000（1秒）"
+
+  - name: long_press_at
+    is_action: true
+    deps: [coordinate]
+    description: "长按指定坐标 (x,y)。当无法用 index 定位时作为回退手段。duration 默认 1000ms。用于触发坐标位置的上下文菜单。"
+    params:
+      - name: x
+        type: integer
+        required: true
+      - name: y
+        type: integer
+        required: true
+      - name: duration_ms
+        type: integer
+        description: "长按持续时间（ms），默认 1000"
+
+  - name: swipe
+    is_action: true
+    deps: [coordinate]
+    description: "从 (x1,y1) 滑动到 (x2,y2)。用于翻页或滚动列表。向下翻页典型值：(360,1000)→(360,400)。"
+    params:
+      - name: x1
+        type: integer
+        required: true
+      - name: y1
+        type: integer
+        required: true
+      - name: x2
+        type: integer
+        required: true
+      - name: y2
+        type: integer
+        required: true
+      - name: duration_ms
+        type: integer
+        description: "滑动时长，默认 300"
+
+  - name: type
+    is_action: true
+    deps: [input]
+    description: "输入文本到当前焦点输入框。仅支持 ASCII（字母/数字/拼音）。搜索中文时用拼音（小红书→xiaohongshu，设置→shezhi）。典型流程：tap_element 点入输入框 → type(text='...') → key(name='enter') 触发搜索。"
+
+  - name: type_secret
+    is_action: true
+    deps: [input]
+    description: "输入密码/密钥（脱敏注入：值通过 secret_id 引用，永不进 LLM 上下文）。需先用 tap_element 点入输入框。{secret_ids}"
+    params:
+      - name: secret_id
+        type: string
+        description: "凭证 ID"
+        required: true
+      - name: index
+        type: integer
+        description: "目标输入框的 index（可选）"
+    params:
+      - name: text
+        type: string
+        required: true
+
+  - name: wait
+    description: "等待 N 秒后继续。仅用于短动画/页面过渡（1-2s）。安装/下载等异步操作用 poll_until，不要 blind wait。"
+    params:
+      - name: seconds
+        type: number
+        description: "等待秒数，默认 1（建议 ≤2）"
+        required: false
+
+  - name: poll_until
+    deps: [app_mgmt]
+    description: "轮询等待条件满足。比 wait 高效——条件满足立刻返回。安装应用后典型用法：poll_until(condition='package_installed', package='com.xingin.xhs', timeout=60)。"
+    params:
+      - name: condition
+        type: string
+        description: "条件类型，当前支持 package_installed"
+        required: true
+      - name: package
+        type: string
+        description: "包名，如 com.xingin.xhs"
+      - name: timeout
+        type: integer
+        description: "最长等待秒数，默认 30"
+      - name: interval
+        type: number
+        description: "轮询间隔秒数，默认 1"
+
+  - name: scroll_to_find
+    deps: [a11y, coordinate]
+    description: "滚动寻找目标文本。观察列表无目标时用此工具滑动探索（每滑一次 observe 一次），找到后返回目标 index。典型用法：observe → 没看到'电池'→ scroll_to_find(text='电池') → 返回 index→ tap_element(index=返回的index)。"
+    params:
+      - name: text
+        type: string
+        description: "目标文本（部分匹配），如 '电池'、'蓝牙'、'存储'"
+        required: true
+      - name: direction
+        type: string
+        description: "滚动方向：down(向下翻) 或 up(向上翻)，默认 down"
+      - name: max_swipes
+        type: integer
+        description: "最大滑动次数，默认 5"
+
+  - name: back
+    is_action: true
+    deps: [input]
+    description: "按返回键。进入错误页面时用 back 退出。"
+
+  - name: home
+    is_action: true
+    deps: [input]
+    description: "按 Home 键回桌面。"
+
+  - name: key
+    is_action: true
+    deps: [input]
+    description: "按下系统键。⚠️ key(enter) 后搜索结果需要 2-3s 加载，必须同时调用 wait(2)+observe()，禁止单独调 key 后等 auto-observe。搜索标准流程：type(text='拼音')+key(name='enter')+wait(seconds=2)+observe() 四个工具一次调齐。常用键：enter(搜索/确认)、back(返回)、home、search。"
+    params:
+      - name: name
+        type: string
+        description: "按键名，如 enter/back/search/home"
+        required: true
+
+  - name: launch
+    is_action: true
+    deps: [app_mgmt]
+    description: "按包名启动应用。始终用此工具而非 tap 桌面图标。常用包名：设置=com.android.settings、Play商店=com.android.vending、时钟=com.android.deskclock、计算器=com.android.calculator2。"
+    params:
+      - name: package
+        type: string
+        required: true
+
+  - name: assert
+    description: "验证断言。操作后调用以确认结果是否满足预期，如 assert(description='蓝牙已关闭', passed=true)。"
+    params:
+      - name: description
+        type: string
+        description: "断言内容"
+        required: true
+      - name: passed
+        type: boolean
+        description: "是否通过"
+        required: true
+
+  - name: check_package
+    deps: [app_mgmt]
+    description: "查包管理器——设备级事实，非屏幕文本。判断应用是否已安装时必须用此工具。屏幕按钮文字可能误导（广告也有'打开'），设备事实才可信。"
+    params:
+      - name: package
+        type: string
+        description: "包名，如 com.xingin.xiaohongshu"
+        required: true
+
+  - name: current_app
+    deps: [app_mgmt]
+    description: "查前台 Activity（设备级事实）。验证当前确实在目标应用页面而非广告或错误页面。"
+
+  - name: screenshot
+    description: "截取当前屏幕截图。用于记录或确认界面状态。"
+
+  - name: shell
+    is_action: true
+    deps: [shell]
+    description: "执行 adb shell 命令（对标 CC 的 Bash 灵活性）。用于绕过工具限制直接操作设备。仅作最后回退手段，优先用专用工具。"
+    params:
+      - name: command
+        type: string
+        description: "adb shell 命令，如 'pm list packages'"
+        required: true
+
+  - name: add_memory
+    description: "存入一条记忆（key-value），离开当前页面前记住关键信息。后续每步自动注入，不用回翻历史。典型场景：搜索结果中找到目标应用名→记下包名；确认安装成功→记下状态。key 要简短有意义（如 pkg/target/installed/step_done）。"
+    params:
+      - name: key
+        type: string
+        description: "记忆键名（简短有意义，如 pkg/target/step_done）"
+        required: true
+      - name: value
+        type: string
+        description: "记忆值"
+        required: true
+
+  - name: complete
+    description: "结束任务。目标达成时 success=true + 结果摘要。必须在 assert 验证通过后调用，禁止未验证就 complete。"
+    params:
+      - name: result
+        type: string
+        description: "结果摘要"
+        required: true
+      - name: success
+        type: boolean
+        description: "目标是否达成"
+        required: true

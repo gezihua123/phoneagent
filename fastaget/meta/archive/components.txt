@@ -1,0 +1,15 @@
+## §3 组件库
+
+### FAB | #pull-on: create,add,new,新建,添加,创建,+
+- 右下角(y>85%), desc="Create"/"Add", 主要创建操作
+
+### TopAppBar | #pull-on: save,back,保存,navigate,导航
+- 屏幕顶部(y<150); 左←; 中标题; 右✓/🔍/⋮; ✓=保存
+
+### BottomNavigation | #pull-on: tab,switch,切换,navigate_to
+- 底部固定(y>2000), 3-5 图标+文字
+
+### OverflowMenu | #pull-on: menu,更多,选项,delete,删除,edit,编辑
+- TopAppBar 右侧 ⋮; 编辑/删除/分享/设置
+
+（弹窗/Dialog/Snackbar 的处理见 ui_types.txt 弹窗/权限块，不重复）

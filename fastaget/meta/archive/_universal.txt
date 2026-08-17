@@ -1,0 +1,27 @@
+## §1 测试方法
+
+### 验证阶梯 | #pull-on: verify,assert,complete,检查,验证
+1. shell: settings get / content query / sqlite3 SELECT / ls / cat / find
+2. UI: observe 后检查特定元素的 text/content_description
+3. 屏幕推断: dumpsys activity / observe 元素数量
+
+### 操作闭环 | #pull-on: stuck,停滞,卡住
+observe → 分析 → 执行 → observe 确认。每步必须看到变化。连续 3 步纯操作是危险信号。
+- 人类 avg 7 步/median 6 步完成一任务，超过 10 步 → 可能已迷路
+
+### 超时与重试 | #pull-on: stuck,停滞,timeout,超时,retry
+- launch 后 wait 2s; tap 后 0.5s; 网络 wait(2)
+- 同一方法最多试 2 次，无效立刻换
+- 连续 3 步无 observe/verify → 你可能已完成
+
+### 异常恢复 | #pull-on: error,popup,permission,弹窗,权限,crash
+- 弹窗: tap Allow/OK; 无则 back
+- 引导页: NEXT→NEXT→DONE/SKIP
+- 进错页面: HOME 优先于 BACK（人类 88% 起点是 HOME，仅 1.2% 操作用 BACK）
+- 连续 3+ 次 BACK = 已迷路 → HOME→重新 launch 目标 app
+
+### 完成判定 | #pull-on: verify,complete,verify,complete,finish,完成
+- 目标达成 → complete(success=true)，禁止继续
+- UI 已确认但 shell 无法验证 → complete(success=true)，不要因为缺 shell 证据判自己失败
+- 不确定 → shell 验证优先于反复尝试
+- 多次无法完成 → complete(success=false)

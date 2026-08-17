@@ -1,0 +1,151 @@
+## §1 Testing Methods
+
+### Verification Ladder | #pull-on: verify,assert,complete,check
+1. shell: settings get / content query / ls / cat / find
+2. UI: observe and check specific element text/content_description
+3. Screen inference: dumpsys activity / observe element count
+
+### Operation Loop | #pull-on: stuck,loop
+observe → analyze → execute → observe to confirm. Every step must see a change. 3+ consecutive pure-action steps is a danger signal.
+- Human avg 7 steps / median 6 steps per task. Over 10 steps → you may be lost.
+
+### Timeout & Retry | #pull-on: stuck,timeout,retry
+- After launch: wait 2s; after tap: 0.5s; after network action: wait(2)
+- Same method: try at most 2 times. Ineffective → switch immediately.
+- 3+ consecutive steps without observe/verify → you may already be done.
+
+### Exception Recovery | #pull-on: error,popup,permission,crash
+- Popups: tap Allow/OK; if none: back
+- Onboarding: NEXT → NEXT → DONE/SKIP
+- Wrong page: prefer HOME over BACK (88% of human recovery starts from HOME; only 1.2% uses BACK)
+- 3+ consecutive BACK = you're lost → HOME → re-launch target app
+
+### Completion Judgment | #pull-on: verify,complete,finish
+- Goal achieved → complete(success=true). Do not continue.
+- UI confirmed but shell can't verify → complete(success=true). Don't fail yourself over missing shell evidence.
+- Uncertain → shell verification takes priority over repeated retries.
+- Unable to complete after multiple attempts → complete(success=false).
+
+## §2 Interface Types & Operation Modes
+
+### Viewfinder / Media Capture | #pull-on: camera,photo,record,shutter
+- SurfaceView + ≤10 elements = NORMAL. Empty UI tree during recording is also NORMAL.
+- Shutter centered at bottom, desc usually "Shutter"; horizontal swipe to switch Photo/Video; same button starts and stops.
+- Stop recording: tap the same position again.
+- Verify: find /sdcard -name "*.mp4" / "*.jpg"
+- ⚠️ Do not use ocr/run_script to find "missing" elements in the viewfinder — few elements is NORMAL.
+- ⚠️ UI tree changes ≠ failure: viewfinder/player has few elements → NORMAL; UI tree goes empty during recording → NORMAL; page transition briefly empty → wait(1) then observe.
+
+### List / Scrollable Screens | #pull-on: scroll,list,find,scroll_to_find
+- scroll_to_find > swipe; long_press for context menu; swipe sideways to reveal action buttons (delete/archive)
+- FAB bottom-right for new item; long_press first item to enter multi-select mode, top bar shows batch actions.
+- 3+ scrolls without finding the target → you may be in the wrong zone/page. back or HOME to reposition.
+
+### Custom View / Non-Accessible Items | #pull-on: stale_tap,stuck,not found,not visible,invisible
+- Some apps (Expense/Broccoli/Tasks/OsmAnd) use custom RecyclerView items NOT in the a11y tree.
+- If observe shows a container (RecyclerView/ListView) with bounds (x1,y1)-(x2,y2) but no child items:
+  1. Count visible rows by scrolling and noting how many items fit (typically 5-8).
+  2. Estimate item i Y = y1 + (y2 - y1) * (i + 0.5) / N (N = estimated visible item count).
+  3. Use tap(x, y) at X = (x1+x2)/2, Y = estimated. For long_press use long_press(x, y).
+  4. After tapping, observe to confirm the action took effect (dialog opened, item highlighted, etc.).
+- If coordinate tap misses, adjust Y by one row height (typically (y2-y1)/N ≈ 150-250px) and retry.
+- Alternative: swipe sideways on the item row to reveal delete/edit action buttons.
+
+### Tab Switching | #pull-on: tab,switch,navigate_to
+- BottomNavigation: 3-5 icons at the bottom; TabRow: top tabs.
+- navigate_to(tab="name") → observe to confirm content area changed.
+- Off-screen tab elements are not in the UI tree (ViewPager behavior).
+- Clock: Timer/Stopwatch/Alarm; Camera: Photo/Video.
+
+### Popups / Permissions | #pull-on: popup,permission,grant,dialog
+- Permission dialogs: "While using the app" / "Only this time" / "Don't allow"
+- Onboarding: NEXT → NEXT → DONE/SKIP until main screen.
+- back can dismiss most popups.
+
+### Text Input / Forms | #pull-on: type,input,form,keyboard
+- tap_element to focus → type → key(enter) to search; after key(enter) wait(2)+observe for results.
+- ✓/Save is on TopAppBar right side or bottom; form submit button usually at bottom — scroll down first.
+- back auto-saves (Markor) vs explicit ✓ (Expense/Calendar).
+- Keyboard covers content: swipe the page or back to dismiss keyboard.
+
+### Media Player | #pull-on: media,play,player,video
+- SurfaceView is invisible; control bar auto-hides at bottom — tap the play area to reveal.
+- Progress bar usually not in accessibility tree.
+
+### Browser / WebView | #pull-on: browser,chrome,webview
+- wait(2-3) + observe; back to go back one page.
+- Web page element accessibility annotations may be incomplete.
+
+### Sidebar / Drawer Menu | #pull-on: drawer,sidebar,menu,☰
+- Open: swipe right from left edge, or tap top-left hamburger icon (☰).
+- Close: tap outside area or back; drawer elements are only visible when open.
+
+### Grid / Gallery | #pull-on: grid,album,thumbnail
+- View details: tap thumbnail; fullscreen browse: horizontal swipe to go previous/next.
+- Multi-select: long-press the first image; exit fullscreen: × / back / swipe down.
+
+### Share Panel / System Chooser | #pull-on: share,chooser,select,send
+- System share panel initially shows only ~5 frequent apps. This is a textbook case of "target not in current view → tap More".
+- Target app not in initial grid → "More" (grid item, text="More") → expands full list (recycler id containing "more_apps").
+- Full list is alphabetically sorted; find and tap; go back with desc="Navigate up".
+
+### Settings / Toggles | #pull-on: settings,toggle,switch
+- Toggle: tap_element on the switch row to toggle, observe to confirm state flipped.
+- Sub-menu: tap_element to enter, back to return; current value shown as text may not be tappable.
+
+### File Management | #pull-on: files,file,folder,file manager
+- Enter folder: tap folder name; go back: back; select file: long-press for action menu.
+- New: bottom-right "+" FAB; ⚠️ RED LINE: no shell echo/mkdir to impersonate file operations.
+
+### Gesture Tolerance | #pull-on: swipe,scroll,gesture
+- Horizontal swipe: swipe from center-right to center-left (start ~2/3 width, end ~1/3 width), duration 300-500ms.
+- Vertical scroll: swipe from lower half to upper half (start ~2/3 height, end ~1/3 height), duration 300ms.
+- Wrong button tapped: back to return, don't re-launch.
+- ⚠️ Don't back immediately after a gesture without observing the effect — the gesture's effect may be what you wanted (e.g. revealing a hidden menu). Blindly backing undoes it.
+- Observe after every gesture; same gesture repeated ≤2 times → switch strategy.
+
+### List Management (CRUD) | #pull-on: create,add,delete,edit,list
+- Create: FAB → form → ✓ → new entry appears in list; Edit: tap → modify → back (auto-save) or ✓.
+- Delete: long_press → menu → Delete; verify: item count ±1.
+
+### Information Query | #pull-on: query,view,check
+- launch → observe → read screen / check data → stop when found. Do not continue exploring.
+
+### Search Input Details | #pull-on: type,search,find,input,suggestion
+- TYPE → tap suggestion has higher success rate than TYPE → ENTER — prefer tapping search suggestion TEXT.
+- Search term: 8-15 characters is sufficient; the search bar is the first TEXT element on the page.
+- No results: re-tap the search bar to focus → shorten search term → check if keyboard is visible.
+
+### Element Interaction Strategy | #pull-on: tap,click,element,select,not found,clickable
+- TEXT labels are preferred over ICON icons (67% of human operations target TEXT, 33% target ICON).
+- Same-name elements: pick the one with the largest y; TEXT+ICON combos: tap TEXT.
+- NavigationBar icon exception: ICON_NAV_BAR_CIRCLE (home) / ICON_NAV_BAR_RECT (recents) can be tapped directly.
+- Element not responding: try adjacent TEXT → micro-scroll → ICON_X to dismiss popup.
+- Target not in current view: check for ⋮ / ☰ / "More" / "Options" on the page → tap to open. This is a universal fallback — share panel app lists, list item action menus, settings sub-pages can all be hidden behind these entry points.
+
+## §3 Component Library
+
+### FAB | #pull-on: create,add,new,+
+- Bottom-right (y > 85%), desc="Create"/"Add", primary creation action.
+
+### TopAppBar | #pull-on: save,back,navigate
+- Screen top (y < 150); left ←; center title; right ✓/🔍/⋮; ✓ = save.
+
+### BottomNavigation | #pull-on: tab,switch,navigate_to
+- Fixed at bottom (high y), 3-5 icons + text.
+
+### OverflowMenu | #pull-on: menu,options,delete,edit
+- TopAppBar right ⋮; edit/delete/share/settings. NOTE: this is NOT the share panel "More" button — for share panel app list overflow, refer to §2 "Share Panel / System Chooser".
+
+(Dialog / Snackbar handling is covered in the Popups/Permissions section above — not repeated.)
+
+## §5 Accessibility Tree Interpretation
+
+### Element Location | #pull-on: observe,element,index,found,not found
+- Use index=N directly when given; same-name elements: pick the one with the largest y.
+- scroll_to_find > swipe; RecyclerView elements often have "card"/"item".
+- clickable=true → button; checkable=true → switch; scrollable=true → list.
+
+### Edge Cases | #pull-on: observe,empty,no elements,few
+- 0-3 elements → viewfinder (NORMAL) or broken page → back.
+- Sudden element count increase → page finished loading, all previous indices are stale → re-observe.

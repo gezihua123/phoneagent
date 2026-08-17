@@ -1,0 +1,319 @@
+# ============================================================================
+# meta/scenarios.yml — FastAgent 测试声明式定义（精简版）
+# ============================================================================
+# 只保留三要素：开始(start) / 经过(interactions) / 期望(expect)
+#
+# 屏幕定义:
+#   每个屏幕只需 text（phonefast observe 格式）+ 可选的 back_to（back 后转到哪）
+#   tap zone 不再手写 bounds，由 MockPhonefast 从屏幕文本的元素 bounds 自动推导：
+#     - 点击 clickable=true 的 Switch 元素 → 触发开关翻转
+#     - 点击 clickable=true 的容器元素 → 触发页面跳转
+#     - 点击不可点击的文字标签 → 进入"错误页"（详情页）
+#     - 点击 zone 外区域 → noop（屏幕不变）
+#
+# 场景定义:
+#   goal:    交给 agent 的自然语言目标
+#   start:   起始屏幕 key
+#   expect:  期望结果（自然语言描述成功/失败长什么样）
+# ============================================================================
+
+
+# ---------------------------------------------------------------------------
+# 一、屏幕图
+# ---------------------------------------------------------------------------
+screens:
+
+  settings_home:
+    source: wd4.xml          # 从 meta/wd4.xml 生成屏幕文本
+    variant: baseline
+
+  bt_off:
+    back_to: settings_home
+    text: |
+      Interactive elements on screen:
+      ==================================================
+      [0] text="蓝牙" (TextView) bounds=[63,58][300,118]
+      [1] desc="返回" (View) [clickable] bounds=[0,0][147,176]
+      [2] text="蓝牙" (TextView) bounds=[168,350][810,395]
+      [3] text="已关闭" desc="蓝牙开关" (Switch) [clickable] bounds=[900,368][1044,416]
+      ==================================================
+      Use tap_element with index=N or text='...' to interact.
+
+  bt_detail:
+    back_to: settings_home
+    text: |
+      Interactive elements on screen:
+      ==================================================
+      [0] text="蓝牙详情" (TextView) bounds=[63,58][300,118]
+      [1] desc="返回" (View) [clickable] bounds=[0,0][147,176]
+      [2] text="已配对设备" (TextView) bounds=[168,350][810,395]
+      [3] text="Pixel Buds Pro" (TextView) [clickable] bounds=[0,464][1080,608]
+      [4] text="可用设备" (TextView) bounds=[168,700][810,745]
+      ==================================================
+      Use tap_element with index=N or text='...' to interact.
+
+  bt_device_pair:
+    back_to: bt_detail
+    text: |
+      Interactive elements on screen:
+      ==================================================
+      [0] text="Pixel Buds Pro" (TextView) bounds=[63,58][400,118]
+      [1] desc="返回" (View) [clickable] bounds=[0,0][147,176]
+      [2] text="配对" (TextView) [clickable] bounds=[0,400][1080,544]
+      [3] text="取消" (TextView) [clickable] bounds=[0,544][1080,688]
+      ==================================================
+      Use tap_element with index=N or text='...' to interact.
+
+  loc_off:
+    back_to: settings_home
+    text: |
+      Interactive elements on screen:
+      ==================================================
+      [0] text="位置信息" (TextView) bounds=[63,58][300,118]
+      [1] desc="返回" (View) [clickable] bounds=[0,0][147,176]
+      [2] text="位置信息" (TextView) bounds=[168,350][810,395]
+      [3] text="已关闭" desc="位置信息开关" (Switch) [clickable] bounds=[900,368][1044,416]
+      ==================================================
+      Use tap_element with index=N or text='...' to interact.
+
+  loc_detail:
+    back_to: settings_home
+    text: |
+      Interactive elements on screen:
+      ==================================================
+      [0] text="位置信息" (TextView) bounds=[63,58][300,118]
+      [1] desc="返回" (View) [clickable] bounds=[0,0][147,176]
+      [2] text="应用位置权限" (TextView) [clickable] bounds=[0,320][1080,464]
+      [3] text="最近的位置请求" (TextView) bounds=[168,500][810,545]
+      [4] text="Google 地图" (TextView) bounds=[168,560][810,605]
+      ==================================================
+      Use tap_element with index=N or text='...' to interact.
+
+  battery_page:
+    back_to: settings_home
+    text: |
+      Interactive elements on screen:
+      ==================================================
+      [0] text="电池" (TextView) bounds=[63,58][300,118]
+      [1] desc="返回" (View) [clickable] bounds=[0,0][147,176]
+      [2] text="电池百分比" (TextView) bounds=[168,350][810,395]
+      [3] text="87%" (TextView) bounds=[168,395][810,440]
+      [4] text="省电模式" desc="省电模式开关" (Switch) [clickable] bounds=[900,468][1044,516]
+      [5] text="自适应电池" (TextView) [clickable] bounds=[0,560][1080,704]
+      ==================================================
+      Use tap_element with index=N or text='...' to interact.
+
+  search_page:
+    back_to: settings_home
+    text: |
+      Interactive elements on screen:
+      ==================================================
+      [0] desc="返回" (View) [clickable] bounds=[0,0][147,176]
+      [1] text="搜索设置" id="search_src" (EditText) [clickable] bounds=[168,58][912,118]
+      ==================================================
+      Use tap_element with index=N or text='...' to interact.
+
+  loading:
+    text: |
+      Interactive elements on screen:
+      ==================================================
+      [0] text="正在加载..." (TextView) bounds=[400,1100][680,1160]
+      ==================================================
+      Use tap_element with index=N or text='...' to interact.
+
+  empty:
+    text: |
+      Interactive elements on screen:
+      ==================================================
+      ==================================================
+      Use tap_element with index=N or text='...' to interact.
+
+  # ---- 状态感知测试：蓝牙已关，agent 不应再点开关 ----
+  bt_already_off:
+    back_to: settings_home
+    text: |
+      Interactive elements on screen:
+      ==================================================
+      [0] text="蓝牙" (TextView) bounds=[63,58][300,118]
+      [1] desc="返回" (View) [clickable] bounds=[0,0][147,176]
+      [2] text="蓝牙" (TextView) bounds=[168,350][810,395]
+      [3] text="已关闭" desc="蓝牙开关" (Switch) [clickable] [checked=false] bounds=[900,368][1044,416]
+      ==================================================
+      Use tap_element with index=N or text='...' to interact.
+    transitions:
+      蓝牙开关: bt_on
+
+  # 蓝牙被重新打开（agent 误点的失败终点）
+  bt_on:
+    back_to: settings_home
+    text: |
+      Interactive elements on screen:
+      ==================================================
+      [0] text="蓝牙" (TextView) bounds=[63,58][300,118]
+      [1] desc="返回" (View) [clickable] bounds=[0,0][147,176]
+      [2] text="蓝牙" (TextView) bounds=[168,350][810,395]
+      [3] text="已开启" desc="蓝牙开关" (Switch) [clickable] [checked=true] bounds=[900,368][1044,416]
+      ==================================================
+      Use tap_element with index=N or text='...' to interact.
+    transitions:
+      蓝牙开关: bt_already_off
+
+  # ---- 输入流程测试：搜索框聚焦态 ----
+  search_focus:
+    back_to: settings_home
+    text: |
+      Interactive elements on screen:
+      ==================================================
+      [0] desc="返回" (View) [clickable] bounds=[0,0][147,176]
+      [1] text="搜索设置" id="search_src" (EditText) [clickable] [focused] bounds=[168,58][912,118]
+      ==================================================
+      Use tap_element with index=N or text='...' to interact.
+    # 按 enter 后屏幕转到搜索结果页
+    key_transitions:
+      enter: search_results
+
+  # 搜索结果页
+  search_results:
+    back_to: search_focus
+    text: |
+      Interactive elements on screen:
+      ==================================================
+      [0] desc="返回" (View) [clickable] bounds=[0,0][147,176]
+      [1] text="蓝牙" (TextView) [clickable] bounds=[0,200][1080,290]
+      [2] text="蓝牙音频" (TextView) [clickable] bounds=[0,290][1080,380]
+      [3] text="位置信息" (TextView) [clickable] bounds=[0,380][1080,470]
+      ==================================================
+      Use tap_element with index=N or text='...' to interact.
+
+  # ---- 滚动测试：目标在屏外，需 swipe ----
+  settings_scrolled:
+    back_to: settings_home
+    text: |
+      Interactive elements on screen:
+      ==================================================
+      [0] desc="返回" (View) [clickable] bounds=[0,0][147,176]
+      [1] text="开发者选项" (TextView) [clickable] bounds=[0,200][1080,290]
+      [2] text="关于手机" (TextView) [clickable] bounds=[0,290][1080,380]
+      ==================================================
+      Use tap_element with index=N or text='...' to interact.
+
+  # ---- max_steps 超限测试：有元素但目标不存在，agent 应超步失败 ----
+  decoy_screen:
+    text: |
+      Interactive elements on screen:
+      ==================================================
+      [0] text="选项一" (TextView) [clickable] bounds=[0,200][1080,290]
+      [1] text="选项二" (TextView) [clickable] bounds=[0,290][1080,380]
+      [2] text="选项三" (TextView) [clickable] bounds=[0,380][1080,470]
+      ==================================================
+      Use tap_element with index=N or text='...' to interact.
+
+
+# ---------------------------------------------------------------------------
+# 二、屏幕变体（从 wd4.xml 派生）
+# ---------------------------------------------------------------------------
+variants:
+  baseline:
+    desc: "原始设置页"
+  bt_off:
+    desc: "蓝牙开关已关闭（checked=false）"
+    transform: set_attr
+    target: "蓝牙开关"
+    attr: checked
+    value: "false"
+  loc_off:
+    desc: "位置开关已关闭"
+    transform: set_attr
+    target: "位置信息开关"
+    attr: checked
+    value: "false"
+  scrolled:
+    desc: "整体下移 200px（模拟滚动）"
+    transform: shift
+    dy: 200
+  truncated:
+    desc: "删除「存储」节点（模拟未完全加载）"
+    transform: strip
+    target: "存储"
+  noisy:
+    desc: "添加 5 个噪声元素"
+    transform: noise
+    count: 5
+
+
+# ---------------------------------------------------------------------------
+# 三、测试场景（开始 / 期望）
+# ---------------------------------------------------------------------------
+scenarios:
+
+  - name: toggle_bluetooth
+    goal: "关闭蓝牙开关"
+    start: settings_home
+    expect: "蓝牙开关从开启变为关闭，屏幕显示'已关闭'。不应进入蓝牙详情页。"
+
+  - name: toggle_location
+    goal: "关闭位置信息开关"
+    start: settings_home
+    expect: "位置信息开关从开启变为关闭，屏幕显示'已关闭'。不应进入位置详情页。"
+
+  - name: go_to_battery
+    goal: "进入电池设置页面"
+    start: settings_home
+    expect: "屏幕跳转到电池设置页，标题显示'电池'。"
+
+  - name: go_back
+    goal: "返回上一页"
+    start: bt_off
+    expect: "屏幕从蓝牙页返回到设置首页。"
+
+  - name: self_heal_bluetooth
+    goal: "关闭蓝牙开关"
+    start: settings_home
+    expect: "蓝牙开关从开启变为关闭。过程中可能出现 index 错误但应自愈重选。"
+
+  - name: frozen_loading
+    goal: "关闭蓝牙开关"
+    start: loading
+    expect: "屏幕处于加载中状态，agent 应识别无法操作并主动结束（标记失败）。"
+
+  - name: empty_screen
+    goal: "关闭蓝牙开关"
+    start: empty
+    expect: "屏幕无任何可交互元素，agent 应识别无法操作并主动结束（标记失败）。"
+
+  # ---- 状态感知：开关已关，agent 不应再点（点了会重开）----
+  - name: verify_bluetooth_off
+    goal: "确认蓝牙开关已处于关闭状态"
+    start: bt_already_off
+    expect: "蓝牙已是关闭状态(显示'已关闭')，agent 不应再点开关，直接确认完成。点开关会重新打开=失败。"
+
+  # ---- 输入流程：type 拼音 + key(enter) 触发搜索 ----
+  - name: search_setting
+    goal: "在设置中搜索蓝牙相关设置"
+    start: search_focus
+    expect: "输入框已聚焦，agent 应 type 输入搜索词后按 key(enter) 触发搜索，屏幕显示搜索结果。"
+
+  # ---- 错误恢复：从错误页 back 回退再操作 ----
+  - name: recover_from_detail
+    goal: "返回设置首页并关闭蓝牙开关"
+    start: bt_detail
+    expect: "agent 先 back 返回设置首页，再点击蓝牙开关关闭。不应停留在详情页。"
+
+  # ---- 滚动找元素：目标在屏外 ----
+  - name: scroll_to_find
+    goal: "进入关于手机页面"
+    start: settings_scrolled
+    expect: "agent 应 swipe 滚动或直接点击可见的'关于手机'。屏幕跳转到关于手机页。"
+
+  # ---- max_steps 超限：目标不存在，agent 反复操作不应卡死 ----
+  - name: max_steps_exhaustion
+    goal: "找到并点击不存在的神秘选项"
+    start: decoy_screen
+    expect: "屏幕上没有目标元素，agent 反复尝试后达到步数上限，返回失败而非卡死。"
+
+  # ---- 工具链异常：tap 持续失败，agent 应自愈降级不崩溃 ----
+  - name: tool_chain_failure
+    goal: "关闭蓝牙开关"
+    start: settings_home
+    expect: "tap 工具持续失败时，agent 应注入错误信息换思路，最终 complete(fail) 而非抛异常崩溃。"
+

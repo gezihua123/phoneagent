@@ -1,0 +1,76 @@
+## §2 界面类型与操作模式
+
+### 取景器/媒体捕获 | #pull-on: camera,相机,拍照,录像,record,shutter
+- SurfaceView + 元素 ≤10 = 正常; 录制时 UI 树变空也是正常
+- Shutter 底部居中 desc 通常 "Shutter"; 横滑切换 Photo/Video; 同按钮开始/停止
+- 验证: find /sdcard -name "*.mp4" / "*.jpg"
+- ⚠️ 不要 ocr/run_script 找取景器里"缺失"元素——元素少是正常的
+
+### 列表/可滚动界面 | #pull-on: scroll,list,列表,find,查找,scroll_to_find
+- scroll_to_find > swipe; long_press 菜单; 侧滑显示操作按钮(删除/归档)
+- FAB 右下角新增; long_press 首项进入多选模式，顶栏出现批量操作
+- 3+ 次滚动未找到目标 → 可能错区/错页，back 或 HOME 重新定位
+
+### Tab 切换 | #pull-on: tab,switch,切换,navigate_to,标签
+- BottomNavigation: 底部 3-5 图标; TabRow: 顶部标签
+- navigate_to(tab="名称") → observe 确认内容区域变化
+- 离线 tab 的元素不在 UI 树中（ViewPager 特性）
+- Clock: Timer/Stopwatch/Alarm; Camera: Photo/Video
+
+### 弹窗/权限 | #pull-on: popup,permission,弹窗,权限,grant,dialog
+- 权限弹窗: "While using the app" / "Only this time" / "Don't allow"
+- 引导页: NEXT→NEXT→DONE/SKIP 直到主界面
+- back 可关闭大多数弹窗
+
+### 文本输入/表单 | #pull-on: type,input,form,输入,表单,填写,keyboard
+- tap_element 聚焦 → type → key(enter) 搜索; key(enter) 后 wait(2)+observe 等结果
+- ✓/Save 在 TopAppBar 右侧或底部; 表单提交按钮通常在底部需先滚到底
+- back 自动保存(Markor) vs 显式点✓(Expense/Calendar)
+- 键盘遮挡: 滑动页面或 back 收起键盘
+
+### 媒体播放器 | #pull-on: media,play,播放,player,video
+- SurfaceView 不可见; 控制栏底部自动隐藏——点播放区域重新显示
+- 进度条通常不在 accessibility 树中
+
+### 浏览器/WebView | #pull-on: browser,chrome,webview,浏览器
+- wait(2-3) + observe; back 回退上一页
+- 网页元素 accessibility 标注可能不完整
+
+### 侧边栏/抽屉菜单 | #pull-on: drawer,抽屉,sidebar,汉堡,menu,☰
+- 打开: 左边缘右滑 或 点左上角汉堡图标(☰)
+- 关闭: 点外侧区域 或 back; 抽屉内元素只在打开时可见
+
+### 网格/宫格 | #pull-on: grid,网格,宫格,相册,album,thumbnail,缩略图
+- 查看详情: tap 缩略图; 全屏浏览: 左右横滑切换前/后
+- 多选: 长按第一张; 退出全屏: ×/back/下滑
+
+### 设置/开关 | #pull-on: settings,设置,toggle,开关,switch
+- 开关: tap_element 点开关行切换，observe 确认状态翻转
+- 子菜单: tap_element 进入, back 返回; 当前值显示为文字不一定可点
+
+### 文件管理 | #pull-on: files,文件,folder,文件夹,file manager
+- 进入文件夹: tap 文件夹名; 返回: back; 选择文件: 长按弹出操作菜单
+- 新建: 右下角 "+" FAB; ⚠️ 红线: 不能 shell echo/mkdir 冒充文件操作
+
+### 手势容错 | #pull-on: swipe,滑动,横滑,scroll,手势,gesture
+- 横滑切换: 从中间滑到另一侧(x1=720,x2=360), duration 300-500ms
+- 竖滑滚动: 从下半屏滑到上半屏(y1=1200,y2=600), duration 300ms
+- 点错按钮: back 返回，不要 launch 重来
+- 每次手势后 observe 确认; 同一手势重复 ≤2 次即换策略
+
+### 列表管理(CRUD) | #pull-on: create,add,delete,edit,新建,添加,删除,编辑,列表
+- 创建: FAB→表单→✓→列表出现新条目; 编辑: tap→修改→back(自动保存)或✓
+- 删除: long_press→菜单→Delete; 验证: 条目数±1
+
+### 信息查询 | #pull-on: query,view,check,查看,查询,有哪些
+- launch→observe→读屏幕/查数据→查到即停; 禁止继续探索
+
+### 搜索输入细节 | #pull-on: type,search,find,input,搜索,输入,查找,suggestion
+- TYPE→tap suggestion（人类 6.8%），TYPE→ENTER 仅 2.2%——优先 tap 搜索建议 TEXT
+- 搜索词 8-15 字符即可; 搜索栏是页面第一个 TEXT 元素
+- 无结果: 重 tap 搜索栏聚焦 → 缩短搜索词 → 检查键盘是否弹出
+
+### 元素交互策略 | #pull-on: tap,click,element,点击,选择,找不到,clickable
+- TEXT 标签优先于 ICON 图标（人类 67% 操作 TEXT，33% 操作 ICON）
+- 同名元素选 y 最大的; TEXT+ICON 组合点 TEXT; NavigationBar 图标例外可直接点
+- 元素不响应: 试相邻 TEXT → 微 scroll → ICON_X 关弹窗

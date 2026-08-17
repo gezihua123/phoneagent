@@ -1,0 +1,10 @@
+## §5 Accessibility 树解读
+
+### 元素定位 | #pull-on: observe,element,元素,element,index,found,找不到
+- index=N 直接使用; 同名元素选 y 最大的
+- scroll_to_find > swipe; RecyclerView 元素带 "card"/"item"
+- clickable=true→按钮; checkable=true→开关; scrollable=true→列表
+
+### 边界情况 | #pull-on: observe,empty,空,no elements,few,元素少
+- 0-3 元素→取景器(正常)或残缺页面→back
+- 元素突增→页面加载完成，索引全部失效→重新 observe

@@ -1,0 +1,198 @@
+## §6 App Reference (injected at startup by goal keyword match) [AITW stats]
+
+### Clock | #k: clock,timer,stopwatch,alarm
+- Avg 7 steps; 55% TAP 20% SWIPE 6% HOME
+- Tabs: Alarm | Clock | Timer | Stopwatch (BottomNavigation)
+- Timer: navigate_to(tab="Timer") → number pad → tap → set duration
+- Stopwatch: navigate_to(tab="Stopwatch") → tap Start
+
+### Camera | #k: camera,photo,record
+- Avg 9 steps; 49% TAP 27% SWIPE 7% HOME (highest HOME rate)
+- Viewfinder auto-displays; Shutter centered at bottom, desc "Shutter"
+- Mode switch: horizontal swipe or tap "Switch to Camera/Video"
+- Photos → /sdcard/Pictures/; Videos → /sdcard/Movies/
+- **AOSP Camera2 default = VIDEO mode**: cold-launch always starts in video recording mode, regardless of intent. The mode ribbon (Photo | Video | Portrait) sits between the viewfinder and Shutter button; locate the clickable container whose children include Photo/Video/Portrait labels, or observe elements with text/desc matching these mode names. Mode label text may NOT appear in the accessibility tree — do NOT rely on element text to determine current mode. To switch modes: swipe horizontally ON the ribbon or tap the mode words directly. **NEVER press the Shutter to probe the current mode** — the Shutter is mode-dependent (tap starts recording in video mode) and may trigger an unintended side effect that wastes 2+ turns to undo. Resolve ambiguity via non-destructive means: inspect the mode-ribbon element labels (the mode-switch button label names the TARGET mode, not the current one), or verify via filesystem — `shell(ls -lt /sdcard/DCIM/Camera/ /sdcard/Movies/)` shows what prior captures produced (.jpg=photo, .mp4=video).
+- If the goal is a photo capture but camera shows a timer after pressing Shutter → IMMEDIATELY stop recording (press Shutter again) and switch to photo mode before any real capture. Photo outputs land in /sdcard/DCIM/Camera/ or /sdcard/Pictures/; video outputs in /sdcard/Movies/. Some emulator images may not persist captures to disk — verify via the camera's own thumbnail/gallery view rather than only file system.
+- **Sharing**: AOSP Camera2 has NO inline share button after capture. To share a photo/video:
+  ① After capture → tap the thumbnail circle (bottom-right of viewfinder, shows last captured image)
+  ② In the photo viewer → look for Share icon (usually top bar, ⋮ menu, or share icon). Do NOT press back from the viewer — that discards the sharing opportunity.
+  ③ If thumbnail is not visible → back() → home() → open Photos/Gallery app → find the file → tap → Share
+  Do NOT keep trying to find a share button inside the camera viewfinder — it does not exist there.
+
+### Calendar | #k: calendar,event,simple calendar
+- Avg 7.5 steps; 50% TAP 30% SWIPE (scroll-heavy)
+- Month view + FAB(+) bottom-right (desc="New Event" id="calendar_fab"); New event: FAB → fill Title → set date/time → ✓ save
+- ⚠️ DO NOT swipe in month view — it switches pages/tabs, not dates. Use TAP on date numbers only.
+- To create event: launch app → tap FAB (desc="New Event") → tap "Event" option → form opens → fill Title/Description → set date/time → Save (top-right).
+- ⚠️ Month-view day cells (id="month_view_background") have NO date text in the a11y tree — you cannot identify which cell is which day by reading the tree. Do NOT try to tap a specific day from the month grid. Instead, create the event from the FAB form and use the form's DATE FIELD to set the exact date.
+- Event form date field: shows a label like "August 14 (Fri)". Tap it → a date-picker dialog opens with day-number cells → tap the target day NUMBER → tap OK. For relative dates ("in two weeks", "tomorrow"): compute the target day with shell(date -d '+14 days' '+%d %m %Y') (or +1 days) BEFORE opening the picker, then tap exactly that day number in the picker.
+- Event form time field: tap it → time picker (hour/minute number pad) → tap hour then minute → OK.
+- Save = TopAppBar Save/✓ icon (top-right corner), NOT a "Save" text button
+- **Navigate to a specific date (for viewing/deleting events on that date)**: the app opens on DAY view with the date title at top (id="top_value", e.g. "August 13 (Thu)"). Tap the title → a 3-wheel date picker opens: month wheel (e.g. Jul/Aug/Sep buttons), day wheel, year wheel — with OK (id="button1") / Cancel (id="button2"). The CURRENT wheel value is the id="numberpicker_input" Input element (editable!).
+  RELIABLE way to set the date — do NOT repeatedly tap the small prev/next value buttons (the wheel moves but taps land on the same coordinate and are unreliable):
+  1. Tap the target month on the month wheel once (e.g. text="Jul" button).
+  2. Tap the DAY wheel's numberpicker_input (the Input showing the current day) → select-all (long-press CTRL+A, i.e. key 29) → type the target day number (replaces the selection) → press enter. NOTE: do NOT use DEL/backspace key events — they behave unreliably here; select-all + type is the reliable path.
+  3. Tap OK. Observe: the day view title must show the target date (e.g. "July 17 (Fri)").
+  Compute the target day/month first: shell(date -d 'YYYY-MM-DD' '+%d %b') or shell(date -d '+14 days' '+%d %b').
+- On the day view, event cards ARE in the a11y tree: id="event_item_holder" (clickable container) with child text id="event_item_title" (the title) and id="event_item_time" (e.g. "14:00 - 15:00"). If the event is later in the day than the visible window, scroll the day_events list.
+- Delete event (verified path): tap the event card (event_item_holder) → "Edit Task" page opens → tap the DELETE button directly (desc="Delete" id="delete", top-right of the edit page — no ⋮ menu needed) → confirm dialog "Are you sure you want to proceed with the deletion?" → tap Yes (id="button1").
+
+### Contacts | #k: contacts
+- FAB(+) → First Name/Last Name/Phone → Save
+- Search: top search box
+
+### SMS | #k: sms,message,messages
+- Send: FAB(+) → number → type → send; Reply: tap conversation → type
+- ⚠️ To find a recipient's number: use the app UI (FAB → New conversation → type the NAME or number in the recipient/search field — the app resolves contacts). Do NOT rely on shell content queries of the contacts provider — it may be empty even when the app UI shows the contact. If the goal itself gives a number (e.g. "Alice Smith (555-0100)"), just type that NUMBER directly into the recipient field — no contact lookup needed.
+- Verify: content query --uri content://sms/sent
+
+### Files | #k: files,file,download,documentsui
+- System file manager (Files/Documents), shows directory list on launch; tap to enter subdirectory, path nav at top
+- Delete: long_press target file → context menu → Delete → OK confirm
+- Move: long_press target file → context menu (⋮ "More options" top-right) → Move to → navigate into target folder → ✓/Move confirm
+- ⚠️ MOVE PICKER NAVIGATION (verified): the Move-to picker opens at the "Downloads" root — NOT at Documents, and NOT as a folder tree. To reach /sdcard/Documents/<subfolder>: tap ☰ "Show roots" (drawer shows STORAGE ROOTS: "Downloads" and the internal-storage root, e.g. "sdk_gphone64_arm64") → tap the internal-storage root → tap "Documents" → tap the target subfolder → tap MOVE. The Show-roots drawer is TRANSIENT — it auto-collapses quickly, so tap Show roots and then immediately observe/tap the next element in one motion (or use run_script to chain tap→observe); a delayed observe sees the drawer already closed.
+- Left nav drawer: ☰ "Show roots" → choose Downloads/Documents etc.
+- Default directory /sdcard/; note: UI varies significantly across versions
+- File rows on this emulator (Google documentsui): rows DO expose the filename as id="title" Text — tap the row whose title matches the target name directly. If titles are absent (other variants expose label='item_root' with no filename), fall back to shell(ls -la <dir>) for file order and tap the N-th row top-to-bottom.
+
+### Gallery | #k: gallery,simple gallery
+- Copy: long_press → ⋮ → Copy to; View: tap
+
+### Draw | #k: draw,drawing
+- Canvas on launch, bottom toolbar; Save: ⋮ → Save → name → ✓ → /sdcard/Pictures/
+- **Save flow (verified)**: tap Save (top bar) → file-save dialog opens with a default name like image_YYYY_MM_DD_HH_MM_SS → tap the name field → select-all (long-press CTRL+A) → type the goal's exact target filename (e.g. test_note_ufvu.png) → tap OK. The save dialog ALSO has a directory chooser — if the goal requires Pictures folder, navigate the folder tree to Pictures before OK (left drawer "Show roots" → Pictures). Default save location may NOT be Pictures — always confirm/choose the target folder in the dialog.
+
+### Audio | #k: audio,recorder,record
+- Audio Recorder app (com.dimowner.audiorecorder): dismiss any first-launch dialog → tap the round Record button → wait a few seconds → tap Stop → a save dialog appears with a default name like "Record-NN" → to rename: tap the name field → key('clear') empties it → type the goal's exact name → tap Save.
+- If the name field cannot be edited, tap Save with the current name and report honestly — do NOT re-record in a loop (each re-record restarts the same dialog).
+
+### Recipe | #k: recipe,broccoli
+- App name "Broccoli"; main screen: recipe list (RecyclerView id="recycler_view") + FAB(+) bottom-right
+- Recipe cards ARE in the a11y tree as clickable CardView. Each card exposes child text id="card_text_view_title" (the recipe name) and id="card_text_view_description". Tap a card directly by index/text — do NOT estimate coordinates and do NOT long_press to delete (long_press just opens the recipe like a normal tap).
+- New: FAB(+) → new-recipe form with fields [Title, Description, Source, Servings, Time, Ingredients, Directions] → fill_fields(fields=[{label:'Title',value:'...'},{label:'Description',value:'...'},...]) in ONE step → tap ✓ (TopAppBar save, top-right). Each empty field shows its label as a hint; pass those exact labels to fill_fields. Time format: "45 mins" (number + unit). Form is taller than the screen — fill_fields auto-scrolls to off-screen fields (Directions).
+- Delete (only path): tap the recipe card → detail page opens → tap ⋮ "More options" (desc="More options", top-right corner) → tap "Delete" → a confirm dialog "Delete this recipe?" appears → tap the "DELETE" button (id="button1"). Then observe the list to confirm the recipe is gone.
+- Delete duplicates of a specific recipe in a long list: swipe up on recycler_view to scroll, find the target by its card title (id="card_text_view_title"), tap it open, run the ⋮→Delete→DELETE cycle, then scroll again and repeat for the next duplicate. Each duplicate needs its own tap-card→⋮→Delete→DELETE sequence — there is no batch/multi-select delete.
+
+### Expense | #k: expense
+- App name contains "arduia" (com.arduia.expense); Home screen: Totals (INCOME/OUTCOME) + "Expenses in this Week" + "Recent" list (rv_recent_lists) + FAB (fb_main_add) bottom-right. Expense cards (id="cd_expense", clickable) ARE in the a11y tree with child text: id="tv_name" (expense name), id="tv_date" (date), id="tv_amount" (amount).
+- New: FAB(+) → form with fields [Name, Amount, Note] (Input elements, hint text as label) + category chips (Food/Income/Housing/Social/Entertainment) → fill_fields(fields=[{label:'Name',value:'...'},{label:'Amount',value:'15.50'}]) → tap SAVE (id="btn_save"). Amount accepts "15.50" format (stored as cents).
+- Delete (Expense Logs, drawer ☰ → Expense Logs): each row has a DEDICATED delete icon (id="imv_delete_icon", clickable, top-right of row) + "Delete" label — tap the icon directly, then CONFIRM. No long-press needed (long-press also works: cd_expense → btn_delete → CONFIRM). To find the target row in a long list: the row name text (id="tv_name") IS in the a11y tree — tap rows by index/text directly, do NOT estimate coordinates.
+- Seeded data may be dated 2023 while the app's current-week view shows only recent rows — use the "Recent" list on Home or Expense Logs (drawer) which show all rows sorted by date DESC.
+
+### Tasks | #k: tasks,todo
+- List + FAB(+); New: FAB → title/date/priority → ✓; Filter: Today/Week/All
+- ⚠️ List items may NOT be in a11y tree. If observe shows container bounds but no items, estimate Y per row: Y=y1+(y2-y1)*(i+0.5)/N, tap at X=(x1+x2)/2.
+
+### Retro | #k: retro,music,playlist
+- Tabs: Songs/Albums/Artists; Playlists: sidebar → Playlists
+- Create playlist: Playlists screen → ⋮ More options (top-right) → "New playlist" → type name → Create. There is NO FAB on the playlists screen.
+- Add songs to a playlist (per-song): open a song's ⋮ menu → "Add to playlist" → tap target playlist. Adding order = playlist order — add songs IN THE ORDER the goal lists them.
+- Add songs (multi-select, faster): long-press the song row CONTAINER (the clickable ViewGroup, NOT the title Text element — long-pressing Text fails) → selection mode → tap "Select all" (appears in the selection toolbar — saves one tap per song) → ⋮ → "Add to playlist" → target playlist.
+- Song durations: shell `content query --uri content://media/external/audio/media --projection title:duration` lists title+duration in ms (device may lack ffprobe).
+- Export playlist (goal says "export to Downloads"): open the playlist → ⋮ More options → "Save as file" → choose destination folder (Downloads) → confirm. The exported file is <playlist name>.m3u.
+- Requires MP3 files under /sdcard/Music/
+
+### OsmAnd | #k: osmand
+- First launch: SKIP DOWNLOAD; permissions → Allow. After launch WAIT and re-observe: the a11y tree starts near-empty (0-8 elements) and fills in over seconds — resample before acting.
+- ⚠️ BUTTONS ARE TAPPED, NOT TYPED: the words Search / Clear / INCREASE SEARCH RADIUS / Add / Marker / Save / Done name UI BUTTONS. NEVER type them into any text field. Only the PLACE NAME (e.g. "Times Square") is ever typed.
+- Every tap: observe FIRST, then tap_element with the index from THAT fresh observe (never reuse an old index).
+- Search: tap the Search button (desc="Search") → if the input keeps old text (the query PERSISTS across app restarts), tap the Clear icon (desc="Clear") → type ONLY the place name → key(enter).
+- ⚠️ INCREASE SEARCH RADIUS: the button's label is a click=False Text inside a clickable row — tap the label's coordinates. Match the EXACT text "INCREASE SEARCH RADIUS" (the description "Change the search or increase its radius." also contains the word "increase" and is NOT the button). The maximum radius is 500 km — when the button disappears and the text becomes "Nothing found", STOP increasing.
+- Two-stage search for far targets (VERIFIED, works at any distance): when the target is not found ("Nothing found" / "Could not find anything") → tap SHOW ON MAP (geocodes and centers the map) → tap Search again → Clear → type the place name → key(enter) → the result row now appears → tap it. Use this instead of burning many steps on the radius button for targets farther than ~500 km.
+- Result rows are click=False Text elements (id="title") inside clickable parents — tap the text's coordinates.
+- Tap a result row → a context card opens at the bottom (id="context_menu_line1"). Card buttons: Add (favorite) / Marker / Share / Actions.
+- FAVORITE goal: card → tap Add → editor opens → tap the name field (id="name_edit") and type the place name → tap Save.
+- MARKER goal: card → tap Marker → saved instantly, no dialog.
+- TRACK goal: card → Actions → Plan a route → the planner opens with points: 1 → tap the planner's Search icon (top-left) → search the next place → tap its result row → a card opens. ⚠️ While the card is open, its NAVIGATION button (bottom-right) COVERS the planner's bottom Add button — tapping Add's coordinates then starts navigation instead (a step trap). Close the card first (tap the map area above it), then tap Add (id="add_point_button") and CONFIRM the counter shows "points: 2" (id="measurement_points_text_view") BEFORE tapping Done (id="widget_top_bar_save", top-right) → GPX auto-saves. If the counter does not increase, the selection was lost — repeat the search row tap.
+- ⚠️ Map overlay is opaque in the a11y tree, and the search-result tree is unstable (may briefly show only ~4 elements) — wait and re-observe before concluding "no results".
+
+### VLC | #k: vlc,video
+- Media browser; /sdcard/VLCVideos/; Playlist: long_press → Add to playlist
+- ⚠️ Media list items may NOT be in a11y tree. Estimate Y from container bounds, use tap(x,y) or long_press(x,y).
+- Playlist creation (verified): long-press one video → selection mode → tap OTHER videos to multi-select → "Add to playlist" (id="actionbar_add" or text) → dialog → "+ Create new playlist" (if goal asks a new name) → type name → SAVE. Adding multiple files in ONE batch saves many steps (per-file long-press loops are slow).
+- ⚠️ In the "Add to playlist" dialog, existing playlists from PREVIOUS runs may appear with stale track counts — do NOT trust them as "task done"; create/fill the playlist the goal names and verify via the playlist detail screen showing exactly the goal's files in order.
+- ⚠️ Video FRAME content is never in the a11y tree. To read text shown in a video (transcribe goals): play the video, pause it (tap center), then use OCR (pf ocr / tools.ocr) to read the paused frame text. Repeat pause→OCR per frame. Playback controls are at the screen bottom.
+
+### Joplin | #k: joplin,notes(joplin)
+- Notebook+note drawer navigation; FAB(+) → Markdown → ✓
+- Todo: [ ] checkbox
+- ⚠️ Note list items may NOT be in a11y tree. Estimate Y from container bounds, use tap(x,y).
+
+### OpenTracks | #k: opentracks,sports
+- Record button centered; history/stats list view
+- ⚠️ Activity list items may NOT be in a11y tree. Estimate Y from container bounds, use tap(x,y).
+
+### Play Store | #k: play store, install, uninstall, googleplay
+- Avg 9.9 steps (one of the longest categories); 60% TAP 14% SWIPE 12% TYPE
+- Multi-tab layout: top horizontal tabs + bottom nav bar; may land on any tab after cold start
+- Multiple search entry points: top toolbar and bottom nav bar both have search. If top search bar doesn't respond, try the bottom entry.
+- Install button text varies: "Install" / "Update" / "Open" / "Uninstall"
+- Do NOT tap ICON_MAGNIFYING_GLASS to start search — tap the search bar TEXT instead.
+- **Launch fallback**: If launch(app="Play Store") fails or app doesn't appear → HOME → find the Play Store icon on the launcher (label "Play Store") → tap it. If icon not on current page → swipe to find it. Do NOT waste steps debugging with dumpsys/monkey — if the package exists, find and tap the icon.
+- **Search bypass**: If UI search doesn't work → shell(am start -a android.intent.action.VIEW -d "market://details?id=TARGET_PACKAGE") jumps directly to the app page, bypassing search.
+
+### Markor | #k: markor,note
+- File manager interface: shows directory list on launch, tap to enter subdirectory, path nav at top
+- New: FAB(+) → New File dialog → **two separate fields: Name (base filename) + Extension (defaulted, e.g. md)**. Type ONLY the base name in the Name field (the goal's exact target filename WITHOUT extension, e.g. "merged_notes"); if the Extension field already shows the desired extension (md/txt), LEAVE it untouched. Then OK/confirm → file opens in editor → type content → back (auto-save).
+- **Merge/create-file-from-shell-content flow**: for goals like "merge the contents of A, B, C into a new note X" — (1) read the source contents with shell(cat /sdcard/Documents/Markor/A.md; echo '---'; cat B.md ...), (2) FAB → New File → type the target base name in the Name field (e.g. merged_notes) → OK, (3) the editor opens — type the merged text directly with type() (content is short, typing is reliable; do NOT fight with long-press paste/OCR), inserting a blank line between each note's content, (4) back to auto-save. Verify: shell(cat /sdcard/Documents/Markor/X.md).
+- Delete/Move: long_press target file → context menu → Delete/Move
+- Edit: tap filename to open → modify content → back auto-saves
+- **Text editing in editor**: To replace ALL content — long_press in text area → "Select All" → type new text (replaces selection). To ADD text at top — tap to position cursor at start → type prefix → back saves.
+- **Multi-select mode (batch delete)**: long_press ONE file → enters selection mode: top bar shows Favourite/Rename/Details/Delete (id="action_delete_selected_items"), selected items get "Selected " prefix in their desc. Tap MORE files to add them to the selection → tap Delete once → confirm. For "delete all notes": long_press the first file → tap every other file → Delete once. This deletes ALL selected files in ONE confirm — do NOT long_press→Delete→confirm per file.
+- File items expose their names in desc (e.g. desc="File note_alpha.md "), id="opoc_filesystem_item__root" — tap/select by desc text directly, no coordinate estimation needed.
+- Default path /sdcard/Documents/Markor/; files are primarily .md / .txt
+- ⚠️ RED LINE: never use shell echo to impersonate app operations
+
+### Clipper | #k: clipper,clipboard
+- UI flow: launch the app → tap + (add) button → type content → tap Copy to save to clipboard.
+- Verify: shell(dumpsys activity broadcasts | grep clipper.set | grep text)
+- ⚠️ FIRST-LAUNCH HELP PAGE: Clipper's first screen is a Help/Service page whose a11y tree has ≤5 elements and NO clickable elements (the + button is not in the tree). Do NOT burn steps hunting for the + button with OCR — if after launch you observe <5 elements with no clickable nodes, switch IMMEDIATELY to the fallback clipboard approach. Fallback (verified steps): launch Markor → FAB(+) → "New note" → a FILENAME dialog appears: type any filename (e.g. clip.md) → Create → the note EDITOR opens → type the target content into the editor → long-press the typed text → Select all → Copy. The system clipboard is what matters. Do NOT use `am broadcast --es` to inject content — this bypasses the UI and violates the shell-write prohibition.
+
+### Shopping | #k: shopping,buy,add to cart,checkout
+- Avg 5.8 steps (shortest category); 54% TAP 16% SWIPE 8% TYPE
+- Flow: browser → TYPE search → tap result → scroll product page → tap "Add to cart" / "Buy Now"
+- Partial product name input is sufficient; Add-to-cart button text varies by site
+
+### Gmail | #k: gmail,email,compose
+- Avg 9.9 steps (one of the longest categories); 59% TAP 20% SWIPE
+- First launch: Accept → No thanks → OK (same onboarding pattern as Chrome)
+- Compose: FAB(+) / "Compose" → recipient → subject → body → Send
+
+### Maps | #k: maps,navigate,direction
+- Avg 7.1 steps; 54% TAP 17% SWIPE 6% HOME
+- Search bar at top → TYPE destination → tap suggestion → scroll map → tap Directions/Start
+- Pan with SWIPE (not pinch-zoom)
+
+### Chrome | #k: chrome,browser
+- Avg 6.3 steps; 52% TAP 9% SWIPE 16% TYPE (search-heavy)
+- First launch: Accept & continue → No thanks ×2
+- Local HTML files (task pages in Downloads): tap the file row in the Files app — it opens in Chrome directly (no chooser on this emulator; if an "Open with" dialog does appear, pick Chrome). Page content (headings, buttons, inputs, plain text) IS exposed in the a11y tree; a <canvas> has NO element of its own — locate it by its aria-label if present, or by the bounds of neighboring elements and the screenshot. Dynamic text updates (e.g. result messages) appear in the tree after they render. WebView: wait(2-3)
+
+### Settings | #k: settings,wifi,bluetooth,brightness,airplane,flight
+- Avg 7.5 steps; 48% TAP 27% SWIPE (most scroll-heavy category)
+- Choose the path by goal shape:
+  - **Bare system-toggle goal that names NO app** (e.g. "turn on wifi", "turn bluetooth off", "set brightness to X"): shell toggles are allowed, but ALWAYS check the current state first with a read-only query (`settings get ...`); if already at the target state, complete directly.
+  - **Goal names the Settings app or any app UI** (e.g. "Open the Settings app...", "use the Settings UI..."): the change MUST be made through the Settings UI (launch → observe → tap/type → observe confirmation). Shell is QUERY-ONLY here (`settings get`/`dumpsys`) — use it to verify state, never to make the change.
+- UI search: top bar type → key(enter)
+- System toggle shell commands (read current state first; if already at target → complete directly):
+  - Bluetooth: settings get global bluetooth_on | svc bluetooth enable/disable
+  - WiFi: settings get global wifi_on | svc wifi enable/disable
+  - Airplane mode: settings get global airplane_mode_on | settings put global airplane_mode_on 0/1
+  - Brightness: settings get system screen_brightness | max = settings put system screen_brightness 255, min = settings put system screen_brightness 1 (NOT 0 — 0 turns the backlight OFF and is not the "minimum brightness" value; the valid min is 1)
+- Direct settings page launch: am start -a android.settings.BLUETOOTH_SETTINGS / WIFI_SETTINGS / BATTERY_SETTINGS
+- ⚠️ Settings search results often return developer options sub-items misleadingly — prefer am start to go directly to the target page
+
+### Photos | #k: photos,photo
+- Gallery-type: confirm tab first (Photos/Albums); tap cover to enter view
+
+### Phone | #k: phone,dial
+- Dial: tap number keys → call; Contacts tab to look up contacts
+
+### YouTube | #k: youtube,video
+- Search: tap magnifying glass → TYPE → ENTER; Play: tap cover → tap play button
+
+### Keep | #k: keep,note(keep)
+- New: FAB → type → back auto-save; checklist: tap checkbox
+
+### Drive | #k: drive,google drive
+- File list tap to enter; Upload: FAB → Upload

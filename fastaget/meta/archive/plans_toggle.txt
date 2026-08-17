@@ -1,0 +1,33 @@
+# keywords: 关闭蓝牙, 开启蓝牙, 关闭WiFi, 开启WiFi, 关闭Wi-Fi, 开启Wi-Fi, 关闭wifi, 开启wifi, 切换蓝牙, 切换WiFi, 蓝牙开关, WiFi开关, 关闭开关, 开启开关
+
+## ⚠️ 系统开关：优先用 shell，不要 launch Settings！
+
+蓝牙/WiFi/飞行模式等系统开关，shell 直调最快最稳：
+
+```bash
+# 蓝牙
+shell(command="settings get global bluetooth_on")     # 检查 0/1
+shell(command="svc bluetooth enable")                 # 开启
+shell(command="svc bluetooth disable")                # 关闭
+
+# WiFi
+shell(command="settings get global wifi_on")
+shell(command="svc wifi enable")
+shell(command="svc wifi disable")
+
+# 飞行模式
+shell(command="settings get global airplane_mode_on")
+shell(command="settings put global airplane_mode_on 1")  # 开
+shell(command="settings put global airplane_mode_on 0")  # 关
+```
+
+### 执行流程（所有开关通用）
+1. shell get 检查当前状态
+2. 已处目标状态 → 直接 complete(success=true)
+3. 否则 shell 切换 → shell get 验证 → assert → complete
+
+### 仅当 shell 不可用时回退到 UI
+launch(com.android.settings) → 搜索目标 → tap Switch 元素。但 shell 几乎总是可用，优先 shell。
+
+### 前置检查（重要）
+- 操作前必须 shell get 确认当前状态，已处目标状态则直接 complete，禁止重复 toggle。

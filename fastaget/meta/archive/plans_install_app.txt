@@ -1,0 +1,23 @@
+# keywords: 安装, 下载, install, download, 搜索, search, 应用商店, 市场, Google Play, Play 商店
+
+## 任务类型：安装/下载应用
+
+### 执行计划
+1. **直接启动应用商店**：用 launch(package=包名) 启动应用商店，不要 tap 桌面图标。
+   - Google Play = com.android.vending
+   - 其他市场按需查包名
+2. **搜索目标应用**：在商店内找搜索入口，输入应用名拼音，key(enter) 触发搜索。key 工具已内置等待，不用手动 wait。
+3. **检查是否已安装**：observe 搜索结果，看是否有"已安装"/"打开"标签。用 check_package 核实。
+4. **直接在搜索结果中安装**（关键）：**不要点击搜索结果进入应用详情页**！在搜索结果卡片内直接找"安装"按钮（label 不含文字但父级 container clickable=true），点击即可触发安装。
+5. **等待安装完成**：用 poll_until(condition="package_installed", package=包名) 轮询等待，装完立即返回。
+6. complete(success=True)
+
+### 常见陷阱
+- ❌ **绝对不要点击搜索结果进入详情页**：Google Play 应用详情页 accessibility 树残缺（仅 2-4 个元素，资源名显示为 "0_resource_name_obfuscated"），找不到安装按钮。
+- ❌ 不要 tap 桌面图标启动应用商店——桌面图标可能无法点击（launcher 差异）。
+- ✅ 如果 observe 到 ≤4 个元素且 label 含 "0_resource_name_obfuscated" → 这是残缺详情页，立即 back() 返回搜索结果！
+- ✅ 搜索结果中每个应用卡片都有内嵌的安装/打开按钮，在元素列表中向上找最近的 clickable 父容器。
+
+### 验证范式
+- 安装前：check_package → installed=False
+- 安装后：check_package → installed=True，complete(success=True)

@@ -1,0 +1,50 @@
+## §4 任务分类打法（按 goal task type 路由注入）[AITW 705,448 eps 蒸馏]
+
+### settings_toggle | #k: turn on,turn off,toggle,enable,disable,switch,开关,设置,wifi,bluetooth,蓝牙,brightness,亮度
+- 打法: shell 优先(svc/settings get→put→get 验证)；shell 不可用时回退 UI(搜索→tap toggle)
+- 高频衔接(UI回退): 上滑→TAP 设置齿轮×27 | 设置齿轮→下滑×13 | 下滑→TAP 'Network & internet'×9
+- 起手统计: Settings 类 76% 上滑, 21% HOME（65eps）; 人类轨迹走 UI，但 shell 更快更稳
+
+### search | #k: search,find,look up,搜索,查找,查询
+- 打法: 定位搜索框(放大镜/搜索栏文字) → tap → TYPE 关键词 → ENTER → 结果页出现即完成
+- 高频衔接: 上滑→设置齿轮×12 | HOME→TAP图标×8 | TAP图标→⋮×7
+- 起手统计: Chrome 搜索 17% HOME, 9% TAP图标（17329eps）; Other 搜索 45% HOME（381eps）
+
+### app_launch | #k: open,launch,install,uninstall,打开,安装,卸载,启动
+- 打法: 优先 HOME 后滑动找图标 tap; 找不到 → 应用列表搜索; 安装类 → Play Store 搜索 → Install → Open
+- 高频衔接: HOME→TAP图标×15 | TAP图标→⋮×12 | ⋮→TAP 'New tab'×8
+- 起手统计: Play Store 89% HOME（211eps）; Other 82% HOME（88eps）; Calendar 63% 上滑（11eps）
+
+### web_navigation | #k: browse,url,website,网页,网址,域名,navigate
+- 打法: Chrome 地址栏直接输入域名(无需 www) → ENTER → 等页面加载(标题/URL 变化即完成)
+- 高频衔接: HOME→TAP图标×9 | HOME→上滑×8 | 上滑→TAP Play×4
+- 起手统计: Chrome 39% HOME, 16% TAP图标（297eps）
+
+### data_input | #k: create,add,new,新建,添加,创建,input,form,表单,录入
+- 打法: 找 FAB(+) 或 'New/Create/Add' → 逐字段 tap→type → Save/✓/Done → 列表出现新条目即完成
+- 高频衔接: HOME→上滑×11 | HOME→TAP图标×8 | 上滑→TAP 'Chrome'×4
+- 起手统计: Chrome 31% HOME, 10% TAP图标（901eps）
+
+### messaging | #k: message,sms,send,reply,短信,消息,发送,回复
+- 打法: tap 对话/FAB → tap 输入框 → type 内容 → tap 发送键 → 气泡出现即完成
+- 高频衔接: 上滑→TAP 邮件×6 | 邮件→汉堡菜单×4 | 'GOT IT'→'TAKE ME TO GMAIL'×3
+- 起手统计: Gmail 58% 上滑, 7% TAP加号（39eps）
+
+### calendar_task | #k: calendar,event,schedule,日历,日程,事件
+- 打法: 日期导航用横滑切换周/月 → tap 目标日期 → 事件列表/新建 FAB
+- 高频衔接: 上滑→前进箭头×7 | 前进箭头→'Got it'×6 | 'Got it'→汉堡菜单×5
+- 起手统计: Calendar 75% 上滑（8eps, 样本少）
+
+### media | #k: play,video,song,photo,album,播放,视频,相册,音乐
+- 打法: 列表浏览 → tap 封面/标题进入 → 播放键居中; 相册类先确认 tab(Photos/Albums)
+- 高频衔接: 上滑→TAP Play×11 | HOME→上滑×8 | TAP Play→放大镜×7
+- 起手统计: YouTube 61% HOME, 26% 上滑（26eps）; Photos 100% 上滑（4eps）
+
+### shopping | #k: shopping,buy,购买,买,cart,checkout,购物,amazon,ebay
+- 打法: 浏览器 → 输入域名 → ENTER → 搜索商品 → tap 商品 → scroll 找 'Add to cart' → tap → cart 角标变化即完成
+- 高频衔接: HOME→TAP图标×16 | HOME→上滑×6 | 上滑→TAP Play×4
+- 起手统计: Chrome 购物 40% HOME, 17% TAP图标（6301eps）; Other 购物 32% HOME（166eps）
+
+### navigation | #k: navigate,direction,map,导航,方向
+- 打法: Maps 搜索目的地 → tap 建议项 → Directions → Start
+- 起手统计: Maps 搜索 56% HOME（37eps; 样本少低置信）

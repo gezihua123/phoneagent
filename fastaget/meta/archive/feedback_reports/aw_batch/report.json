@@ -1,0 +1,194 @@
+{
+  "passed": 0,
+  "total": 1,
+  "cost_usd": 0.0133,
+  "verify_passed": 0,
+  "verify_total": 0,
+  "false_positives": 0,
+  "false_negatives": 0,
+  "agent_claimed_passed": 0,
+  "cases": [
+    {
+      "name": "ad-hoc",
+      "goal": "打开浏览器，跳转到百度",
+      "success": false,
+      "summary": "未完成（达到步数上限）",
+      "steps": 15,
+      "cost_usd": 0.0133,
+      "healed_count": 0,
+      "agent_asserts": [],
+      "expected_asserts": [],
+      "trajectory": [
+        {
+          "index": 1,
+          "action": "device_status",
+          "args": {},
+          "result": "[OK] device status: connected=True, connected_devices=[{'connected': True, 'serial': 'emulator-5554', 'width': 1080, 'height': 2400, 'control_available': True, 'ui_available': True}], device_count=2, devices=['13709314CF044927', 'emulator-5554'], pid=58963, socket_path=/tmp/phonefast-501.sock, started_at=2026-07-31T13:02:33+08:00",
+          "success": true,
+          "elapsed": 0.0,
+          "cost_usd": 0.00386,
+          "healed": false
+        },
+        {
+          "index": 2,
+          "action": "observe",
+          "args": {},
+          "result": "[FAILED] observe failed: phonefast observe: observe ui: connect ui socket: dial tcp [::1]:27277: connect: connection refused",
+          "success": false,
+          "elapsed": 0.038,
+          "cost_usd": 0.0005790000000000001,
+          "healed": false
+        },
+        {
+          "index": 3,
+          "action": "shell",
+          "args": {
+            "command": "dumpsys window | grep -E \"mCurrentFocus|mFocusedApp\""
+          },
+          "result": "[OK] shell 'dumpsys window | grep -E \"mCurrentFocus|mFocusedApp\"' → mCurrentFocus=Window{2cfb13c u0 com.google.android.apps.nexuslauncher/com.google.android.apps.nexuslauncher.NexusLauncherActivity}\n  mFocusedApp=ActivityRecord{bb945a6 u0 com.google.android.apps.nexuslauncher/.NexusLauncherActivity} t296}",
+          "success": true,
+          "elapsed": 0.054,
+          "cost_usd": 0.0006700000000000005,
+          "healed": false
+        },
+        {
+          "index": 4,
+          "action": "launch",
+          "args": {
+            "app": "Chrome"
+          },
+          "result": "[OK] ✓ launched com.android.chrome (resolved from 'Chrome')",
+          "success": true,
+          "elapsed": 1.084,
+          "cost_usd": 0.0007239999999999998,
+          "healed": false
+        },
+        {
+          "index": 5,
+          "action": "wait_and_observe",
+          "args": {
+            "seconds": 3
+          },
+          "result": "[OK] waited 3.0s, observed 0 elements",
+          "success": true,
+          "elapsed": 3.039,
+          "cost_usd": 0.0006329999999999999,
+          "healed": false
+        },
+        {
+          "index": 6,
+          "action": "current_app",
+          "args": {},
+          "result": "[OK] current: com.android.chrome/org.chromium.chrome.browser.firstrun.FirstRunActivity",
+          "success": true,
+          "elapsed": 0.065,
+          "cost_usd": 0.000549,
+          "healed": false
+        },
+        {
+          "index": 7,
+          "action": "ocr",
+          "args": {},
+          "result": "[OK] OCR: 2 text regions found",
+          "success": true,
+          "elapsed": 0.288,
+          "cost_usd": 0.0006329999999999999,
+          "healed": false
+        },
+        {
+          "index": 8,
+          "action": "screenshot",
+          "args": {},
+          "result": "[OK] screenshot captured",
+          "success": true,
+          "elapsed": 0.046,
+          "cost_usd": 0.0005549999999999999,
+          "healed": false
+        },
+        {
+          "index": 9,
+          "action": "wait_and_observe",
+          "args": {
+            "seconds": 2
+          },
+          "result": "[OK] waited 2.0s, observed 0 elements",
+          "success": true,
+          "elapsed": 2.044,
+          "cost_usd": 0.0006630000000000004,
+          "healed": false
+        },
+        {
+          "index": 10,
+          "action": "ocr",
+          "args": {},
+          "result": "[OK] OCR: 2 text regions found",
+          "success": true,
+          "elapsed": 0.156,
+          "cost_usd": 0.0006219999999999993,
+          "healed": false
+        },
+        {
+          "index": 11,
+          "action": "screenshot",
+          "args": {},
+          "result": "[OK] screenshot captured",
+          "success": true,
+          "elapsed": 0.04,
+          "cost_usd": 0.0005439999999999993,
+          "healed": false
+        },
+        {
+          "index": 12,
+          "action": "run_script",
+          "args": {
+            "code": "r = tools.ocr()\nprint(json.dumps(r, indent=2, ensure_ascii=False))\nresult = \"ocr done\""
+          },
+          "result": "[OK] ocr done",
+          "success": true,
+          "elapsed": 0.152,
+          "cost_usd": 0.0008339999999999997,
+          "healed": false
+        },
+        {
+          "index": 13,
+          "action": "run_script",
+          "args": {
+            "code": "r = tools.ocr()\nfor item in r:\n    print(item)\nresult = \"done\""
+          },
+          "result": "[OK] done",
+          "success": true,
+          "elapsed": 0.151,
+          "cost_usd": 0.0007430000000000006,
+          "healed": false
+        },
+        {
+          "index": 14,
+          "action": "shell",
+          "args": {
+            "command": "uiautomator dump /sdcard/window.xml 2>&1 && cat /sdcard/window.xml | head -c 3000"
+          },
+          "result": "[OK] shell 'uiautomator dump /sdcard/window.xml 2>&1 && cat /sdcard/wind' → Killed",
+          "success": true,
+          "elapsed": 0.224,
+          "cost_usd": 0.0008630000000000009,
+          "healed": false
+        },
+        {
+          "index": 15,
+          "action": "run_script",
+          "args": {
+            "code": "# 查看截图 - 通过OCR获取文本位置\nr = tools.ocr()\nprint(\"OCR region count:\", len(r))\nresult = \"len=\" + str(len(r))"
+          },
+          "result": "[OK] len=0",
+          "success": true,
+          "elapsed": 0.095,
+          "cost_usd": 0.0008420000000000007,
+          "healed": false
+        }
+      ],
+      "verified": null,
+      "verify_detail": "",
+      "agent_claimed_success": false
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
+# macOS
+__MACOSX/
+.DS_Store
+
+# Logs / reports
+logs/
+reports/
+*.log
+
+# Temp
+tmp/
+
+# Python
+__pycache__/
+*.py[cod]
+*.so
+.venv/
+venv/
+
+# IDE
+.idea/
+.vscode/

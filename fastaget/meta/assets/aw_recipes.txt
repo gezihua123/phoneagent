@@ -1,0 +1,4 @@
+title|description|servings|preparationTime|ingredients|directions
+Chocolate Cake|A rich and moist chocolate cake for special occasions.|8 servings|45 mins|flour, cocoa, sugar, eggs, butter|Mix dry ingredients. Add wet ingredients. Bake at 350F for 30 mins.
+Chicken Soup|A hearty soup perfect for cold winter days.|6 servings|60 mins|chicken, carrots, celery, onion, broth|Boil chicken, add vegetables, simmer for 45 mins. Add salt to taste.
+Pasta Primavera|A light pasta dish loaded with fresh seasonal vegetables.|4 servings|25 mins|pasta, bell peppers, zucchini, cherry tomatoes, olive oil|Cook pasta. Sauté vegetables. Toss together with olive oil and Parmesan.

@@ -1,0 +1,52 @@
+# 设备上下文提示配置（声明式领域知识，非 agent 代码硬编码）
+#
+# 宪法第三条：领域知识放 meta/，不放 fastaget/ 主线代码。
+# DeviceContext.from_phonefast() 加载本文件，按 goal 关键词匹配注入。
+# 加载失败 → 空默认，不炸 agent。
+#
+# package_hints: 应用提示条目列表。
+#   label:    注入 LLM 的英文显示名（Prompt 英文铁律：发给 LLM 的文本一律英文）
+#   package:  包名
+#   keywords: goal 匹配关键词（仅用于匹配 goal，绝不注入 prompt，可为中文）
+#   goal 命中任一 keyword → 注入 "label→package" 作 hint。
+#   仅作"已装应用判断/启动提示"，agent 仍需 launch 后 observe 确认，不盲信。
+# network_keywords: 触发网络状态采集的 goal 关键词（仅匹配，不注入）。命中才采集 network（避免无谓 shell）。
+
+package_hints:
+  - label: "Google Play Store"
+    package: com.android.vending
+    keywords: ["google play", "play 商店", "play商店"]
+  - label: "WeChat"
+    package: com.tencent.mm
+    keywords: ["微信", "wechat"]
+  - label: "Xiaohongshu"
+    package: com.xingin.xhs
+    keywords: ["小红书", "xiaohongshu", "rednote"]
+  - label: "Settings"
+    package: com.android.settings
+    keywords: ["设置", "settings"]
+  - label: "Douyin"
+    package: com.ss.android.ugc.aweme
+    keywords: ["抖音", "tiktok"]
+  - label: "QQ"
+    package: com.tencent.mobileqq
+    keywords: ["qq"]
+  - label: "Taobao"
+    package: com.taobao.taobao
+    keywords: ["淘宝", "taobao"]
+  - label: "NetEase Cloud Music"
+    package: com.netease.cloudmusic
+    keywords: ["网易云"]
+  - label: "Amap"
+    package: com.autonavi.minimap
+    keywords: ["高德", "地图"]
+
+network_keywords:
+  - 搜索
+  - 下载
+  - 安装
+  - 联网
+  - 更新
+  - search
+  - download
+  - install

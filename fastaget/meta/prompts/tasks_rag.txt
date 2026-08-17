@@ -1,0 +1,52 @@
+## §4 Task-Type Playbooks from Human Demonstrations [AITW 714,446 eps]
+
+> Per category: tactic + measured high-frequency action transitions + step estimate.
+
+### settings toggle | #k: turn on,turn off,toggle,enable,disable,switch
+- Tactic: Settings toggles: open Settings → search bar type keyword (fastest) OR drill into category → tap the toggle; switch state itself is the completion signal
+- Frequent transitions: SWIPE_UP → TAP '[ICON_SETTINGS]' ×65; HOME → SWIPE_UP ×32; BACK → SWIPE_UP ×13; TAP '[ICON_SETTINGS]' → SWIPE_UP ×10; TAP '[ICON_SETTINGS]' → SWIPE_DOWN ×9
+- Step estimate: median 8
+
+### search | #k: search,find,look up
+- Tactic: Search flow: locate search box (magnifier / search-bar text) → tap → TYPE keyword → ENTER; result page appearing = done
+- Frequent transitions: SWIPE_UP → TAP '[ICON_SETTINGS]' ×37; HOME → SWIPE_UP ×24; SWIPE_UP → TAP '[ICON_LOCATION]' ×7; TAP 'Accept & continue' → TAP 'Continue' ×6; BACK → SWIPE_UP ×6
+- Step estimate: median 6
+
+### app launch | #k: open,launch,install,uninstall
+- Tactic: App launch: HOME then swipe to find the icon and tap; not found → app-list search; install tasks → Play Store search → Install → Open
+- Frequent transitions: HOME → SWIPE_UP ×30; SWIPE_UP → TAP '[ICON_PLAY]' ×13; TAP '[ICON_PLAY]' → TAP '[ICON_MAGNIFYING_GLASS]' ×13; HOME → TAP (unlabeled icon) ×11; TAP '[ICON_MAGNIFYING_GLASS]' → TAP 'X' ×8
+- Step estimate: median 7
+
+### other | #k: other
+- Frequent transitions: HOME → SWIPE_UP ×27; SWIPE_UP → TAP '[ICON_SETTINGS]' ×18; SWIPE_UP → TAP 'Clock' ×12; TAP '[ICON_PLAY]' → TAP '[ICON_MAGNIFYING_GLASS]' ×10; BACK → SWIPE_UP ×9
+- Step estimate: median 8
+
+### media | #k: play,video,song,photo,album
+- Tactic: Media: browse list → tap cover/title to open → play button centered; gallery apps: confirm tab first (Photos/Albums)
+- Frequent transitions: SWIPE_UP → TAP '[ICON_PLAY]' ×38; HOME → SWIPE_UP ×31; TAP '[ICON_PLAY]' → TAP '[ICON_MAGNIFYING_GLASS]' ×24; SWIPE_UP → TAP 'Photos' ×15; HOME → TAP '[ICON_PLAY]' ×11
+- Step estimate: median 8
+
+### data input | #k: create,add,new,delete,edit
+- Tactic: Data entry: find FAB(+) or 'New/Create/Add' → tap each field → type → Save/✓/Done; new entry appearing in list = done
+- Frequent transitions: HOME → TAP (unlabeled icon) ×17; HOME → SWIPE_UP ×17; SWIPE_UP → TAP 'Chrome' ×6; TAP '[ICON_PLAY]' → TAP '[ICON_MAGNIFYING_GLASS]' ×5; TAP '[ICON_SHOPPING_CART]' → TAP '[ICON_DELETE]' ×5
+- Step estimate: median 7
+
+### messaging | #k: message,email,send,reply,sms,gmail
+- Tactic: Messaging: tap conversation/FAB → tap input field → type content → tap send; message bubble appearing = done
+- Frequent transitions: HOME → SWIPE_UP ×14; SWIPE_UP → TAP '[ICON_ARROW_BACKWARD]' ×7; TAP '[ICON_THREE_BARS]' → SWIPE_UP ×7; SWIPE_UP → TAP '[ICON_THREE_BARS]' ×6; SWIPE_UP → TAP '[ICON_PLAY]' ×6
+- Step estimate: median 5
+
+### calendar task | #k: calendar,event,schedule,appointment
+- Tactic: Calendar: swipe horizontally to switch week/month → tap target date → event list / new-event FAB
+- Frequent transitions: HOME → SWIPE_UP ×11; SWIPE_UP → TAP '[ICON_V_FORWARD]' ×8; TAP '[ICON_V_FORWARD]' → TAP 'Got it' ×7; SWIPE_UP → TAP 'Calendar' ×4; TAP '[ICON_V_FORWARD]' → TAP 'it' ×4
+- Step estimate: median 7
+
+### shopping | #k: cart,checkout,buy,shop,amazon,ebay,costco,walmart,target,bestbuy
+- Tactic: Shopping flow: browser → type domain → ENTER → search product → tap item → scroll to find 'Add to cart' → tap; cart badge change = done
+- Frequent transitions: SWIPE_UP → TAP 'Remove' ×12; HOME → TAP (unlabeled icon) ×11; SWIPE_UP → TAP '[ICON_PLAY]' ×9; HOME → SWIPE_UP ×7; TAP '[ICON_PLAY]' → TAP '[ICON_MAGNIFYING_GLASS]' ×7
+- Step estimate: median 8
+
+### web navigation | #k: .com,website,reddit,browse,bookmark
+- Tactic: Web navigation: Chrome address bar → type domain directly (no www needed) → ENTER → wait for load (title/URL change = done)
+- Frequent transitions: HOME → SWIPE_UP ×10; TYPE 'newegg.com' → TAP 'newegg.com' ×10; HOME → TAP (unlabeled icon) ×10; SWIPE_UP → TAP '[ICON_PLAY]' ×8; TYPE 'newegg.com' → ENTER ×8
+- Step estimate: median 10

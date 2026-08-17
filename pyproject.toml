@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fastaget"
+version = "0.1.0"
+description = "快速、自愈的 Android 测试 Agent —— 调用 phonefast 执行器，连接自定义模型"
+requires-python = ">=3.10"
+dependencies = [
+    "httpx>=0.27",             # HTTP 直连 LLM API（替代 claude-agent-sdk 子进程模式）
+    "pyyaml>=6.0",             # 用例 DSL / 工具定义 / 场景定义
+    "rich>=14.0",              # 终端美化（Panel/Table/Rule 等，参照 mobilerun）
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=7"]
+
+[project.scripts]
+fastaget = "fastaget.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["fastaget*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

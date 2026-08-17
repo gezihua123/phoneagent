@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Maze Puzzle</title>
+  <style>
+    .row {
+      display: flex;
+    }
+
+    .cell {
+      width: 110px;
+      height: 110px;
+      border: 1px solid black;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 56px;
+    }
+
+    .wall {
+      background-color: black;
+    }
+
+    .character {
+      color: black;
+    }
+
+    .goal {
+      background-color: green;
+    }
+
+    .controls {
+      margin-top: 10px;
+    }
+
+    .controls button {
+      margin-right: 5px;
+      padding: 15px 28px;
+      font-size: 30px;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="maze"></div>
+
+  <div class="controls">
+    <button onclick="moveCharacter('up')">Up</button>
+    <button onclick="moveCharacter('down')">Down</button>
+    <button onclick="moveCharacter('left')">Left</button>
+    <button onclick="moveCharacter('right')">Right</button>
+  </div>
+
+  <script>
+    const mazeSize = 4;
+    let mazeLayout = [];
+    let characterPosition = { row: 0, col: 0 };
+
+    class SeededRNG {
+    constructor(seed) {
+        this.seed = seed;
+    }
+
+    random() {
+        const a = 1664525;
+        const c = 1013904223;
+        const m = 2 ** 32;
+
+        this.seed = (a * this.seed + c) % m;
+        return this.seed / m;
+    }
+    }
+
+    rng = new SeededRNG(123456789)
+    function generateMaze() {
+      mazeLayout = [];
+      for (let row = 0; row < mazeSize; row++) {
+        const currentRow = [];
+        for (let col = 0; col < mazeSize; col++) {
+          currentRow.push('#');
+        }
+        mazeLayout.push(currentRow);
+      }
+
+      // Create a path from start to goal
+      const stack = [{ row: 0, col: 0 }];
+      const directions = [[-1, 0], [1, 0], [0, -1], [0, 1]];
+
+      while (stack.length > 0) {
+        const { row, col } = stack.pop();
+        mazeLayout[row][col] = ' ';
+
+        if (row === mazeSize - 1 && col === mazeSize - 1) {
+          break;
+        }
+
+        // Shuffle the order of directions
+        for (let i = directions.length - 1; i > 0; i--) {
+          const j = Math.floor(rng.random() * (i + 1));
+          [directions[i], directions[j]] = [directions[j], directions[i]];
+        }
+
+        for (const [dx, dy] of directions) {
+          const newRow = row + dx;
+          const newCol = col + dy;
+          if (
+            newRow >= 0 &&
+            newRow < mazeSize &&
+            newCol >= 0 &&
+            newCol < mazeSize &&
+            mazeLayout[newRow][newCol] === '#'
+          ) {
+            stack.push({ row: newRow, col: newCol });
+          }
+        }
+      }
+
+      mazeLayout[0][0] = ' ';
+      mazeLayout[mazeSize - 1][mazeSize - 1] = '$';
+      characterPosition = { row: 0, col: 0 };
+    }
+
+    function renderMaze() {
+      const mazeElement = document.getElementById('maze');
+      mazeElement.innerHTML = '';
+
+      for (let row = 0; row < mazeLayout.length; row++) {
+        const rowElement = document.createElement('div');
+        rowElement.className = 'row';
+
+        for (let col = 0; col < mazeLayout[row].length; col++) {
+          const cellElement = document.createElement('div');
+          cellElement.className = 'cell';
+
+          if (mazeLayout[row][col] === '#') {
+            cellElement.classList.add('wall');
+          } else if (row === characterPosition.row && col === characterPosition.col) {
+            cellElement.classList.add('character');
+            cellElement.innerHTML = 'X';
+          } else if (mazeLayout[row][col] === '$') {
+            cellElement.classList.add('goal');
+          }
+
+          rowElement.appendChild(cellElement);
+        }
+
+        mazeElement.appendChild(rowElement);
+      }
+    }
+
+    function moveCharacter(direction) {
+      const newPosition = { ...characterPosition };
+
+      switch (direction) {
+        case 'up':
+          newPosition.row--;
+          break;
+        case 'down':
+          newPosition.row++;
+          break;
+        case 'left':
+          newPosition.col--;
+          break;
+        case 'right':
+          newPosition.col++;
+          break;
+      }
+
+      if (isValidMove(newPosition)) {
+        characterPosition = newPosition;
+        renderMaze();
+        checkGoalReached();
+      }
+    }
+
+    function isValidMove(position) {
+      const { row, col } = position;
+      if (
+        row < 0 ||
+        row >= mazeLayout.length ||
+        col < 0 ||
+        col >= mazeLayout[row].length ||
+        mazeLayout[row][col] === '#'
+      ) {
+        return false;
+      }
+      return true;
+    }
+
+    function checkGoalReached() {
+      const { row, col } = characterPosition;
+      if (mazeLayout[row][col] === '$') {
+        document.body.innerHTML = '<h1>Success!</h1>';
+      }
+    }
+
+    generateMaze();
+    renderMaze();
+  </script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+# keywords: 查看蓝牙, 查看WiFi, 查看电池, 查看存储, 查看应用, 查看选项, 查看, 查看
+
+## 任务类型：查看/查询设置项
+
+### 关键：查看 = 获取信息，不是反复导航
+"查看蓝牙选项"等任务目标只是看到信息。用 shell 直接打开目标 Activity 比搜索更快：
+
+```bash
+# 直接打开各设置页（am start）
+shell(command="am start -a android.settings.BLUETOOTH_SETTINGS")   # 蓝牙
+shell(command="am start -a android.settings.WIFI_SETTINGS")        # WiFi
+shell(command="am start -a android.settings.BATTERY_SETTINGS")     # 电池
+shell(command="am start -a android.settings.INTERNAL_STORAGE_SETTINGS")  # 存储
+shell(command="am start -a android.settings.APPLICATION_SETTINGS_SETTINGS")  # 应用
+shell(command="am start -a android.settings.DEVICE_INFO_SETTINGS")  # 关于手机
+shell(command="am start -a android.settings.SETTINGS")  # 设置主页
+```
+
+### 执行流程
+1. shell am start 打开目标设置页
+2. observe 确认进入 → 报告看到的信息
+3. assert(看到目标内容) → complete(success=true)
+
+### 反模式
+- ❌ launch Settings 后用搜索（搜索结果常返回开发者选项子项，误导）
+- ❌ 反复 scroll + tap 搜索建议
+- ✅ shell am start 一步直达目标页

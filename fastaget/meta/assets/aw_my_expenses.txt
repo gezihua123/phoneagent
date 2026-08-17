@@ -1,0 +1,103 @@
+name|amount_dollars|category_name|note
+Programming Book|$49.99|Education|Python reference
+Groceries|$89.5|Food|Weekly shopping
+Doctor Visit|$30.0|Health Care|Annual checkup
+Gas Station|$55.0|Transportation|Fill up tank
+Monthly Rent|$1500.0|Housing|Due on 1st
+Doctor Visit|$30.0|Health Care|Annual checkup
+Groceries|$89.5|Food|Weekly shopping
+Gas Station|$55.0|Transportation|Fill up tank
+Groceries|$89.5|Food|Weekly shopping
+Concert Tickets|$150.0|Social|Birthday gift
+Gas Station|$55.0|Transportation|Fill up tank
+Concert Tickets|$150.0|Social|Birthday gift
+Concert Tickets|$150.0|Social|Birthday gift
+Doctor Visit|$30.0|Health Care|Annual checkup
+Dinner Out|$42.0|Food|Date night
+Gas Station|$55.0|Transportation|Fill up tank
+Groceries|$89.5|Food|Weekly shopping
+Monthly Rent|$1500.0|Housing|Due on 1st
+Concert Tickets|$150.0|Social|Birthday gift
+Gas Station|$55.0|Transportation|Fill up tank
+Gas Station|$55.0|Transportation|Fill up tank
+Gas Station|$55.0|Transportation|Fill up tank
+Groceries|$89.5|Food|Weekly shopping
+Dinner Out|$42.0|Food|Date night
+Programming Book|$49.99|Education|Python reference
+Doctor Visit|$30.0|Health Care|Annual checkup
+Doctor Visit|$30.0|Health Care|Annual checkup
+Dinner Out|$42.0|Food|Date night
+Dinner Out|$42.0|Food|Date night
+Doctor Visit|$30.0|Health Care|Annual checkup
+Gas Station|$55.0|Transportation|Fill up tank
+Concert Tickets|$150.0|Social|Birthday gift
+Dinner Out|$42.0|Food|Date night
+Dinner Out|$42.0|Food|Date night
+Doctor Visit|$30.0|Health Care|Annual checkup
+Monthly Rent|$1500.0|Housing|Due on 1st
+Programming Book|$49.99|Education|Python reference
+Programming Book|$49.99|Education|Python reference
+Lunch|$15.5|Food|Team lunch. Reimbursable.
+Concert Tickets|$150.0|Social|Birthday gift
+Concert Tickets|$150.0|Social|Birthday gift
+Doctor Visit|$30.0|Health Care|Annual checkup
+Groceries|$89.5|Food|Weekly shopping
+Gas Station|$55.0|Transportation|Fill up tank
+Monthly Rent|$1500.0|Housing|Due on 1st
+Doctor Visit|$30.0|Health Care|Annual checkup
+Monthly Rent|$1500.0|Housing|Due on 1st
+Doctor Visit|$30.0|Health Care|Annual checkup
+Doctor Visit|$30.0|Health Care|Annual checkup
+Programming Book|$49.99|Education|Python reference
+Dinner Out|$42.0|Food|Date night
+Programming Book|$49.99|Education|Python reference
+Programming Book|$49.99|Education|Python reference
+Monthly Rent|$1500.0|Housing|Due on 1st
+Gas Station|$55.0|Transportation|Fill up tank
+Gas Station|$55.0|Transportation|Fill up tank
+Gas Station|$55.0|Transportation|Fill up tank
+Concert Tickets|$150.0|Social|Birthday gift
+Monthly Rent|$1500.0|Housing|Due on 1st
+Dinner Out|$42.0|Food|Date night
+Groceries|$89.5|Food|Weekly shopping
+Programming Book|$49.99|Education|Python reference
+Concert Tickets|$150.0|Social|Birthday gift
+Groceries|$89.5|Food|Weekly shopping
+Gas Station|$55.0|Transportation|Fill up tank
+Coffee|$4.0|Food|Morning coffee. Reimbursable.
+Dinner Out|$42.0|Food|Date night
+Doctor Visit|$30.0|Health Care|Annual checkup
+Concert Tickets|$150.0|Social|Birthday gift
+Groceries|$89.5|Food|Weekly shopping
+Monthly Rent|$1500.0|Housing|Due on 1st
+Programming Book|$49.99|Education|Python reference
+Dinner Out|$42.0|Food|Date night
+Programming Book|$49.99|Education|Python reference
+Groceries|$89.5|Food|Weekly shopping
+Monthly Rent|$1500.0|Housing|Due on 1st
+Monthly Rent|$1500.0|Housing|Due on 1st
+Dinner Out|$42.0|Food|Date night
+Monthly Rent|$1500.0|Housing|Due on 1st
+Groceries|$89.5|Food|Weekly shopping
+Groceries|$89.5|Food|Weekly shopping
+Dinner Out|$42.0|Food|Date night
+Groceries|$89.5|Food|Weekly shopping
+Groceries|$89.5|Food|Weekly shopping
+Programming Book|$49.99|Education|Python reference
+Programming Book|$49.99|Education|Python reference
+Groceries|$89.5|Food|Weekly shopping
+Monthly Rent|$1500.0|Housing|Due on 1st
+Doctor Visit|$30.0|Health Care|Annual checkup
+Doctor Visit|$30.0|Health Care|Annual checkup
+Monthly Rent|$1500.0|Housing|Due on 1st
+Programming Book|$49.99|Education|Python reference
+Gas Station|$55.0|Transportation|Fill up tank
+Programming Book|$49.99|Education|Python reference
+Concert Tickets|$150.0|Social|Birthday gift
+Dinner Out|$42.0|Food|Date night
+Concert Tickets|$150.0|Social|Birthday gift
+Dinner Out|$42.0|Food|Date night
+Concert Tickets|$150.0|Social|Birthday gift
+Concert Tickets|$150.0|Social|Birthday gift
+Dinner Out|$42.0|Food|Date night
+Monthly Rent|$1500.0|Housing|Due on 1st

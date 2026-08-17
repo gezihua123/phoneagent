@@ -1,0 +1,576 @@
+cases:
+- goal: Add the recipes from recipes.jpg in Simple Gallery Pro to the Broccoli recipe
+    app.
+  initialize:
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "DELETE
+      FROM recipes;"
+  - command: am force-stop com.flauschcode.broccoli 2>/dev/null || true
+  max_steps: 30
+  name: AW-RecipeAddMultipleRecipesFromImage
+  tags:
+  - H
+  - broccoli
+  - T4
+  verify:
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "SELECT
+      COUNT(*) FROM recipes;"
+    expect_re: '[1-9][0-9]*'
+- goal: Delete all but one of any recipes in the Broccoli app that are exact duplicates,
+    ensuring at least one instance of each unique recipe remains
+  initialize:
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "DELETE
+      FROM recipes;"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Avocado Toast with Egg','A delicious and healthy choice for any time
+      of the day.','1 serving','10 mins','','as per recipe','Toast bread, top with
+      mashed avocado, a fried egg, salt, pepper, and chili flakes. Garnish with fresh
+      herbs for a more vibrant taste.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Greek Salad Pita Pockets','An ideal recipe for experimenting with different
+      flavors and ingredients.','3-4 servings','30 mins','','to preference','Fill
+      pita pockets with lettuce, cucumber, tomato, feta, olives, and Greek dressing.
+      Feel free to substitute with ingredients you have on hand.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Chocolate Cake','A rich and moist chocolate cake for special occasions.','8
+      servings','45 mins','','flour, cocoa, sugar, eggs, butter','Mix dry ingredients.
+      Add wet ingredients. Bake at 350F for 30 mins.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Chicken Soup','A hearty soup perfect for cold winter days.','6 servings','60
+      mins','','chicken, carrots, celery, onion, broth','Boil chicken, add vegetables,
+      simmer for 45 mins. Add salt to taste.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Pasta Primavera','A light pasta dish loaded with fresh seasonal vegetables.','4
+      servings','25 mins','','pasta, bell peppers, zucchini, cherry tomatoes, olive
+      oil','Cook pasta. Sauté vegetables. Toss together with olive oil and Parmesan.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Spicy Tuna Wraps','A quick and easy meal, perfect for busy weekdays.','2
+      servings','20 mins','','varies','Mix canned tuna with mayo and sriracha. Spread
+      on tortillas, add lettuce and cucumber slices, roll up. Try adding a pinch of
+      your favorite spices for extra flavor.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Spicy Tuna Wraps','A quick and easy meal, perfect for busy weekdays.','2
+      servings','20 mins','','varies','Mix canned tuna with mayo and sriracha. Spread
+      on tortillas, add lettuce and cucumber slices, roll up. Try adding a pinch of
+      your favorite spices for extra flavor.',0);"
+  - command: am force-stop com.flauschcode.broccoli 2>/dev/null || true
+  max_steps: 12
+  name: AW-RecipeDeleteDuplicateRecipes
+  tags:
+  - E
+  - broccoli
+  - T4
+  verify:
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "SELECT
+      COUNT(*) FROM recipes WHERE title='Spicy Tuna Wraps';"
+    expect: '1'
+- goal: Delete all but one of any recipes in the Broccoli app that are exact duplicates,
+    ensuring at least one instance of each unique recipe remains
+  initialize:
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "DELETE
+      FROM recipes;"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Avocado Toast with Egg','A delicious and healthy choice for any time
+      of the day.','1 serving','10 mins','','as per recipe','Toast bread, top with
+      mashed avocado, a fried egg, salt, pepper, and chili flakes. Garnish with fresh
+      herbs for a more vibrant taste.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Greek Salad Pita Pockets','An ideal recipe for experimenting with different
+      flavors and ingredients.','3-4 servings','30 mins','','to preference','Fill
+      pita pockets with lettuce, cucumber, tomato, feta, olives, and Greek dressing.
+      Feel free to substitute with ingredients you have on hand.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Chocolate Cake','A rich and moist chocolate cake for special occasions.','8
+      servings','45 mins','','flour, cocoa, sugar, eggs, butter','Mix dry ingredients.
+      Add wet ingredients. Bake at 350F for 30 mins.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Chicken Soup','A hearty soup perfect for cold winter days.','6 servings','60
+      mins','','chicken, carrots, celery, onion, broth','Boil chicken, add vegetables,
+      simmer for 45 mins. Add salt to taste.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Pasta Primavera','A light pasta dish loaded with fresh seasonal vegetables.','4
+      servings','25 mins','','pasta, bell peppers, zucchini, cherry tomatoes, olive
+      oil','Cook pasta. Sauté vegetables. Toss together with olive oil and Parmesan.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Banana Bread','A classic quick bread made with ripe bananas.','8 servings','50
+      mins','','bananas, flour, sugar, eggs, baking soda','Mash bananas. Mix all ingredients.
+      Bake at 350F for 45 mins.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Avocado Toast with Egg','A delicious and healthy choice for any time
+      of the day.','1 serving','10 mins','','as per recipe','Toast bread, top with
+      mashed avocado, a fried egg, salt, pepper, and chili flakes. Garnish with fresh
+      herbs for a more vibrant taste.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Greek Salad Pita Pockets','An ideal recipe for experimenting with different
+      flavors and ingredients.','3-4 servings','30 mins','','to preference','Fill
+      pita pockets with lettuce, cucumber, tomato, feta, olives, and Greek dressing.
+      Feel free to substitute with ingredients you have on hand.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Chocolate Cake','A rich and moist chocolate cake for special occasions.','8
+      servings','45 mins','','flour, cocoa, sugar, eggs, butter','Mix dry ingredients.
+      Add wet ingredients. Bake at 350F for 30 mins.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Chicken Soup','A hearty soup perfect for cold winter days.','6 servings','60
+      mins','','chicken, carrots, celery, onion, broth','Boil chicken, add vegetables,
+      simmer for 45 mins. Add salt to taste.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Pasta Primavera','A light pasta dish loaded with fresh seasonal vegetables.','4
+      servings','25 mins','','pasta, bell peppers, zucchini, cherry tomatoes, olive
+      oil','Cook pasta. Sauté vegetables. Toss together with olive oil and Parmesan.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Banana Bread','A classic quick bread made with ripe bananas.','8 servings','50
+      mins','','bananas, flour, sugar, eggs, baking soda','Mash bananas. Mix all ingredients.
+      Bake at 350F for 45 mins.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Avocado Toast with Egg','A delicious and healthy choice for any time
+      of the day.','1 serving','10 mins','','as per recipe','Toast bread, top with
+      mashed avocado, a fried egg, salt, pepper, and chili flakes. Garnish with fresh
+      herbs for a more vibrant taste.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Greek Salad Pita Pockets','An ideal recipe for experimenting with different
+      flavors and ingredients.','3-4 servings','30 mins','','to preference','Fill
+      pita pockets with lettuce, cucumber, tomato, feta, olives, and Greek dressing.
+      Feel free to substitute with ingredients you have on hand.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Chocolate Cake','A rich and moist chocolate cake for special occasions.','8
+      servings','45 mins','','flour, cocoa, sugar, eggs, butter','Mix dry ingredients.
+      Add wet ingredients. Bake at 350F for 30 mins.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Chicken Soup','A hearty soup perfect for cold winter days.','6 servings','60
+      mins','','chicken, carrots, celery, onion, broth','Boil chicken, add vegetables,
+      simmer for 45 mins. Add salt to taste.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Pasta Primavera','A light pasta dish loaded with fresh seasonal vegetables.','4
+      servings','25 mins','','pasta, bell peppers, zucchini, cherry tomatoes, olive
+      oil','Cook pasta. Sauté vegetables. Toss together with olive oil and Parmesan.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Banana Bread','A classic quick bread made with ripe bananas.','8 servings','50
+      mins','','bananas, flour, sugar, eggs, baking soda','Mash bananas. Mix all ingredients.
+      Bake at 350F for 45 mins.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Avocado Toast with Egg','A delicious and healthy choice for any time
+      of the day.','1 serving','10 mins','','as per recipe','Toast bread, top with
+      mashed avocado, a fried egg, salt, pepper, and chili flakes. Garnish with fresh
+      herbs for a more vibrant taste.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Greek Salad Pita Pockets','An ideal recipe for experimenting with different
+      flavors and ingredients.','3-4 servings','30 mins','','to preference','Fill
+      pita pockets with lettuce, cucumber, tomato, feta, olives, and Greek dressing.
+      Feel free to substitute with ingredients you have on hand.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Chocolate Cake','A rich and moist chocolate cake for special occasions.','8
+      servings','45 mins','','flour, cocoa, sugar, eggs, butter','Mix dry ingredients.
+      Add wet ingredients. Bake at 350F for 30 mins.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Chicken Soup','A hearty soup perfect for cold winter days.','6 servings','60
+      mins','','chicken, carrots, celery, onion, broth','Boil chicken, add vegetables,
+      simmer for 45 mins. Add salt to taste.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Pasta Primavera','A light pasta dish loaded with fresh seasonal vegetables.','4
+      servings','25 mins','','pasta, bell peppers, zucchini, cherry tomatoes, olive
+      oil','Cook pasta. Sauté vegetables. Toss together with olive oil and Parmesan.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Banana Bread','A classic quick bread made with ripe bananas.','8 servings','50
+      mins','','bananas, flour, sugar, eggs, baking soda','Mash bananas. Mix all ingredients.
+      Bake at 350F for 45 mins.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Avocado Toast with Egg','A delicious and healthy choice for any time
+      of the day.','1 serving','10 mins','','as per recipe','Toast bread, top with
+      mashed avocado, a fried egg, salt, pepper, and chili flakes. Garnish with fresh
+      herbs for a more vibrant taste.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Greek Salad Pita Pockets','An ideal recipe for experimenting with different
+      flavors and ingredients.','3-4 servings','30 mins','','to preference','Fill
+      pita pockets with lettuce, cucumber, tomato, feta, olives, and Greek dressing.
+      Feel free to substitute with ingredients you have on hand.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Chocolate Cake','A rich and moist chocolate cake for special occasions.','8
+      servings','45 mins','','flour, cocoa, sugar, eggs, butter','Mix dry ingredients.
+      Add wet ingredients. Bake at 350F for 30 mins.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Chicken Soup','A hearty soup perfect for cold winter days.','6 servings','60
+      mins','','chicken, carrots, celery, onion, broth','Boil chicken, add vegetables,
+      simmer for 45 mins. Add salt to taste.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Pasta Primavera','A light pasta dish loaded with fresh seasonal vegetables.','4
+      servings','25 mins','','pasta, bell peppers, zucchini, cherry tomatoes, olive
+      oil','Cook pasta. Sauté vegetables. Toss together with olive oil and Parmesan.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Banana Bread','A classic quick bread made with ripe bananas.','8 servings','50
+      mins','','bananas, flour, sugar, eggs, baking soda','Mash bananas. Mix all ingredients.
+      Bake at 350F for 45 mins.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Avocado Toast with Egg','A delicious and healthy choice for any time
+      of the day.','1 serving','10 mins','','as per recipe','Toast bread, top with
+      mashed avocado, a fried egg, salt, pepper, and chili flakes. Garnish with fresh
+      herbs for a more vibrant taste.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Greek Salad Pita Pockets','An ideal recipe for experimenting with different
+      flavors and ingredients.','3-4 servings','30 mins','','to preference','Fill
+      pita pockets with lettuce, cucumber, tomato, feta, olives, and Greek dressing.
+      Feel free to substitute with ingredients you have on hand.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Chocolate Cake','A rich and moist chocolate cake for special occasions.','8
+      servings','45 mins','','flour, cocoa, sugar, eggs, butter','Mix dry ingredients.
+      Add wet ingredients. Bake at 350F for 30 mins.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Chicken Soup','A hearty soup perfect for cold winter days.','6 servings','60
+      mins','','chicken, carrots, celery, onion, broth','Boil chicken, add vegetables,
+      simmer for 45 mins. Add salt to taste.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Pasta Primavera','A light pasta dish loaded with fresh seasonal vegetables.','4
+      servings','25 mins','','pasta, bell peppers, zucchini, cherry tomatoes, olive
+      oil','Cook pasta. Sauté vegetables. Toss together with olive oil and Parmesan.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Banana Bread','A classic quick bread made with ripe bananas.','8 servings','50
+      mins','','bananas, flour, sugar, eggs, baking soda','Mash bananas. Mix all ingredients.
+      Bake at 350F for 45 mins.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Avocado Toast with Egg','A delicious and healthy choice for any time
+      of the day.','1 serving','10 mins','','as per recipe','Toast bread, top with
+      mashed avocado, a fried egg, salt, pepper, and chili flakes. Garnish with fresh
+      herbs for a more vibrant taste.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Greek Salad Pita Pockets','An ideal recipe for experimenting with different
+      flavors and ingredients.','3-4 servings','30 mins','','to preference','Fill
+      pita pockets with lettuce, cucumber, tomato, feta, olives, and Greek dressing.
+      Feel free to substitute with ingredients you have on hand.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Chocolate Cake','A rich and moist chocolate cake for special occasions.','8
+      servings','45 mins','','flour, cocoa, sugar, eggs, butter','Mix dry ingredients.
+      Add wet ingredients. Bake at 350F for 30 mins.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Chicken Soup','A hearty soup perfect for cold winter days.','6 servings','60
+      mins','','chicken, carrots, celery, onion, broth','Boil chicken, add vegetables,
+      simmer for 45 mins. Add salt to taste.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Pasta Primavera','A light pasta dish loaded with fresh seasonal vegetables.','4
+      servings','25 mins','','pasta, bell peppers, zucchini, cherry tomatoes, olive
+      oil','Cook pasta. Sauté vegetables. Toss together with olive oil and Parmesan.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Banana Bread','A classic quick bread made with ripe bananas.','8 servings','50
+      mins','','bananas, flour, sugar, eggs, baking soda','Mash bananas. Mix all ingredients.
+      Bake at 350F for 45 mins.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Spicy Tuna Wraps','A quick and easy meal, perfect for busy weekdays.','2
+      servings','20 mins','','varies','Mix canned tuna with mayo and sriracha. Spread
+      on tortillas, add lettuce and cucumber slices, roll up. Try adding a pinch of
+      your favorite spices for extra flavor.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Spicy Tuna Wraps','A quick and easy meal, perfect for busy weekdays.','2
+      servings','20 mins','','varies','Mix canned tuna with mayo and sriracha. Spread
+      on tortillas, add lettuce and cucumber slices, roll up. Try adding a pinch of
+      your favorite spices for extra flavor.',0);"
+  - command: am force-stop com.flauschcode.broccoli 2>/dev/null || true
+  max_steps: 22
+  name: AW-RecipeDeleteDuplicateRecipes2
+  tags:
+  - M
+  - broccoli
+  - T4
+  verify:
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "SELECT
+      COUNT(*) FROM recipes WHERE title='Spicy Tuna Wraps';"
+    expect: '1'
+- goal: Delete all but one of any recipes in the Broccoli app that are exact duplicates,
+    ensuring at least one instance of each unique recipe remains
+  initialize:
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "DELETE
+      FROM recipes;"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Avocado Toast with Egg','A delicious and healthy choice for any time
+      of the day.','1 serving','10 mins','','as per recipe','Toast bread, top with
+      mashed avocado, a fried egg, salt, pepper, and chili flakes. Garnish with fresh
+      herbs for a more vibrant taste.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Greek Salad Pita Pockets','An ideal recipe for experimenting with different
+      flavors and ingredients.','3-4 servings','30 mins','','to preference','Fill
+      pita pockets with lettuce, cucumber, tomato, feta, olives, and Greek dressing.
+      Feel free to substitute with ingredients you have on hand.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Chocolate Cake','A rich and moist chocolate cake for special occasions.','8
+      servings','45 mins','','flour, cocoa, sugar, eggs, butter','Mix dry ingredients.
+      Add wet ingredients. Bake at 350F for 30 mins.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Chicken Soup','A hearty soup perfect for cold winter days.','6 servings','60
+      mins','','chicken, carrots, celery, onion, broth','Boil chicken, add vegetables,
+      simmer for 45 mins. Add salt to taste.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Pasta Primavera','A light pasta dish loaded with fresh seasonal vegetables.','4
+      servings','25 mins','','pasta, bell peppers, zucchini, cherry tomatoes, olive
+      oil','Cook pasta. Sauté vegetables. Toss together with olive oil and Parmesan.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Banana Bread','A classic quick bread made with ripe bananas.','8 servings','50
+      mins','','bananas, flour, sugar, eggs, baking soda','Mash bananas. Mix all ingredients.
+      Bake at 350F for 45 mins.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Avocado Toast with Egg','A delicious and healthy choice for any time
+      of the day.','1 serving','10 mins','','as per recipe','Toast bread, top with
+      mashed avocado, a fried egg, salt, pepper, and chili flakes. Garnish with fresh
+      herbs for a more vibrant taste.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Greek Salad Pita Pockets','An ideal recipe for experimenting with different
+      flavors and ingredients.','3-4 servings','30 mins','','to preference','Fill
+      pita pockets with lettuce, cucumber, tomato, feta, olives, and Greek dressing.
+      Feel free to substitute with ingredients you have on hand.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Chocolate Cake','A rich and moist chocolate cake for special occasions.','8
+      servings','45 mins','','flour, cocoa, sugar, eggs, butter','Mix dry ingredients.
+      Add wet ingredients. Bake at 350F for 30 mins.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Chicken Soup','A hearty soup perfect for cold winter days.','6 servings','60
+      mins','','chicken, carrots, celery, onion, broth','Boil chicken, add vegetables,
+      simmer for 45 mins. Add salt to taste.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Pasta Primavera','A light pasta dish loaded with fresh seasonal vegetables.','4
+      servings','25 mins','','pasta, bell peppers, zucchini, cherry tomatoes, olive
+      oil','Cook pasta. Sauté vegetables. Toss together with olive oil and Parmesan.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Banana Bread','A classic quick bread made with ripe bananas.','8 servings','50
+      mins','','bananas, flour, sugar, eggs, baking soda','Mash bananas. Mix all ingredients.
+      Bake at 350F for 45 mins.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Avocado Toast with Egg','A delicious and healthy choice for any time
+      of the day.','1 serving','10 mins','','as per recipe','Toast bread, top with
+      mashed avocado, a fried egg, salt, pepper, and chili flakes. Garnish with fresh
+      herbs for a more vibrant taste.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Greek Salad Pita Pockets','An ideal recipe for experimenting with different
+      flavors and ingredients.','3-4 servings','30 mins','','to preference','Fill
+      pita pockets with lettuce, cucumber, tomato, feta, olives, and Greek dressing.
+      Feel free to substitute with ingredients you have on hand.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Chocolate Cake','A rich and moist chocolate cake for special occasions.','8
+      servings','45 mins','','flour, cocoa, sugar, eggs, butter','Mix dry ingredients.
+      Add wet ingredients. Bake at 350F for 30 mins.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Chicken Soup','A hearty soup perfect for cold winter days.','6 servings','60
+      mins','','chicken, carrots, celery, onion, broth','Boil chicken, add vegetables,
+      simmer for 45 mins. Add salt to taste.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Pasta Primavera','A light pasta dish loaded with fresh seasonal vegetables.','4
+      servings','25 mins','','pasta, bell peppers, zucchini, cherry tomatoes, olive
+      oil','Cook pasta. Sauté vegetables. Toss together with olive oil and Parmesan.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Banana Bread','A classic quick bread made with ripe bananas.','8 servings','50
+      mins','','bananas, flour, sugar, eggs, baking soda','Mash bananas. Mix all ingredients.
+      Bake at 350F for 45 mins.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Avocado Toast with Egg','A delicious and healthy choice for any time
+      of the day.','1 serving','10 mins','','as per recipe','Toast bread, top with
+      mashed avocado, a fried egg, salt, pepper, and chili flakes. Garnish with fresh
+      herbs for a more vibrant taste.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Greek Salad Pita Pockets','An ideal recipe for experimenting with different
+      flavors and ingredients.','3-4 servings','30 mins','','to preference','Fill
+      pita pockets with lettuce, cucumber, tomato, feta, olives, and Greek dressing.
+      Feel free to substitute with ingredients you have on hand.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Chocolate Cake','A rich and moist chocolate cake for special occasions.','8
+      servings','45 mins','','flour, cocoa, sugar, eggs, butter','Mix dry ingredients.
+      Add wet ingredients. Bake at 350F for 30 mins.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Chicken Soup','A hearty soup perfect for cold winter days.','6 servings','60
+      mins','','chicken, carrots, celery, onion, broth','Boil chicken, add vegetables,
+      simmer for 45 mins. Add salt to taste.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Pasta Primavera','A light pasta dish loaded with fresh seasonal vegetables.','4
+      servings','25 mins','','pasta, bell peppers, zucchini, cherry tomatoes, olive
+      oil','Cook pasta. Sauté vegetables. Toss together with olive oil and Parmesan.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Banana Bread','A classic quick bread made with ripe bananas.','8 servings','50
+      mins','','bananas, flour, sugar, eggs, baking soda','Mash bananas. Mix all ingredients.
+      Bake at 350F for 45 mins.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Avocado Toast with Egg','A delicious and healthy choice for any time
+      of the day.','1 serving','10 mins','','as per recipe','Toast bread, top with
+      mashed avocado, a fried egg, salt, pepper, and chili flakes. Garnish with fresh
+      herbs for a more vibrant taste.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Greek Salad Pita Pockets','An ideal recipe for experimenting with different
+      flavors and ingredients.','3-4 servings','30 mins','','to preference','Fill
+      pita pockets with lettuce, cucumber, tomato, feta, olives, and Greek dressing.
+      Feel free to substitute with ingredients you have on hand.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Chocolate Cake','A rich and moist chocolate cake for special occasions.','8
+      servings','45 mins','','flour, cocoa, sugar, eggs, butter','Mix dry ingredients.
+      Add wet ingredients. Bake at 350F for 30 mins.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Chicken Soup','A hearty soup perfect for cold winter days.','6 servings','60
+      mins','','chicken, carrots, celery, onion, broth','Boil chicken, add vegetables,
+      simmer for 45 mins. Add salt to taste.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Pasta Primavera','A light pasta dish loaded with fresh seasonal vegetables.','4
+      servings','25 mins','','pasta, bell peppers, zucchini, cherry tomatoes, olive
+      oil','Cook pasta. Sauté vegetables. Toss together with olive oil and Parmesan.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Banana Bread','A classic quick bread made with ripe bananas.','8 servings','50
+      mins','','bananas, flour, sugar, eggs, baking soda','Mash bananas. Mix all ingredients.
+      Bake at 350F for 45 mins.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Avocado Toast with Egg','A delicious and healthy choice for any time
+      of the day.','1 serving','10 mins','','as per recipe','Toast bread, top with
+      mashed avocado, a fried egg, salt, pepper, and chili flakes. Garnish with fresh
+      herbs for a more vibrant taste.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Greek Salad Pita Pockets','An ideal recipe for experimenting with different
+      flavors and ingredients.','3-4 servings','30 mins','','to preference','Fill
+      pita pockets with lettuce, cucumber, tomato, feta, olives, and Greek dressing.
+      Feel free to substitute with ingredients you have on hand.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Chocolate Cake','A rich and moist chocolate cake for special occasions.','8
+      servings','45 mins','','flour, cocoa, sugar, eggs, butter','Mix dry ingredients.
+      Add wet ingredients. Bake at 350F for 30 mins.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Chicken Soup','A hearty soup perfect for cold winter days.','6 servings','60
+      mins','','chicken, carrots, celery, onion, broth','Boil chicken, add vegetables,
+      simmer for 45 mins. Add salt to taste.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Pasta Primavera','A light pasta dish loaded with fresh seasonal vegetables.','4
+      servings','25 mins','','pasta, bell peppers, zucchini, cherry tomatoes, olive
+      oil','Cook pasta. Sauté vegetables. Toss together with olive oil and Parmesan.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Banana Bread','A classic quick bread made with ripe bananas.','8 servings','50
+      mins','','bananas, flour, sugar, eggs, baking soda','Mash bananas. Mix all ingredients.
+      Bake at 350F for 45 mins.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Avocado Toast with Egg','A delicious and healthy choice for any time
+      of the day.','1 serving','10 mins','','as per recipe','Toast bread, top with
+      mashed avocado, a fried egg, salt, pepper, and chili flakes. Garnish with fresh
+      herbs for a more vibrant taste.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Greek Salad Pita Pockets','An ideal recipe for experimenting with different
+      flavors and ingredients.','3-4 servings','30 mins','','to preference','Fill
+      pita pockets with lettuce, cucumber, tomato, feta, olives, and Greek dressing.
+      Feel free to substitute with ingredients you have on hand.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Chocolate Cake','A rich and moist chocolate cake for special occasions.','8
+      servings','45 mins','','flour, cocoa, sugar, eggs, butter','Mix dry ingredients.
+      Add wet ingredients. Bake at 350F for 30 mins.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Chicken Soup','A hearty soup perfect for cold winter days.','6 servings','60
+      mins','','chicken, carrots, celery, onion, broth','Boil chicken, add vegetables,
+      simmer for 45 mins. Add salt to taste.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Pasta Primavera','A light pasta dish loaded with fresh seasonal vegetables.','4
+      servings','25 mins','','pasta, bell peppers, zucchini, cherry tomatoes, olive
+      oil','Cook pasta. Sauté vegetables. Toss together with olive oil and Parmesan.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Banana Bread','A classic quick bread made with ripe bananas.','8 servings','50
+      mins','','bananas, flour, sugar, eggs, baking soda','Mash bananas. Mix all ingredients.
+      Bake at 350F for 45 mins.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Spicy Tuna Wraps','A quick and easy meal, perfect for busy weekdays.','2
+      servings','20 mins','','varies','Mix canned tuna with mayo and sriracha. Spread
+      on tortillas, add lettuce and cucumber slices, roll up. Try adding a pinch of
+      your favorite spices for extra flavor.',0);"
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "INSERT
+      INTO recipes(title,description,servings,preparationTime,source,ingredients,directions,favorite)
+      VALUES('Spicy Tuna Wraps','A quick and easy meal, perfect for busy weekdays.','2
+      servings','20 mins','','varies','Mix canned tuna with mayo and sriracha. Spread
+      on tortillas, add lettuce and cucumber slices, roll up. Try adding a pinch of
+      your favorite spices for extra flavor.',0);"
+  - command: am force-stop com.flauschcode.broccoli 2>/dev/null || true
+  max_steps: 25
+  name: AW-RecipeDeleteDuplicateRecipes3
+  tags:
+  - M
+  - broccoli
+  - T4
+  verify:
+  - command: sqlite3 /data/data/com.flauschcode.broccoli/databases/broccoli "SELECT
+      COUNT(*) FROM recipes WHERE title='Spicy Tuna Wraps';"
+    expect: '1'

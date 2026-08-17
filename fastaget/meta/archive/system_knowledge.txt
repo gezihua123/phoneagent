@@ -1,0 +1,78 @@
+# Mobile Operation Knowledge Base
+> Generated from 705,448 human demonstration episodes across 17 apps.
+
+## App Entry Patterns (most common way to reach each app)
+
+- **Chrome** (浏览器): 21974 goals/132021 eps, 起手 `HOME`, 进入 `HOME → TAP(无文字图标) → TAP '[ICON_THREE_DOTS]'(更多菜单⋮)` 
+- **Settings** (设置): 75 goals/79681 eps, 起手 `上滑`, 进入 `上滑 → TAP '[ICON_SETTINGS]'(设置齿轮) → 上滑` 
+- **Gmail** (邮件): 130 goals/67884 eps, 起手 `上滑`, 进入 `上滑 → TAP '[ICON_THREE_BARS]'(汉堡菜单☰) → 上滑` 
+- **Maps** (地图): 46 goals/40914 eps, 起手 `HOME`, 进入 `HOME → TAP '[ICON_LOCATION]'(定位) → TAP 'X'` 
+- **Photos** (相册): 30 goals/26161 eps, 起手 `上滑`, 进入 `上滑 → TAP 'Photos' → TAP '[ICON_ARROW_BACKWARD]'(返回箭头)` 
+- **Calendar** (日历): 26 goals/25624 eps, 起手 `上滑`, 进入 `上滑 → TAP '[ICON_V_FORWARD]'(前进/下一页) → TAP 'Got it'` 
+- **Clock** (时钟/闹钟): 28 goals/20322 eps, 起手 `上滑`, 进入 `上滑 → TAP 'Clock' → TAP '[ICON_THREE_DOTS]'(更多菜单⋮)` 
+- **Phone** (电话): 38 goals/11874 eps, 起手 `上滑`, 进入 `上滑 → TAP '[ICON_SETTINGS]'(设置齿轮) → 上滑` 
+- **YouTube** (视频): 47 goals/10515 eps, 起手 `上滑`, 进入 `上滑 → TAP '[ICON_PLAY]'(Play/播放) → TAP 'UPDATE'` 
+- **Play Store** (应用商店): 48 goals/6092 eps, 起手 `上滑`, 进入 `上滑 → TAP '[ICON_PLAY]'(Play/播放) → TAP '[ICON_ARROW_BACKWARD]'(返回箭头)` 
+- **Contacts** (联系人): 15 goals/3143 eps, 起手 `上滑`, 进入 `上滑 → TAP '[ICON_PERSON]' → TAP '[ICON_PLUS]'(新建/添加)` 
+- **Messages** (短信): 13 goals/331 eps, 起手 `HOME`, 进入 `HOME → 上滑 → TAP '[ICON_PLAY]'(Play/播放)` 
+- **Keep** (笔记): 4 goals/198 eps, 起手 `HOME`, 进入 `HOME → 上滑 → TAP '[ICON_PLAY]'(Play/播放)` 
+- **Drive** (云盘): 21 goals/174 eps, 起手 `HOME`, 进入 `HOME → 上滑 → TAP '[ICON_PLAY]'(Play/播放)` 
+- **Camera** (相机): 1 goals/39 eps, 起手 `HOME`, 进入 `HOME → 上滑 → TAP '[ICON_TAKE_PHOTO]'(快门)` 
+- **Files** (文件): 1 goals/13 eps, 起手 `HOME`, 进入 `HOME → 上滑 → TAP 'Files'` 
+- **General** : 5546 goals/278884 eps, 起手 `HOME`, 进入 `HOME → 上滑 → TAP '[ICON_SETTINGS]'(设置齿轮)` ⚠️ 兜底分类
+- **Other** : 446 goals/1578 eps, 起手 `HOME`, 进入 `HOME → 上滑 → TAP '[ICON_PLAY]'(Play/播放)` ⚠️ 兜底分类
+
+## Task Category Tactics
+
+- **settings_toggle** (198679 eps): 设置类开关: Settings → 搜索栏输入关键词(最快) 或 逐层找分类 → tap toggle → 开关状态即完成特征 | 高频衔接: 上滑→TAP '[ICON_SETTINGS]'(设置齿轮)×27 | TAP '[ICON_SETTINGS]'(设置齿轮)→下滑×13 | 下滑→TAP 'Network & internet'×9
+- **shopping** (13448 eps): 购物流程: 浏览器 → 输入域名 → ENTER → 搜索商品 → tap 商品 → scroll 找 'Add to cart' → tap → cart 角标变化即完成 | 高频衔接: HOME→TAP(无文字图标)×16 | HOME→上滑×6 | 上滑→TAP '[ICON_PLAY]'(Play/播放)×4
+- **search** (160101 eps): 搜索流程: 定位搜索框(放大镜/搜索栏文字) → tap → TYPE 关键词 → ENTER → 结果页出现即完成 | 高频衔接: 上滑→TAP '[ICON_SETTINGS]'(设置齿轮)×12 | HOME→TAP(无文字图标)×8 | TAP(无文字图标)→TAP '[ICON_THREE_DOTS]'(更多菜单⋮)×7
+- **app_launch** (113017 eps): 启动 app: 优先 HOME 后滑动找图标 tap; 找不到 → 应用列表搜索; 安装类 → Play Store 搜索 → Install → Open | 高频衔接: HOME→TAP(无文字图标)×15 | TAP(无文字图标)→TAP '[ICON_THREE_DOTS]'(更多菜单⋮)×12 | TAP '[ICON_THREE_DOTS]'(更多菜单⋮)→TAP 'New tab'×8
+- **web_navigation** (6639 eps): 网页导航: Chrome 地址栏直接输入域名(无需 www) → ENTER → 等页面加载(标题/URL 变化即完成) | 高频衔接: HOME→TAP(无文字图标)×9 | HOME→上滑×8 | 上滑→TAP '[ICON_PLAY]'(Play/播放)×4
+- **data_input** (29042 eps): 数据录入: 找 FAB(+) 或 'New/Create/Add' → 逐字段 tap→type → Save/✓/Done → 列表出现新条目即完成 | 高频衔接: HOME→上滑×11 | HOME→TAP(无文字图标)×8 | 上滑→TAP 'Chrome'×4
+- **messaging** (28052 eps): 消息类: tap 对话/FAB → tap 输入框 → type 内容 → tap 发送键 → 气泡出现即完成 | 高频衔接: 上滑→TAP '[ICON_ENVELOPE]'(邮件)×6 | TAP '[ICON_ENVELOPE]'(邮件)→TAP '[ICON_THREE_BARS]'(汉堡菜单☰)×4 | TAP 'GOT IT'→TAP 'TAKE ME TO GMAIL'×3
+- **calendar_task** (16544 eps): 日历类: 日期导航用横滑切换周/月 → tap 目标日期 → 事件列表/新建 FAB | 高频衔接: 上滑→TAP '[ICON_V_FORWARD]'(前进/下一页)×7 | TAP '[ICON_V_FORWARD]'(前进/下一页)→TAP 'Got it'×6 | TAP 'Got it'→TAP '[ICON_THREE_BARS]'(汉堡菜单☰)×5
+- **media** (35207 eps): 媒体类: 列表浏览 → tap 封面/标题进入 → 播放键居中; 相册类先确认 tab(Photos/Albums) | 高频衔接: 上滑→TAP '[ICON_PLAY]'(Play/播放)×11 | HOME→上滑×8 | TAP '[ICON_PLAY]'(Play/播放)→TAP '[ICON_MAGNIFYING_GLASS]'(搜索)×7
+- **navigation** (18 eps): 导航类: Maps 搜索目的地 → tap 建议项 → Directions → Start | 高频衔接: TAP '[ICON_ARROW_UPWARD]'(向上箭头)→TAP '[ICON_NAV_BAR_CIRCLE]'(导航圆钮)×1 | 上滑→TAP 'Mystery, Thrller'×1 | TAP 'DIRECTIONS'→TAP 'X'×1
+
+## Icon Semantics (OCR label → meaning + visual hint)
+
+- **ARROW_BACKWARD** = ← 左箭头, 返回上一页, 通常在页面左上角
+- **ARROW_UPWARD** = ↑ 上箭头, 展开面板/向上滚动
+- **ASSISTANT** = 语音助手图标, 语音交互, 搜索栏旁或导航栏
+- **CHAT** = 💬 气泡形状, 消息/对话, 通讯应用内
+- **EDIT** = ✎ 铅笔形状, 编辑/修改, 内容详情或工具栏
+- **ENVELOPE** = ✉ 信封形状, 邮件/消息, 通讯应用内
+- **INFO** = ℹ 圆圈i, 查看详情/帮助, 设置或详情页
+- **LAUNCH_APPS** = ⊞ 网格图标, 查看所有应用, 底部导航栏
+- **LOCATION** = 📍 地图标记形状, 定位/地图, 地图应用或导航栏
+- **MAGNIFYING_GLASS** = 放大镜形状, 搜索功能, 通常在页面顶部或工具栏
+- **NAV_BAR_CIRCLE** = ◉ 圆形按钮, 系统Home键, 屏幕底部导航栏
+- **PLAY** = ▶ 三角形播放按钮, 表示播放/启动。注意: 在应用列表中出现是应用图标,在媒体界面中是播放控件,需看上下文
+- **PLUS** = ＋ 加号, 新建/添加, 通常在列表右下角
+- **SETTINGS** = ⚙ 齿轮形状, 设置/配置, 通常在工具栏或菜单中
+- **SHOPPING_CART** = 🛒 购物车形状, 查看购物车, 电商页面导航栏
+- **STAR** = ★ 五角星, 收藏/标记/评分, 列表项或详情页
+- **TAKE_PHOTO** = 📷 相机形状, 拍照/扫描, 底部功能栏
+- **THREE_BARS** = ☰ 三条横线, 导航菜单/抽屉, 通常在页面左上角
+- **THREE_DOTS** = ⋮ 三个竖点, 更多选项/菜单, 通常在页面右上角
+- **UPLOAD** = ↑ 上传箭头, 上传/分享文件, 文件选择或编辑页
+- **V_BACKWARD** = < 左箭头, 后退/上一页, 导航或引导流程
+- **V_DOWNWARD** = ▼ 下箭头, 展开菜单/下拉选项
+- **V_FORWARD** = > 右箭头, 前进/下一页, 导航或引导流程
+- **X** = ✕ 叉号, 关闭/清除/取消, 弹窗右上角或搜索框内
+
+## Operational Guidance (from 21287 human recovery trajectories)
+
+- Tapping [ICON_PLAY] then immediately BACK is the #1 recovery pattern (2582×). [ICON_PLAY] can be either a media control (▶ play button) or an app launcher icon — observe surrounding elements to determine context before tapping.
+- Scrolling past target → BACK is common (9145×). Stop scrolling when the target element enters the visible screen area.
+- Tapping unlabeled icons → BACK (3599×). Prefer elements with readable text labels over bare icons.
+
+## Universal Principles
+
+1. HOME is the safest starting point; use BACK for short undo, HOME for restart
+2. TYPE→ENTER is the most reliable input pattern; always tap the input field first
+3. [ICON_MAGNIFYING_GLASS] = search box — the fastest way to find anything in any app
+4. [ICON_THREE_DOTS] (⋮) = more menu — Settings, Bookmarks, History are usually here
+5. Completion = screen content changes meaningfully; don't rely on a single button press
+6. If stuck after 3+ BACKs, press HOME and restart the task from a clean state

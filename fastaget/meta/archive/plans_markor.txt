@@ -1,0 +1,53 @@
+# keywords: Markor, markor, 笔记, note, 文本编辑, 创建笔记, 编辑笔记, 删除笔记, 文件夹, 移动笔记, 新建文件夹, test_note, 合并笔记, folder, receipt, transcribe
+## 领域知识：Markor 文本编辑器操作模板
+
+Markor 是一个 Android Markdown 编辑器。以下模板适用于所有 Markor 相关任务（创建/编辑/删除/移动笔记/文件夹）。
+
+### 通用原则
+- **必须通过 Markor UI 完成操作**，禁止用 shell 写文件（`echo >`/`mkdir`/`mv`/`rm`）冒充 app 操作
+- shell 只能用于**验证**文件存在或内容（`ls`/`cat`），不能用于**创建/修改/删除**
+- Markor 默认文件路径：`/sdcard/Documents/` 或 `/sdcard/Markor/`（取决于 Markor 配置）
+
+### 创建新笔记
+1. launch(package="net.gsantner.markor")
+2. observe → 确认进入 Markor 主界面（文件夹列表）
+3. tap_element 点击右下角 "+" 按钮（FAB）→ 选择 "新建文件"
+4. 在弹出的文件名输入框中 type 文件名（如 test_note_xxx.md）
+5. tap_element 确认创建
+6. observe → 确认进入了编辑界面
+7. type 输入笔记正文内容
+8. back → 返回文件夹列表（自动保存）
+9. shell("ls /sdcard/Documents/test_note_xxx.md") → 验证文件存在 → assert → complete
+
+### 编辑已有笔记
+1. launch(package="net.gsantner.markor")
+2. observe → 在文件列表中找到目标笔记
+3. tap_element 点击目标笔记文件名 → 进入编辑界面
+4. observe → 确认进入了编辑界面
+5. 在编辑区域输入新内容：先 tap_element 定位光标，再 type 输入
+6. back → 返回文件夹列表（自动保存）
+7. shell("cat /sdcard/Documents/test_note_xxx.md") → 验证内容已更新 → assert → complete
+
+### 创建文件夹
+1. launch(package="net.gsantner.markor")
+2. observe → 确认进入 Markor
+3. tap_element 点击 "+" → 选择 "新建文件夹"
+4. type 输入文件夹名 → 确认
+5. observe → 确认文件夹出现在列表中
+6. shell("ls /sdcard/Documents/") → 验证文件夹存在 → assert → complete
+
+### 删除笔记/文件夹
+1. launch(package="net.gsantner.markor")
+2. observe → 找到目标文件/文件夹
+3. long_press(index=目标index) → 弹出菜单
+4. tap_element 点击 "删除" → 确认删除
+5. shell("ls /sdcard/Documents/") → 验证已删除 → assert → complete
+
+### 移动笔记
+1. launch(package="net.gsantner.markor")
+2. observe → 找到目标文件
+3. long_press(index=目标index) → 选择 "移动"
+4. 导航到目标文件夹 → tap_element 确认
+5. shell("ls /sdcard/Markor/test_note_xxx.md") → 验证已移动 → assert → complete
+
+⚠️ 关键红线：所有 "创建/编辑/删除/移动" 操作必须通过 Markor 的 UI 按钮和菜单完成，shell 仅用于最后的验证步骤。

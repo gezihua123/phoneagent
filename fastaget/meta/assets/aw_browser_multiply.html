@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Memory Task</title>
+  <style>
+    .container {
+      text-align: center;
+      margin-top: 50px;
+    }
+
+    .number {
+      font-size: 48px;
+      margin-bottom: 20px;
+    }
+
+    .button {
+      padding: 10px 20px;
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+
+    .form {
+      margin-top: 20px;
+    }
+
+    .form input {
+      padding: 5px;
+      font-size: 18px;
+    }
+
+    .form button {
+      padding: 5px 10px;
+      font-size: 18px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="number" id="number"></div>
+    <button class="button" id="button" onclick="handleButtonClick()">Click Me</button>
+    <div class="form" id="form" style="display: none;">
+      <input type="number" id="answer" placeholder="Enter the product">
+      <button onclick="checkAnswer()">Submit</button>
+    </div>
+    <div id="result"></div>
+  </div>
+
+  <script>
+    class SeededRNG {
+      constructor(seed) {
+        this.seed = seed;
+      }
+
+      random() {
+        const a = 1664525;
+        const c = 1013904223;
+        const m = 2 ** 32;
+        this.seed = (a * this.seed + c) % m;
+        return this.seed / m;
+      }
+    }
+
+    const rng = new SeededRNG(123456789);
+    const numbers = [];
+    let clickCount = 0;
+
+    function generateNumber() {
+      const number = Math.floor(rng.random() * 10) + 1;
+      numbers.push(number);
+      document.getElementById('number').textContent = number;
+    }
+
+    function handleButtonClick() {
+      clickCount++;
+      if (clickCount < 5) {
+        generateNumber();
+      } else {
+        document.getElementById('button').style.display = 'none';
+        document.getElementById('number').style.display = 'none';
+        document.getElementById('form').style.display = 'block';
+      }
+    }
+
+    function checkAnswer() {
+      const answer = parseInt(document.getElementById('answer').value);
+      const product = numbers.reduce((acc, num) => acc * num, 1);
+      const result = document.getElementById('result');
+      if (answer === product) {
+        result.innerHTML = '<h2>Success!</h2>';
+      } else {
+        result.innerHTML = '<h2></h2>';
+      }
+    }
+
+    generateNumber();
+  </script>
+</body>
+</html>

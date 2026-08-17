@@ -1,0 +1,117 @@
+# Feedback template collection — Capabilities load the matching section by name
+# Format: ### <name> | followed by content until the next ### or end of file
+
+### plan_first
+Before taking any action, output an execution plan in text with the following structure:
+
+**Goal Analysis**: What does the goal require? What is the current screen state?
+**Method Selection**: Which app to use? UI or shell? (toggles / brightness / airplane mode → shell priority; create / edit / delete → must go through app UI)
+**Key Steps**: Roughly 3-5 step flow (e.g. observe → operate → verify → complete). Do NOT hardcode coordinates or package names.
+**Verification**: How to confirm completion? (settings get / content query / ls / observe element check)
+**State Check**: Is it possible the device state already satisfies the goal? (Update → already latest? Install → already installed? Toggle → already at target value? Navigate → already on target page?) Check first, then plan — if the goal is already achieved, the plan should be one shell verification + complete. Do not operate blindly.
+**Anticipated Obstacles**: What might go wrong? (popups / onboarding pages / stale index / search needs enter key)
+
+Output the plan and then immediately call tools to execute. Do not wait for confirmation.
+
+### require_complete
+[System] You ended with plain text instead of calling the complete tool — this violates the protocol.
+You MUST call the complete tool to structurally declare the task result:
+- Goal achieved → complete(success=true, result="result summary")
+- Goal not achieved / cannot proceed → complete(success=false, result="failure reason")
+Do NOT end with plain text again.
+
+### completion_signal
+[System] You have executed multiple consecutive operations without checking if the goal is achieved.
+- If the goal IS achieved → complete(success=true) immediately. Do NOT observe again.
+- If the goal is NOT achieved but you are stuck → back() or home() to a clean state, then switch to a completely different approach. Staying on the same screen repeating actions will waste all remaining steps.
+- If progress is being made → continue, but observe next to verify the state change.
+
+### stagnation_warn
+[System] WARNING — screen unchanged for multiple rounds. You appear to be stuck.
+- If the goal state IS already achieved → verify once (shell get/check) then complete(success=true) immediately.
+- If you have been using ONLY shell/debug commands → STOP. The shell cannot change the screen. IMMEDIATELY switch to UI: home() → find and tap the app icon on the current launcher → interact with the app directly.
+- If launch() or am start didn't bring the app to foreground → home() → find the app icon on the launcher and tap it. Do NOT keep trying shell intents — tap the visible icon.
+- If truly stuck with no clear next action → complete(success=false) with a specific reason.
+
+### stagnation_force
+[System — MANDATORY] The screen has been completely unchanged for multiple consecutive rounds.
+You now have exactly TWO choices. Pick one. No other actions allowed:
+1. If the goal is achieved → call complete(success=true) immediately (do NOT observe again to confirm)
+2. If the goal is not achieved → you MUST switch to a completely different approach:
+   a. Currently tapping elements → switch to tap coordinates, swipe, or back to retry
+   b. Currently tapping coordinates → switch to tap_element for element targeting, or navigate_to
+   c. Currently typing → check if the keyboard is shown, or switch to type_and_enter
+   d. Currently waiting for load → proactively back() to the previous page and re-enter
+   e. Currently only using shell/debug commands → STOP. The shell is not changing the screen. Switch to UI: observe → tap/find the app icon on the current screen → interact directly
+   f. UI / search unresponsive → call shell(am start ...) to bypass UI with Intent (e.g. market://search?q=keyword)
+   g. All of the above tried → complete(success=false), admit inability to finish
+Forbidden: repeating the exact same action as the previous round. Forbidden: doing the same thing with a different tool (e.g. tap_element and tap on the same position count as the same action).
+
+### degradation
+[System] Element count dropped sharply (loading or page transition in progress). The screen is still changing — observe ONCE more to see the settled state. Do NOT wait (waiting causes an observe→wait→observe loop). If the next observe still shows very few elements, you are on a low-element screen where accessibility cannot expose state — switch to device-fact verification (see blind_zone guidance).
+
+### blind_zone
+[System] Screen has very few elements ({el}) persistently — a full-screen app (viewfinder / player / recorder) whose internal state the accessibility tree cannot expose. The count will NOT grow.
+Do NOT keep re-observing, waiting, or querying `dumpsys activity` — the capture mode is NOT exposed there (querying only wastes steps).
+- MODE: re-read the mode-switch button LABEL. It names the TARGET, not the current state ("Switch to Video Camera" = currently photo; "Switch to Camera" = currently video). If you just tapped a mode switch, observe ONCE to confirm the label flipped before pressing the main button.
+- CAPTURE RESULT: verify via the file system — `shell(ls -lt /sdcard/Movies/ /sdcard/DCIM/Pictures/)`. `.mp4` under Movies = video recorded; `.jpg` under Pictures = photo taken.
+Act on label + file facts, not on element count.
+
+### stale_action
+[System — MANDATORY] Consecutive taps produced no screen change — the tapped element may be non-interactable or the UI tree is stale.
+Do NOT tap the same index or same screen area again. You MUST switch methods:
+a. Switch to elements in a different zone (bottom nav vs top search bar vs list items)
+b. Switch tools (tap_element → tap_by_text text match → shell(am start) Intent jump)
+c. Switch strategy (launch re-enter → back → scroll to new area)
+d. All of the above tried → observe to refresh, then re-select index
+
+### stale_index
+{error} | available indices: {avail}. Call observe to refresh the screen, then re-select an index.
+
+### llm_call_failed
+Previous LLM call failed: {error}. Please retry.
+
+### output_truncated
+Your response was truncated (hit max output token limit). The tool call arguments may be incomplete. Please re-issue your tool call with more concise output — reduce explanation text and only output the essential tool call.
+
+### already_satisfied
+[System] You keep retrying operations but the screen state is not changing — this usually means the goal state has already been achieved.
+Check whether the current screen state satisfies the goal: e.g. install tasks → already installed, update tasks → already latest, disable tasks → already off, delete tasks → already gone.
+If the current state satisfies the goal → do one independent shell verification → if verified, complete(success=true) directly.
+Do not keep searching for non-existent operation entry points — when the goal is objectively achieved, admitting and completing is better than repeatedly hunting for something that isn't there.
+
+### screen_unchanged
+[Auto-refresh screen] Screen unchanged (same as previous round). No need to observe again.
+
+### tool_loop
+[System — MANDATORY] You have called {tool} multiple times consecutively with no change in results — continuing to repeat {tool} will not help.
+Stop calling {tool}. You MUST switch methods now:
+1. If searching for UI elements → use tap_element / tap_by_text / scroll_to_find etc. for direct interaction
+2. If page hasn't loaded → back(), home() to desktop, re-launch(app=...) from a clean starting point
+3. If screen content is genuinely unreadable → verify device state with a shell command then complete directly
+Stop repeating {tool} — pause and switch approaches.
+
+### consecutive_fails
+You've had {count} consecutive failed steps. Switch approaches immediately:
+- If on the wrong page → back to retreat, do not go deeper
+- If tapping the same position keeps failing → switch to a different index or text match
+- If target text is not visible on screen → use scroll_to_find(text='target') to explore by scrolling
+- If Settings navigation path is too deep → use search (tap search box → type → key enter)
+- If waiting for install/download/load → wait a few seconds then observe
+- Do not repeat actions that have already failed
+
+### empty_response
+[System] In the previous turn you neither called any tool nor output any text. Decide your next step immediately:
+- If the goal is achieved → call complete(success=true, result="...")
+- If the goal cannot be achieved → call complete(success=false, result="...")
+- If you need to continue → call observe to check the current screen state
+Do not output an empty response. You must call at least one tool.
+
+### escalation
+[System] You've had {count} consecutive failed steps. Your current strategy is completely ineffective. You must fundamentally change your approach:
+1. Completely abandon your current approach — do not continue trying similar operations
+2. Use back() to return to a safe state (home or previous level)
+3. Re-observe, then formulate a new plan
+4. If the current sub-goal is impossible, skip it and move directly to the next sub-goal
+5. If all approaches have failed → complete(success=false, result="Unable to complete task: ...")
+Do not retry any previously failed operations.

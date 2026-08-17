@@ -1,0 +1,169 @@
+## §6 App Patterns from Human Demonstrations [AITW 714,446 eps / 29,064 goals]
+
+> Cross-goal generalized patterns only (app entry + app×category skeletons).
+> Skeletons mined by prefix-tree majority across all human episodes; (NN%) = branch share at that step.
+> Element names, never coordinates — match against the observed UI tree at runtime.
+
+### Chrome | #k: chrome,browser,bookmark,web,tab
+- 27345 goals / 225,271 eps; median 6 steps; 74% DUAL_POINT 6% TYPE 5% HOME 1% BACK
+- Common first actions: HOME(37%), TAP (unlabeled icon)(20%), SWIPE_UP(16%)
+- Entry path: HOME(37%) → TAP (unlabeled icon)(16%) → TAP '[ICON_THREE_DOTS]'(5%) → SWIPE_UP(1%)
+- Pattern [search] (62,587 eps): HOME(30%) → TAP (unlabeled icon)(13%) → TAP '[ICON_THREE_DOTS]'(2%)
+- Pattern [app_launch] (50,415 eps): HOME(39%) → TAP (unlabeled icon)(19%) → TAP '[ICON_THREE_DOTS]'(5%) → TAP 'Bookmarks'(1%)
+- Pattern [settings_toggle] (39,486 eps): HOME(41%) → TAP (unlabeled icon)(20%) → TAP '[ICON_THREE_DOTS]'(11%) → SWIPE_UP(4%) → TAP 'Settings'(3%) → SWIPE_UP(2%)
+- UI landmarks: Google, Settings, Maps, YouTube, Search or type web address, New tab, Notifications, Chrome
+- Note: 17578/27345 goals need text input (tap the input field first, then type)
+- Typical tasks (names only): Go to Yahoo.com; Open Yahoo.com; open a bookmark in the chrome app
+
+### Settings | #k: settings,setting
+- 121 goals / 204,658 eps; median 6 steps; 80% DUAL_POINT 0% TYPE 6% HOME 1% BACK
+- Common first actions: SWIPE_UP(45%), HOME(39%), BACK(3%)
+- Entry path: SWIPE_UP(45%) → TAP '[ICON_SETTINGS]'(32%) → SWIPE_UP(5%)
+- Pattern [settings_toggle] (133,355 eps): SWIPE_UP(45%) → TAP '[ICON_SETTINGS]'(32%) → SWIPE_UP(4%)
+- Pattern [search] (40,506 eps): SWIPE_UP(43%) → TAP '[ICON_SETTINGS]'(35%) → SWIPE_UP(6%)
+- Pattern [other] (22,915 eps): SWIPE_UP(45%) → TAP '[ICON_SETTINGS]'(33%) → SWIPE_UP(10%) → TAP 'About emulated device'(2%)
+- UI landmarks: Maps, Google, Battery, Sound, Display, data, Settings, Gmail
+- Typical tasks (names only): Open Chrome and go to settings; Go to wifi settings; Open privacy settings
+
+### Gmail | #k: gmail,mail,inbox,email
+- 164 goals / 57,426 eps; median 3 steps; 81% DUAL_POINT 0% TYPE 6% HOME 1% BACK
+- Common first actions: SWIPE_UP(46%), HOME(41%), BACK(4%)
+- Entry path: SWIPE_UP(46%) → TAP '[ICON_THREE_BARS]'(6%) → SWIPE_UP(2%)
+- Pattern [messaging] (28,253 eps): SWIPE_UP(46%) → TAP '[ICON_ENVELOPE]'(5%)
+- Pattern [settings_toggle] (11,456 eps): SWIPE_UP(45%) → TAP 'Settings'(9%)
+- Pattern [other] (8,834 eps): SWIPE_UP(46%) → TAP '[ICON_THREE_BARS]'(6%) → SWIPE_UP(2%)
+- UI landmarks: Settings, Calendar, Maps, Gmail, Contacts, Inbox, Starred, Notifications
+- Note: 43/164 goals need text input (tap the input field first, then type)
+- Typical tasks (names only): all mails in gmail; snooze an email in the gmail app; star an email in the gmail app
+
+### Maps | #k: maps,map,navigate,location,directions
+- 82 goals / 46,720 eps; median 6 steps; 71% DUAL_POINT 4% TYPE 7% HOME 2% BACK
+- Common first actions: HOME(41%), SWIPE_UP(24%), TAP '[ICON_LOCATION]'(19%)
+- Entry path: HOME(41%) → SWIPE_UP(17%) → TAP '[ICON_LOCATION]'(12%) → TAP 'X'(2%)
+- Pattern [search] (32,106 eps): HOME(41%) → SWIPE_UP(17%) → TAP '[ICON_LOCATION]'(12%) → TAP 'X'(2%)
+- Pattern [app_launch] (9,333 eps): HOME(42%) → TAP '[ICON_LOCATION]'(18%) → TAP '[ICON_ARROW_BACKWARD]'(3%)
+- Pattern [settings_toggle] (5,193 eps): HOME(41%) → SWIPE_UP(22%) → TAP '[ICON_LOCATION]'(12%) → TAP '[ICON_THREE_BARS]'(3%) → SWIPE_UP(1%)
+- UI landmarks: Google, Maps, Closed, Search here, restaurant, Open now, Gmail, Settings
+- Note: 27/82 goals need text input (tap the input field first, then type)
+- Typical tasks (names only): Open maps; Open Google Maps; Open the map
+
+### Calendar | #k: calendar,event,agenda
+- 29 goals / 39,547 eps; median 7 steps; 80% DUAL_POINT 0% TYPE 6% HOME 1% BACK
+- Common first actions: SWIPE_UP(45%), HOME(42%), BACK(3%)
+- Entry path: SWIPE_UP(45%) → TAP '[ICON_V_FORWARD]'(8%) → TAP 'Got it'(3%) → TAP '[ICON_THREE_BARS]'(1%)
+- Pattern [app_launch] (17,385 eps): SWIPE_UP(46%) → TAP '[ICON_V_FORWARD]'(8%) → TAP 'Got it'(4%) → TAP '[ICON_THREE_BARS]'(1%)
+- Pattern [calendar_task] (16,699 eps): SWIPE_UP(44%) → TAP '[ICON_V_FORWARD]'(8%) → TAP 'Got it'(3%)
+- Pattern [search] (2,799 eps): SWIPE_UP(44%) → TAP '[ICON_V_FORWARD]'(8%) → TAP 'Got it'(3%)
+- UI landmarks: Maps, Settings, Google, Gmail, Calendar, May, Clock, PM
+- Typical tasks (names only): Open calendar and show me the second wee; Open the calendar app, open the side men; Open calendar and show me the fourth wee
+
+### Clock | #k: clock,timer,stopwatch,alarm
+- 49 goals / 32,809 eps; median 7 steps; 80% DUAL_POINT 0% TYPE 6% HOME 1% BACK
+- Common first actions: SWIPE_UP(48%), HOME(42%), BACK(3%)
+- Entry path: SWIPE_UP(48%) → TAP 'Clock'(17%) → TAP '[ICON_THREE_DOTS]'(8%) → TAP 'Settings'(5%)
+- Pattern [other] (20,733 eps): SWIPE_UP(48%) → TAP 'Clock'(17%) → TAP '[ICON_THREE_DOTS]'(6%) → TAP 'Settings'(3%) → SWIPE_UP(1%)
+- Pattern [media] (8,907 eps): SWIPE_UP(48%) → TAP 'Clock'(17%) → TAP '[ICON_THREE_DOTS]'(14%) → TAP 'Settings'(9%) → TAP 'Digital'(2%) → TAP 'Analog'(1%)
+- Pattern [app_launch] (3,110 eps): SWIPE_UP(47%) → TAP 'Clock'(17%) → TAP '[ICON_TIME]'(9%) → TAP '[ICON_PLAY]'(1%)
+- UI landmarks: Clock, Settings, Maps, Home time zone, Alarm, Timer, Stopwatch, Google
+- Typical tasks (names only): set an alarm; change the clock style; change the clock display to digital
+
+### Play Store | #k: play store,playstore,market,install app
+- 397 goals / 23,835 eps; median 8 steps; 72% DUAL_POINT 10% TYPE 6% HOME 2% BACK
+- Common first actions: HOME(46%), SWIPE_UP(32%), TAP '[ICON_PLAY]'(11%)
+- Entry path: HOME(46%) → SWIPE_UP(28%) → TAP '[ICON_PLAY]'(25%) → TAP '[ICON_MAGNIFYING_GLASS]'(7%)
+- Pattern [app_launch] (11,692 eps): HOME(46%) → SWIPE_UP(25%) → TAP '[ICON_PLAY]'(22%) → TAP '[ICON_MAGNIFYING_GLASS]'(10%) → TAP 'X'(5%)
+- Pattern [media] (5,633 eps): SWIPE_UP(46%) → TAP '[ICON_PLAY]'(40%) → TAP '[ICON_ARROW_BACKWARD]'(7%) → TAP '[ICON_LAUNCH_APPS]'(2%)
+- Pattern [other] (4,015 eps): HOME(47%) → SWIPE_UP(25%) → TAP '[ICON_PLAY]'(21%) → TAP '[ICON_MAGNIFYING_GLASS]'(9%) → TAP 'X'(4%)
+- UI landmarks: Maps, Photos, Gmail, Google, Downloads, Clock, Kids, Games
+- Note: 353/397 goals need text input (tap the input field first, then type)
+- Typical tasks (names only): Show me productivity apps on the Play St; Show me popular games on the Play Store; open app "Nova Launcher"
+
+### Photos | #k: photos,gallery,picture,album
+- 23 goals / 16,107 eps; median 2 steps; 77% DUAL_POINT 2% TYPE 6% HOME 2% BACK
+- Common first actions: SWIPE_UP(47%), HOME(41%), BACK(4%)
+- Entry path: SWIPE_UP(47%) → TAP 'Photos'(20%) → TAP '[ICON_ARROW_BACKWARD]'(3%)
+- Pattern [media] (10,527 eps): SWIPE_UP(47%) → TAP 'Photos'(20%) → TAP '[ICON_ARROW_BACKWARD]'(3%)
+- Pattern [search] (2,790 eps): SWIPE_UP(48%) → TAP 'Photos'(21%) → TAP 'Confirm'(3%)
+- Pattern [app_launch] (2,782 eps): SWIPE_UP(46%) → TAP 'Photos'(19%) → TAP '[ICON_ARROW_BACKWARD]'(3%) → TAP '[ICON_THREE_BARS]'(1%)
+- UI landmarks: Photos, Google, Settings, Maps, Sharing, Clock, Chrome, Contacts
+- Note: 6/23 goals need text input (tap the input field first, then type)
+- Typical tasks (names only): See recent photos; find photos in the google photos app; empty trash in google photos
+
+### YouTube | #k: youtube,video,subscribe,channel
+- 57 goals / 10,724 eps; median 9 steps; 79% DUAL_POINT 1% TYPE 6% HOME 2% BACK
+- Common first actions: SWIPE_UP(44%), HOME(41%), SCROLL_BROWSE(4%)
+- Entry path: SWIPE_UP(44%) → TAP '[ICON_PLAY]'(37%) → TAP 'UPDATE'(11%) → TAP 'Google Play Store'(5%)
+- Pattern [media] (5,390 eps): SWIPE_UP(44%) → TAP '[ICON_PLAY]'(37%) → TAP 'UPDATE'(11%) → TAP 'Google Play Store'(5%) → TAP 'JUST ONCE'(4%) → TAP 'Update'(2%)
+- Pattern [search] (5,146 eps): SWIPE_UP(45%) → TAP '[ICON_PLAY]'(38%) → TAP 'UPDATE'(11%) → TAP 'Google Play Store'(5%) → TAP 'JUST ONCE'(4%) → TAP 'Update'(2%)
+- Pattern [app_launch] (161 eps): HOME(46%) → SWIPE_UP(29%) → TAP '[ICON_PLAY]'(24%) → TAP '[ICON_MAGNIFYING_GLASS]'(11%) → TAP 'X'(4%) → TYPE 'YouTube Kids'(2%)
+- UI landmarks: Google, Maps, Clock, Photos, Chrome, Gmail, YouTube, Settings
+- Note: 33/57 goals need text input (tap the input field first, then type)
+- Typical tasks (names only): Open Youtube and go to the subscriptions; Show me popular videos on Youtube; Play the last video I watched on Youtube
+
+### Phone | #k: phone,call,dial
+- 8 goals / 5,741 eps; median 1 steps; 77% DUAL_POINT 0% TYPE 7% HOME 1% BACK
+- Common first actions: SWIPE_UP(47%), HOME(41%), BACK(3%)
+- Entry path: SWIPE_UP(47%) → TAP '[ICON_CALL]'(21%) → TAP 'Voicemail'(12%)
+- Pattern [app_launch] (2,928 eps): SWIPE_UP(48%) → TAP '[ICON_CALL]'(39%) → TAP 'Voicemail'(24%)
+- Pattern [search] (2,809 eps): SWIPE_UP(47%) → TAP '[ICON_SETTINGS]'(38%) → SWIPE_UP(13%) → TAP 'Location'(4%)
+- UI landmarks: Maps, Chrome, Google, Contacts, Voicemail, Favorites, Recents, Search contacts
+- Typical tasks (names only): Open the phone app and click the voicema; find which apps use the phone's location; Empty the shopping cart on walmart.com. 
+
+### Contacts | #k: contacts,contact
+- 14 goals / 3,077 eps; median 1 steps; 64% DUAL_POINT 19% TYPE 5% HOME 1% BACK
+- Common first actions: SWIPE_UP(48%), HOME(41%), BACK(3%)
+- Entry path: SWIPE_UP(48%) → TAP '[ICON_PERSON]'(30%) → TAP '[ICON_PLUS]'(17%)
+- Pattern [data_input] (2,874 eps): SWIPE_UP(49%) → TAP '[ICON_PERSON]'(31%) → TAP '[ICON_PLUS]'(18%)
+- Pattern [app_launch] (170 eps): HOME(47%) → SWIPE_UP(37%) → TAP '[ICON_PERSON]'(23%)
+- Pattern [search] (31 eps): HOME(39%) → TAP (unlabeled icon)(13%)
+- UI landmarks: Maps, Phone, Mobile, SAVE, Email, Home, Create new contact, Saving to
+- Note: 6/14 goals need text input (tap the input field first, then type)
+- Typical tasks (names only): add a contact in the contacts app; Open the contacts; open app "Contacts" (install if not alre
+
+### Messages | #k: messages,sms,text,message
+- 12 goals / 293 eps; median 6 steps; 70% DUAL_POINT 9% TYPE 6% HOME 2% BACK
+- Common first actions: HOME(47%), SWIPE_UP(21%), TAP '[ICON_PLAY]'(15%)
+- Entry path: HOME(47%) → SWIPE_UP(24%) → TAP '[ICON_PLAY]'(18%) → TAP '[ICON_MAGNIFYING_GLASS]'(6%)
+- Pattern [app_launch] (237 eps): HOME(47%) → SWIPE_UP(24%) → TAP '[ICON_PLAY]'(18%) → TAP '[ICON_MAGNIFYING_GLASS]'(7%) → TAP 'X'(3%) → TYPE 'Messages'(1%)
+- Pattern [search] (52 eps): HOME(49%) → SWIPE_UP(28%) → TAP '[ICON_PLAY]'(21%) → TAP '[ICON_ARROW_BACKWARD]'(6%)
+- UI landmarks: Messages, Communication, Messenger, messages, Photos, Messaging, Editors', Messaging & video
+- Note: 8/12 goals need text input (tap the input field first, then type)
+- Typical tasks (names only): open app "Messages" (install if not alre; open app "Messages"; open app "Facebook Messenger" (install i
+
+### Drive | #k: drive,cloud
+- 24 goals / 241 eps; median 1 steps; 71% DUAL_POINT 11% TYPE 5% HOME 1% BACK
+- Common first actions: HOME(46%), SWIPE_UP(27%), TAP '[ICON_PLAY]'(10%)
+- Entry path: HOME(46%) → SWIPE_UP(25%) → TAP '[ICON_PLAY]'(20%) → TAP '[ICON_MAGNIFYING_GLASS]'(9%)
+- Pattern [app_launch] (169 eps): HOME(49%) → SWIPE_UP(30%) → TAP '[ICON_PLAY]'(25%) → TAP '[ICON_MAGNIFYING_GLASS]'(11%) → TAP 'X'(4%) → TYPE 'Google Drive'(2%)
+- Pattern [search] (60 eps): HOME(38%) → TAP (unlabeled icon)(12%)
+- UI landmarks: Google, google, Gmail, Play, google docs, airtel, Google Docs, docs
+- Note: 10/24 goals need text input (tap the input field first, then type)
+- Typical tasks (names only): open app "Google Docs" (install if not a; open app "Google Drive" (install if not ; open app "Google Sheets" (install if not
+
+### Keep | #k: keep,note
+- 1 goals / 51 eps; median 10 steps; 73% DUAL_POINT 11% TYPE 6% HOME 0% BACK
+- Common first actions: HOME(47%), SWIPE_UP(27%), TAP '[ICON_PLAY]'(16%)
+- Entry path: HOME(47%) → SWIPE_UP(25%) → TAP '[ICON_PLAY]'(22%) → TAP '[ICON_MAGNIFYING_GLASS]'(6%)
+- Pattern [app_launch] (51 eps): HOME(47%) → SWIPE_UP(25%) → TAP '[ICON_PLAY]'(22%) → TAP '[ICON_MAGNIFYING_GLASS]'(6%)
+- UI landmarks: Google, Channel, Note, You might also like, Weather, Radar, google keep, android.app.
+- Note: 1/1 goals need text input (tap the input field first, then type)
+- Typical tasks (names only): open app "Google Keep" (install if not a
+
+### Files | #k: files,file,download,documentsui
+- 2 goals / 50 eps; median 5 steps; 70% DUAL_POINT 2% TYPE 9% HOME 3% BACK
+- Common first actions: SWIPE_UP(48%), HOME(42%), TAP 'CLOSE'(4%)
+- Entry path: SWIPE_UP(48%) → TAP 'Files'(18%)
+- Pattern [app_launch] (50 eps): SWIPE_UP(48%) → TAP 'Files'(18%)
+- UI landmarks: Videos, Maps, Images, Photos, YouTube, Downloads, Google, Malaysia
+- Typical tasks (names only): Open the downloads; Open the files app
+
+### Other | #k: other
+- 735 goals / 47,857 eps; median 9 steps; 74% DUAL_POINT 5% TYPE 6% HOME 1% BACK
+- Common first actions: HOME(42%), SWIPE_UP(37%), TAP (unlabeled icon)(5%)
+- Entry path: HOME(42%) → SWIPE_UP(27%) → TAP '[ICON_SETTINGS]'(8%) → SWIPE_UP(3%)
+- Pattern [other] (14,482 eps): HOME(42%) → SWIPE_UP(20%) → TAP '[ICON_SETTINGS]'(7%) → SWIPE_UP(4%) → TAP 'About emulated device'(1%)
+- Pattern [app_launch] (12,570 eps): HOME(42%) → SWIPE_UP(32%) → TAP '[ICON_PLAY]'(10%) → TAP '[ICON_MAGNIFYING_GLASS]'(3%) → TAP 'X'(1%)
+- Pattern [settings_toggle] (11,368 eps): SWIPE_UP(42%) → TAP '[ICON_SETTINGS]'(32%) → SWIPE_UP(9%) → TAP 'Location'(3%) → SWIPE_UP(1%)
+- UI landmarks: Maps, Google, Settings, Chrome, Gmail, Clock, Search, Discover
+- Note: 463/735 goals need text input (tap the input field first, then type)
+- Typical tasks (names only): Turn off the flashlight; Open my contact list; Open Google

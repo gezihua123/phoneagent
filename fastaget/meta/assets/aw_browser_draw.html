@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Color Challenge</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      text-align: center;
+      font-size: 14px;
+    }
+    canvas {
+      border: 1px solid black;
+      touch-action: none;
+    }
+    .color-button {
+      width: 30px;
+      height: 30px;
+      margin: 3px;
+      border: none;
+      cursor: pointer;
+    }
+    #colorPalette {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      max-width: 300px;
+      margin: 0 auto;
+    }
+    #canvasContainer {
+      display: flex;
+      justify-content: center;
+    }
+    #taskColors div {
+      width: 30px;
+      height: 30px;
+      margin: 3px;
+      display: inline-block;
+    }
+    button {
+      margin: 5px;
+      padding: 5px 10px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div id="taskColors"></div>
+  <div id="canvasContainer">
+    <canvas id="canvas" width="300" height="300"></canvas>
+  </div>
+  <br>
+  <p>Available Colors:</p>
+  <div id="colorPalette"></div>
+  <br>
+  <button id="clearButton">Clear</button>
+  <button id="submitButton">Submit</button>
+  <p id="result"></p>
+  <script>
+    class SeededRNG {
+      constructor(seed) {
+        this.seed = seed;
+      }
+
+      random() {
+        const a = 1664525;
+        const c = 1013904223;
+        const m = 2 ** 32;
+        this.seed = (a * this.seed + c) % m;
+        return this.seed / m;
+      }
+    }
+
+    const rng = new SeededRNG(123456789);
+
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const taskColorsElement = document.getElementById('taskColors');
+    const colorPalette = document.getElementById('colorPalette');
+    const clearButton = document.getElementById('clearButton');
+    const submitButton = document.getElementById('submitButton');
+    const resultElement = document.getElementById('result');
+
+    let taskColors = [];
+
+    const availableColors = [
+      '#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff',
+      '#800000', '#008000', '#000080', '#808000', '#800080', '#008080',
+      '#ffa500', '#ff1493', '#9932cc', '#20b2aa', '#4b0082', '#00ff7f',
+      '#ff6347', '#00ced1', '#9400d3', '#f0e68c', '#ff8c00', '#228b22',
+    ];
+
+    function clearCanvas() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    function generateRandomColors(count) {
+      const colors = [];
+      const remainingColors = [...availableColors];
+
+      for (let i = 0; i < count; i++) {
+        if (remainingColors.length === 0) {
+          break;
+        }
+
+        const randomIndex = Math.floor(rng.random() * remainingColors.length);
+        const selectedColor = remainingColors[randomIndex];
+        colors.push(selectedColor);
+        remainingColors.splice(randomIndex, 1);
+      }
+
+      return colors;
+    }
+
+    function displayTaskColors() {
+      taskColorsElement.innerHTML = '';
+      taskColors.forEach(color => {
+        const div = document.createElement('div');
+        div.style.backgroundColor = color;
+        div.style.width = '50px';
+        div.style.height = '50px';
+        div.style.display = 'inline-block';
+        div.style.margin = '5px';
+        taskColorsElement.appendChild(div);
+      });
+    }
+
+    function createColorPalette() {
+      colorPalette.innerHTML = '';
+      availableColors.forEach(color => {
+        const button = document.createElement('button');
+        button.style.backgroundColor = color;
+        button.classList.add('color-button');
+        button.addEventListener('click', () => {
+          ctx.strokeStyle = color;
+        });
+        colorPalette.appendChild(button);
+      });
+    }
+
+    function submitTask() {
+      submitButton.disabled = true;
+      evaluateTask();
+      submitButton.disabled = false;
+    }
+
+    function evaluateTask() {
+      const pixelData = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+      const usedColors = new Set();
+      for (let i = 0; i < pixelData.length; i += 4) {
+        const r = pixelData[i];
+        const g = pixelData[i + 1];
+        const b = pixelData[i + 2];
+        const color = rgbToHex(r, g, b);
+        usedColors.add(color);
+      }
+      const success = taskColors.every(color => usedColors.has(color));
+      showResult(success);
+    }
+
+    function rgbToHex(r, g, b) {
+      const componentToHex = (c) => {
+        const hex = c.toString(16);
+        return hex.length === 1 ? '0' + hex : hex;
+      };
+      return '#' + componentToHex(r) + componentToHex(g) + componentToHex(b);
+    }
+
+    function showResult(success) {
+      if (success) {
+        resultElement.textContent = 'Success!';
+      } else {
+        resultElement.textContent = '';
+      }
+    }
+
+    function init() {
+      taskColors = generateRandomColors(3);
+      displayTaskColors();
+      createColorPalette();
+    }
+
+    canvas.addEventListener('mousedown', startDrawing);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', stopDrawing);
+    canvas.addEventListener('mouseout', stopDrawing);
+
+    canvas.addEventListener('touchstart', startDrawing);
+    canvas.addEventListener('touchmove', draw);
+    canvas.addEventListener('touchend', stopDrawing);
+
+    let isDrawing = false;
+    let lastX = 0;
+    let lastY = 0;
+
+    function startDrawing(e) {
+      isDrawing = true;
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      const x = (e.clientX || e.touches[0].clientX) - rect.left;
+      const y = (e.clientY || e.touches[0].clientY) - rect.top;
+      lastX = x * scaleX;
+      lastY = y * scaleY;
+    }
+
+    function draw(e) {
+      if (!isDrawing) return;
+      e.preventDefault();
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      const x = (e.clientX || e.touches[0].clientX) - rect.left;
+      const y = (e.clientY || e.touches[0].clientY) - rect.top;
+      const currentX = x * scaleX;
+      const currentY = y * scaleY;
+      ctx.beginPath();
+      ctx.moveTo(lastX, lastY);
+      ctx.lineTo(currentX, currentY);
+      ctx.stroke();
+      [lastX, lastY] = [currentX, currentY];
+    }
+    function stopDrawing() {
+      isDrawing = false;
+    }
+
+    init();
+    clearButton.addEventListener('click', clearCanvas);
+    submitButton.addEventListener('click', submitTask);
+  </script>
+</body>
+</html>

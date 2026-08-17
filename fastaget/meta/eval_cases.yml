@@ -1,0 +1,171 @@
+cases:
+- name: T01-返回桌面
+  goal: 按 home 回到桌面，确认回到了桌面
+  max_steps: 10
+  tags:
+  - L1
+  - nav
+  verify:
+  - command: dumpsys activity activities | grep topResumedActivity
+    expect_re: QuickstepLauncher|NexusLauncher
+- name: T02-打开设置
+  goal: 打开设置应用 com.android.settings，确认进入了设置页面
+  max_steps: 8
+  tags:
+  - L1
+  - launch
+  verify:
+  - command: dumpsys activity activities | grep topResumedActivity
+    expect_re: com.android.settings|com.transsion.settings
+- name: T03-查看蓝牙
+  goal: 在设置中找到并查看蓝牙设置页面
+  max_steps: 15
+  tags:
+  - L1
+  - toggle
+  verify:
+  - command: dumpsys activity activities | grep topResumedActivity
+    expect_re: '[Bb]luetooth|ConnectedDevice'
+- name: T04-关闭WiFi
+  goal: 关闭 WiFi 开关。当前 WiFi 是开启状态
+  max_steps: 12
+  tags:
+  - L1
+  - toggle
+  verify:
+  - command: settings get global wifi_on
+    expect: '0'
+- name: T05-开启WiFi
+  goal: 打开 WiFi 开关。当前 WiFi 是关闭状态
+  max_steps: 12
+  tags:
+  - L1
+  - toggle
+  verify:
+  - command: settings get global wifi_on
+    expect_re: ^[12]$
+- name: T06-亮度最大
+  goal: 将屏幕亮度调到最大
+  max_steps: 10
+  tags:
+  - L1
+  - shell
+  verify:
+  - command: settings get system screen_brightness
+    expect: '255'
+- name: T07-亮度最小
+  goal: 将屏幕亮度调到最小
+  max_steps: 10
+  tags:
+  - L1
+  - shell
+  verify:
+  - command: settings get system screen_brightness
+    expect_re: ^[0-9]$|^1[0-5]?$
+- name: T08-查看存储
+  goal: 查看设备存储使用情况
+  max_steps: 12
+  tags:
+  - L2
+  - nav
+  verify:
+  - command: dumpsys activity activities | grep topResumedActivity
+    expect_re: '[Ss]ettings|[Ss]torage'
+- name: T09-打开时钟
+  goal: 启动时钟应用 com.google.android.deskclock，确认进入了时钟页面
+  max_steps: 20
+  tags:
+  - L2
+  - launch
+  verify:
+  - command: dumpsys activity activities | grep topResumedActivity
+    expect_re: '[Dd]esk[Cc]lock'
+- name: T10-打开计算器
+  goal: 启动计算器应用 com.transsion.calculator，确认进入了计算器
+  max_steps: 10
+  tags:
+  - L2
+  - launch
+  verify:
+  - command: dumpsys activity activities | grep topResumedActivity
+    expect_re: '[Cc]alculator'
+- name: T11-截屏
+  goal: 截取当前屏幕截图并确认成功
+  max_steps: 8
+  tags:
+  - L2
+  - capture
+- name: T12-系统信息
+  goal: 查看关于手机页面，确认能看到设备信息
+  max_steps: 25
+  tags:
+  - L2
+  - nav
+  verify:
+  - command: dumpsys activity activities | grep topResumedActivity
+    expect_re: '[Ss]ettings|device|[Aa]bout'
+- name: T13-搜索设置
+  goal: 在设置中搜索"电池"相关选项
+  max_steps: 25
+  tags:
+  - L2
+  - search
+  verify:
+  - command: dumpsys activity activities | grep topResumedActivity
+    expect_re: '[Ss]ettings|[Ss]earch'
+- name: T14-开启飞行模式
+  goal: 打开飞行模式开关
+  max_steps: 12
+  tags:
+  - L2
+  - toggle
+  verify:
+  - command: settings get global airplane_mode_on
+    expect: '1'
+- name: T15-关闭飞行模式
+  goal: 关闭飞行模式开关。当前飞行模式是开启状态
+  max_steps: 12
+  tags:
+  - L2
+  - toggle
+  verify:
+  - command: settings get global airplane_mode_on
+    expect: '0'
+- name: T16-安装应用
+  goal: 从 Google Play 商店搜索并安装"小红书"应用（包名 com.xingin.xhs）
+  max_steps: 40
+  error_thresh: 5
+  tags:
+  - L3
+  - install
+  verify:
+  - command: pm list packages 2>/dev/null | grep xingin.xhs || echo 'NOT_FOUND'
+    not_contain: NOT_FOUND
+- name: T17-卸载应用
+  goal: 卸载"小红书"应用（包名 com.xingin.xhs）
+  max_steps: 25
+  error_thresh: 5
+  tags:
+  - L3
+  - uninstall
+  verify:
+  - command: pm list packages 2>/dev/null | grep xingin.xhs || echo 'NOT_FOUND'
+    expect: NOT_FOUND
+- name: T18-多页面导航
+  goal: 进入设置→蓝牙→返回→WiFi→返回→存储→返回桌面。每一步都要确认到位
+  max_steps: 30
+  tags:
+  - L3
+  - nav
+  verify:
+  - command: dumpsys activity activities | grep topResumedActivity
+    expect_re: QuickstepLauncher|NexusLauncher
+- name: T19-异常恢复
+  goal: 启动不存在的应用 com.fake.nonexistent，然后 back 返回桌面
+  max_steps: 15
+  tags:
+  - L3
+  - recovery
+  verify:
+  - command: dumpsys activity activities | grep topResumedActivity
+    expect_re: QuickstepLauncher|NexusLauncher

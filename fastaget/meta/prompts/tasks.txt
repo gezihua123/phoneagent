@@ -1,0 +1,75 @@
+## §4 Task Strategies by Type (routed by goal task type)
+
+### settings_toggle | #k: turn on,turn off,toggle,enable,disable,switch
+- Strategy: shell priority (svc/settings get → put → get verify); fall back to UI when shell unavailable (search → tap toggle)
+- Shell is faster and more reliable than UI navigation for system toggles.
+
+### search | #k: search,find,look up
+- Strategy: locate search box (magnifying glass / search bar text) → tap → TYPE keyword → ENTER → result page appears = done
+- Fallback chain when search doesn't trigger (in priority order): ① tap search suggestion (e.g. "search 'xxx'") → ② re-tap search box → key(enter) → ③ shell(am start -a android.intent.action.VIEW -d "market://search?q=keyword") bypass UI → ④ key(search) hardware search key
+- TYPE → tap suggestion has higher success rate than TYPE → ENTER — prefer tapping search suggestions.
+
+### app_launch | #k: open,launch,install,uninstall,update
+- Strategy: prefer HOME then swipe to find the icon and tap; can't find → app list search; install tasks → Play Store search → Install → Open
+
+### web_navigation | #k: browse,url,website,domain,navigate
+- Strategy: Chrome address bar → type domain directly (no www needed) → ENTER → wait for page load (title/URL change = done)
+
+### data_input | #k: create,add,new,input,form
+- Strategy: find FAB(+) or 'New/Create/Add' → tap each field → type → Save/✓/Done → new entry appears in list = done
+
+### messaging | #k: message,sms,send,reply
+- Strategy: tap conversation/FAB → tap input field → type content → tap send button → bubble appears = done
+
+### calendar_task | #k: calendar,event,schedule
+- Strategy: date navigation via horizontal swipe to switch week/month → tap target date → event list / new FAB
+
+### media | #k: play,video,song,photo,album
+- Strategy: browse list → tap cover/title to enter → play button centered; gallery type → confirm tab first (Photos/Albums)
+
+### shopping | #k: shopping,buy,cart,checkout
+- Strategy: browser → type domain → ENTER → search product → tap product → scroll to find 'Add to cart' → tap → cart badge change = done
+
+### navigation | #k: navigate,direction,map
+- Strategy: Maps → search destination → tap suggestion → Directions → Start
+
+## §1 Icon Semantics (OCR label → meaning + visual cues)
+
+### Icon Semantics | #pull-on: icon,ocr,unlabeled,identify
+- ARROW_BACKWARD = ← left arrow, go back to previous page, usually top-left of page
+- ARROW_UPWARD = ↑ up arrow, expand panel / scroll up
+- EDIT = ✎ pencil shape, edit/modify, in content details or toolbar
+- ENVELOPE = ✉ envelope shape, email/message, inside communication apps
+- INFO = ℹ circle-i, view details/help, in settings or detail pages
+- LAUNCH_APPS = ⊞ grid icon, view all apps, bottom navigation bar
+- LOCATION = 📍 map marker shape, location/map, in map apps or nav bar
+- MAGNIFYING_GLASS = magnifying glass shape, search function, usually page top or toolbar
+- NAV_BAR_CIRCLE = ◉ circle button, system Home key, screen bottom nav bar
+- PLAY = ▶ triangle play button, play/launch. NOTE: in app list it's an app icon; in media it's a play control — check context.
+- PLUS = ＋ plus sign, new/add, usually bottom-right of list
+- SETTINGS = ⚙ gear shape, settings/config, usually in toolbar or menu
+- SHOPPING_CART = 🛒 cart shape, view cart, e-commerce page nav bar
+- STAR = ★ five-pointed star, favorite/bookmark/rate, in list items or detail pages
+- TAKE_PHOTO = 📷 camera shape, take photo/scan, bottom function bar
+- THREE_BARS = ☰ three horizontal lines, nav menu/drawer, usually page top-left
+- THREE_DOTS = ⋮ three vertical dots, more options/menu, usually page top-right. When you can't find a target — check ⋮ / "More" / "Options" first; targets are often hidden behind these entry points.
+- UPLOAD = ↑ upload arrow, upload/share file, in file picker or edit page
+- V_FORWARD = > right arrow, forward/next page, in navigation or onboarding flow
+- X = ✕ cross, close/clear/cancel, popup top-right or inside search box
+
+## §2 Recovery Patterns
+
+### Recovery patterns | #k: recovery,stuck,back,home,retry
+- Tapping ICON_PLAY then immediately BACK is the #1 recovery pattern. ICON_PLAY can be either a media control (▶ play button) or an app launcher icon — observe surrounding elements to determine context before tapping.
+- Scrolling past target → BACK is common. Stop scrolling when the target element enters the visible screen area.
+- Tapping unlabeled icons → BACK is common. Prefer elements with readable text labels over bare icons.
+
+## §3 General Principles
+
+### Principles | #k: principle,general,guide,start,plan,already
+1. TYPE → ENTER is the most reliable input pattern; always tap the input field first
+2. ICON_MAGNIFYING_GLASS = search box — the fastest way to find anything in any app
+3. ICON_THREE_DOTS (⋮) = more menu — Settings, Bookmarks, History are usually here
+4. Completion = screen content changes meaningfully; don't rely on a single button press
+5. **Check before acting**: after every observe, first judge: does the current device state already satisfy the goal? If yes (e.g. install goal → app already exists and is latest; toggle-off goal → switch already off), do one independent shell verification. If verified → complete directly — the goal is objectively achieved, no need to continue operating. Note the difference between "goal already satisfied" and "operation failed": the former means the device state matches the goal (→ complete true), the latter means you tried but it didn't take effect (→ switch methods and retry).
+(HOME/BACK recovery strategies are covered in ui.txt §1 exception recovery section — not repeated here.)

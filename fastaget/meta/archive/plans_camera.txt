@@ -1,0 +1,14 @@
+# keywords: 拍照, 照片, 视频, 录制, photo, video, camera, 相机, Take one, Take a, record, 录像
+## 领域知识：相机应用
+
+### 通用特征
+- 取景器区域为 SurfaceView，accessibility 不可交互
+- Photo/Video 模式在 accessibility 树中无法区分（Shutter 元素标注相同，模式选择器也可能不显示）
+- 模式切换的可靠方式：先通过手势呼出模式选择器，再点击目标模式（无需判断当前状态）
+- 模式选择器可能自动隐藏，手势可重新呼出
+
+### Camera2 特定
+- 模式选择器：取景器底部横向滑动可呼出 "Switch to Camera/Video" 选项，出现后几秒消失
+- 视频保存至 /sdcard/Movies/，照片保存至 /sdcard/Pictures/
+- 录制期间 UI 元素可能极少或为空（正常现象）
+- ocr/run_script 在取景器场景中通常无效

@@ -1,0 +1,1820 @@
+cases:
+- goal: Record an audio clip using Audio Recorder app and save it.
+  max_steps: 20
+  name: AW-AudioRecorderRecordAudio
+  tags:
+  - E
+  - audio_recorder
+  - T4
+  verify:
+  - command: dumpsys activity activities | grep topResumedActivity
+    expect: ''
+    expect_re: .
+    not_contain: ''
+- goal: Record an audio clip and save it with name "test_note_plxw.md" using Audio
+    Recorder app.
+  max_steps: 15
+  name: AW-AudioRecorderRecordAudioWithFileName
+  tags:
+  - E
+  - audio_recorder
+  - T4
+  verify:
+  - command: dumpsys activity activities | grep topResumedActivity
+    expect: ''
+    expect_re: .
+    not_contain: ''
+- goal: Open the file task.html in Downloads in the file manager; when prompted open
+    it with Chrome. Then create a drawing using the three colors shown at the top
+    and hit submit.
+  max_steps: 25
+  name: AW-BrowserDraw
+  tags:
+  - E
+  - browser
+  - T5
+- goal: Open the file task.html in Downloads in the file manager; when prompted open
+    it with Chrome. Then navigate the X to the bottom-right cell, by using the direction
+    buttons.
+  max_steps: 25
+  name: AW-BrowserMaze
+  tags:
+  - E
+  - browser
+  - T5
+- goal: Open the file task.html in Downloads in the file manager; when prompted open
+    it with Chrome. Then click the button 5 times, remember the numbers displayed,
+    and enter their product in the form.
+  max_steps: 30
+  name: AW-BrowserMultiply
+  tags:
+  - H
+  - browser
+  - T5
+- goal: Take one photo.
+  max_steps: 20
+  name: AW-CameraTakePhoto
+  precondition:
+  - check: '{device.pkg_installed:com.android.camera2}'
+    description: 相机应用已安装
+    severity: critical
+  tags:
+  - E
+  - camera
+  - T1
+  verify:
+  - command: ls /sdcard/Pictures/ 2>/dev/null | grep -c "\.jpg"
+    expect: ''
+    expect_re: ''
+    min_lines: 1
+    not_contain: ''
+- goal: Take one video.
+  max_steps: 20
+  name: AW-CameraTakeVideo
+  precondition:
+  - check: '{device.pkg_installed:com.android.camera2}'
+    description: 相机应用已安装
+    severity: critical
+  - check: '{screen.not_has_text:While using the app}'
+    description: 前台再无障碍弹窗
+    severity: warn
+  tags:
+  - M
+  - camera
+  - T1
+  verify:
+  - command: find /sdcard/Movies -name "*.mp4" 2>/dev/null | head -5
+    expect: ''
+    expect_re: ''
+    min_lines: 1
+    not_contain: ''
+- goal: Pause the stopwatch.
+  initialize:
+  - command: pm clear com.google.android.deskclock 2>/dev/null || true
+  max_steps: 10
+  name: AW-ClockStopWatchPausedVerify
+  tags:
+  - E
+  - clock
+  - T2
+  verify:
+  - command: dumpsys activity activities | grep topResumedActivity
+    expect: ''
+    expect_re: '[Dd]esk[Cc]lock'
+    not_contain: ''
+- goal: Run the stopwatch.
+  max_steps: 9
+  name: AW-ClockStopWatchRunning
+  tags:
+  - E
+  - clock
+  - T2
+  verify:
+  - command: dumpsys activity activities | grep topResumedActivity
+    expect: ''
+    expect_re: '[Dd]esk[Cc]lock'
+    not_contain: ''
+- goal: Create a timer with 0 hours, 5 minutes, and 0 seconds. Do not start the timer.
+  max_steps: 9
+  name: AW-ClockTimerEntry
+  tags:
+  - E
+  - clock
+  - T2
+  verify:
+  - command: dumpsys activity activities | grep topResumedActivity
+    expect: ''
+    expect_re: '[Dd]esk[Cc]lock'
+    not_contain: ''
+- goal: Create a new contact for Alice Smith. Their number is 555-0100.
+  initialize:
+  - command: content delete --uri content://contacts/contacts 2>/dev/null || true
+  max_steps: 15
+  name: AW-ContactsAddContact
+  tags:
+  - E
+  - contacts
+  - T3
+  verify:
+  - command: content query --uri content://com.android.contacts/contacts 2>/dev/null
+      | grep -i "Alice" || echo NOT_FOUND
+    expect: ''
+    expect_re: Alice
+    not_contain: NOT_FOUND
+- goal: 'Go to the new contact screen and enter the following details: First Name:
+    Alice, Last Name: Smith, Phone: 555-0100, Phone Label: Mobile. Do NOT hit save.'
+  max_steps: 15
+  name: AW-ContactsNewContactDraft
+  tags:
+  - E
+  - contacts
+  - T2
+  verify:
+  - command: dumpsys activity activities | grep topResumedActivity
+    expect: ''
+    expect_re: contact
+    not_contain: ''
+- goal: 'Add the following expenses into the arduia pro expense: Lunch 15.50, Coffee
+    4.00'
+  max_steps: 25
+  name: AW-ExpenseAddMultiple
+  tags:
+  - M
+  - expense
+  - T4
+  verify:
+  - command: dumpsys activity activities | grep topResumedActivity
+    expect: ''
+    expect_re: .
+    not_contain: ''
+- goal: Add the expenses from expenses.jpg in Simple Gallery Pro to pro expense.
+  max_steps: 20
+  name: AW-ExpenseAddMultipleFromGallery
+  tags:
+  - H
+  - expense
+  - T4
+  verify:
+  - command: dumpsys activity activities | grep topResumedActivity
+    expect: ''
+    expect_re: .
+    not_contain: ''
+- goal: Go through the transactions in my_expenses.txt in Markor. Log the reimbursable
+    transactions in the arduia pro expense.
+  max_steps: 30
+  name: AW-ExpenseAddMultipleFromMarkor
+  tags:
+  - H
+  - expense
+  - T4
+  verify:
+  - command: dumpsys activity activities | grep topResumedActivity
+    expect: ''
+    expect_re: .
+    not_contain: ''
+- goal: 'Add the following expenses into the arduia pro expense: Lunch 15.50'
+  max_steps: 25
+  name: AW-ExpenseAddSingle
+  tags:
+  - E
+  - expense
+  - T2
+  verify:
+  - command: dumpsys activity activities | grep topResumedActivity
+    expect: ''
+    expect_re: expense|arduia
+    not_contain: ''
+- goal: Delete all but one of any expenses in arduia pro expense that are exact duplicates,
+    ensuring at least one instance of each unique expense remains.
+  max_steps: 18
+  name: AW-ExpenseDeleteDuplicates
+  tags:
+  - M
+  - expense
+  - T4
+  verify:
+  - command: dumpsys activity activities | grep topResumedActivity
+    expect: ''
+    expect_re: .
+    not_contain: ''
+- goal: Delete all but one of any expenses in arduia pro expense that are exact duplicates,
+    ensuring at least one instance of each unique expense remains.
+  max_steps: 18
+  name: AW-ExpenseDeleteDuplicates2
+  tags:
+  - M
+  - expense
+  - T4
+  verify:
+  - command: dumpsys activity activities | grep topResumedActivity
+    expect: ''
+    expect_re: .
+    not_contain: ''
+- goal: 'Delete the following expenses from arduia pro expense: Lunch 15.50, Coffee
+    4.00.'
+  max_steps: 15
+  name: AW-ExpenseDeleteMultiple
+  tags:
+  - E
+  - expense
+  - T4
+  verify:
+  - command: dumpsys activity activities | grep topResumedActivity
+    expect: ''
+    expect_re: .
+    not_contain: ''
+- goal: 'Delete the following expenses from arduia pro expense: Lunch 15.50, Coffee
+    4.00.'
+  max_steps: 34
+  name: AW-ExpenseDeleteMultiple2
+  tags:
+  - H
+  - expense
+  - T4
+  verify:
+  - command: dumpsys activity activities | grep topResumedActivity
+    expect: ''
+    expect_re: .
+    not_contain: ''
+- goal: 'Delete the following expenses from arduia pro expense: Lunch 15.50.'
+  max_steps: 12
+  name: AW-ExpenseDeleteSingle
+  tags:
+  - E
+  - expense
+  - T4
+  verify:
+  - command: dumpsys activity activities | grep topResumedActivity
+    expect: ''
+    expect_re: .
+    not_contain: ''
+- goal: Delete the file test_note_opit.md from the Android filesystem located in the
+    Download folder within the sdk_gphone_x86_64 storage area.
+  initialize:
+  - command: mkdir -p /sdcard/Download && echo test > /sdcard/Download/test_note_opit.md
+  max_steps: 15
+  name: AW-FilesDeleteFile
+  tags:
+  - M
+  - files
+  - T1
+  verify:
+  - command: ls /sdcard/Download/test_note_opit.md 2>/dev/null || echo NOT_FOUND
+    expect: NOT_FOUND
+    expect_re: ''
+    not_contain: ''
+- goal: Move the file test_note_vjcs.md from Documents within the sdk_gphone_x86_64
+    storage area to the Markor within the same sdk_gphone_x86_64 storage area in the
+    Android filesystem.
+  initialize:
+  - command: mkdir -p /sdcard/Documents /sdcard/Markor && echo test > /sdcard/Documents/test_note_vjcs.md
+  max_steps: 35
+  name: AW-FilesMoveFile
+  tags:
+  - M
+  - files
+  - T1
+  verify:
+  - command: ls /sdcard/Markor/test_note_vjcs.md 2>/dev/null || echo NOT_FOUND
+    expect_re: test_note
+- goal: 'Update the Markor note test_note_xddc.md by adding the following text, along
+    with a new blank line before the existing content: "# Test Header".'
+  initialize:
+  - command: pm grant net.gsantner.markor android.permission.WRITE_EXTERNAL_STORAGE
+      2>/dev/null || true
+  - command: mkdir -p /sdcard/Documents && echo "existing content" > /sdcard/Documents/test_note_xddc.md
+  max_steps: 30
+  name: AW-MarkorAddNoteHeader
+  tags:
+  - M
+  - markor
+  - T1
+  verify:
+  - command: cat /sdcard/Documents/test_note_xddc.md 2>/dev/null
+    expect: ''
+    expect_re: ''
+    min_lines: 2
+    not_contain: ''
+- goal: Update the content of test_note_pczi.md to "updated content zklw" in Markor.
+  initialize:
+  - command: pm grant net.gsantner.markor android.permission.WRITE_EXTERNAL_STORAGE
+      2>/dev/null || true
+  - command: mkdir -p /sdcard/Documents && echo "old content" > /sdcard/Documents/test_note_pczi.md
+  max_steps: 30
+  name: AW-MarkorChangeNoteContent
+  tags:
+  - M
+  - markor
+  - T1
+  verify:
+  - command: cat /sdcard/Documents/test_note_pczi.md 2>/dev/null
+    expect: ''
+    expect_re: updated content zklw
+    not_contain: ''
+- goal: Create a new folder in Markor named folder_dip.
+  initialize:
+  - command: pm grant net.gsantner.markor android.permission.WRITE_EXTERNAL_STORAGE
+      2>/dev/null || true
+  max_steps: 30
+  name: AW-MarkorCreateFolder
+  tags:
+  - E
+  - markor
+  - T1
+  verify:
+  - command: ls /sdcard/Documents/ 2>/dev/null
+    expect: ''
+    expect_re: folder_dip
+    not_contain: ''
+- goal: 'Create a new note in Markor named test_note_hsxn.md with the following text:
+    hello world automated test'
+  initialize:
+  - command: pm grant net.gsantner.markor android.permission.WRITE_EXTERNAL_STORAGE
+      2>/dev/null || true
+  max_steps: 30
+  name: AW-MarkorCreateNote
+  tags:
+  - M
+  - markor
+  - T1
+  verify:
+  - command: ls /sdcard/Documents/ 2>/dev/null
+    expect: ''
+    expect_re: test_note_hsxn.md
+    not_contain: ''
+- goal: 'Create a new note in Markor named test_note_eonp.md with the following text:
+    hello world automated test. Share the entire content of the note with the phone
+    number 555-0100 via SMS using Simple SMS Messenger'
+  initialize:
+  - command: pm grant net.gsantner.markor android.permission.WRITE_EXTERNAL_STORAGE
+      2>/dev/null || true
+  max_steps: 30
+  name: AW-MarkorCreateNoteAndSms
+  tags:
+  - H
+  - markor
+  - T4
+  verify:
+  - command: dumpsys activity activities | grep topResumedActivity
+    expect: ''
+    expect_re: .
+    not_contain: ''
+- goal: Create a note in Markor named test_note_glzb.md. Perform a paste operation
+    in the note and save the note.
+  initialize:
+  - command: pm grant net.gsantner.markor android.permission.WRITE_EXTERNAL_STORAGE
+      2>/dev/null || true
+  max_steps: 30
+  name: AW-MarkorCreateNoteFromClipboard
+  tags:
+  - M
+  - markor
+  - T2
+  verify:
+  - command: dumpsys activity activities | grep topResumedActivity
+    expect: ''
+    expect_re: .
+    not_contain: ''
+- goal: Delete all my notes in Markor.
+  initialize:
+  - command: mkdir -p /sdcard/Documents && for i in a b c d; do echo note_$i > /sdcard/Documents/test_note_$i.md;
+      done
+  max_steps: 30
+  name: AW-MarkorDeleteAllNotes
+  tags:
+  - E
+  - markor
+  - T1
+  verify:
+  - command: ls /sdcard/Documents/*.md 2>/dev/null | wc -l
+    expect: '0'
+    expect_re: ''
+    not_contain: ''
+- goal: Delete the newest note in Markor.
+  initialize:
+  - command: pm grant net.gsantner.markor android.permission.WRITE_EXTERNAL_STORAGE
+      2>/dev/null || true
+  max_steps: 30
+  name: AW-MarkorDeleteNewestNote
+  tags:
+  - E
+  - markor
+  - T2
+  verify:
+  - command: dumpsys activity activities | grep topResumedActivity
+    expect: ''
+    expect_re: .
+    not_contain: ''
+- goal: Delete the note in Markor named test_note_llxx.md.
+  initialize:
+  - command: mkdir -p /sdcard/Documents && echo test_content > /sdcard/Documents/test_note_llxx.md
+  max_steps: 30
+  name: AW-MarkorDeleteNote
+  tags:
+  - E
+  - markor
+  - T1
+  verify:
+  - command: ls /sdcard/Documents/ 2>/dev/null
+    expect: ''
+    expect_re: ''
+    not_contain: test_note_llxx.md
+- goal: 'Edit test_note_wxut.md in Markor. Add to the top of the note # Test Header'
+  initialize:
+  - command: pm grant net.gsantner.markor android.permission.WRITE_EXTERNAL_STORAGE
+      2>/dev/null || true
+  - command: mkdir -p /sdcard/Documents && echo "old note" > /sdcard/Documents/test_note_wxut.md
+  max_steps: 30
+  name: AW-MarkorEditNote
+  tags:
+  - E
+  - markor
+  - T1
+  verify:
+  - command: cat /sdcard/Documents/test_note_wxut.md 2>/dev/null
+    expect: ''
+    expect_re: '# Test Header'
+    not_contain: ''
+- goal: Merge the contents of Markor notes note_alpha.md, note_beta.md and note_gamma.md
+    (in the same order) into a new Markor note named {new_file_name} and save it.
+    Add a new line between the content of each note.
+  initialize:
+  - command: pm grant net.gsantner.markor android.permission.WRITE_EXTERNAL_STORAGE
+      2>/dev/null || true
+  max_steps: 30
+  name: AW-MarkorMergeNotes
+  tags:
+  - H
+  - markor
+  - T4
+  verify:
+  - command: dumpsys activity activities | grep topResumedActivity
+    expect: ''
+    expect_re: .
+    not_contain: ''
+- goal: In Markor, move the note test_note_xbdw.md from Documents to Markor.
+  initialize:
+  - command: pm grant net.gsantner.markor android.permission.WRITE_EXTERNAL_STORAGE
+      2>/dev/null || true
+  - command: mkdir -p /sdcard/Documents /sdcard/Documents/Markor && echo "move me"
+      > /sdcard/Documents/test_note_xbdw.md
+  max_steps: 30
+  name: AW-MarkorMoveNote
+  tags:
+  - M
+  - markor
+  - T1
+  verify:
+  - command: ls /sdcard/Documents/Markor/test_note_xbdw.md 2>/dev/null
+    expect: ''
+    expect_re: test_note_xbdw.md
+    not_contain: ''
+- goal: Create a file in Markor, called receipt.md with the transactions from the
+    receipt.png. Use Simple Gallery to view the receipt. Please enter transactions
+    in csv format including the header "Date, Item, Amount".
+  initialize:
+  - command: pm grant net.gsantner.markor android.permission.WRITE_EXTERNAL_STORAGE
+      2>/dev/null || true
+  max_steps: 30
+  name: AW-MarkorTranscribeReceipt
+  tags:
+  - M
+  - markor
+  - T4
+  verify:
+  - command: dumpsys activity activities | grep topResumedActivity
+    expect: ''
+    expect_re: .
+    not_contain: ''
+- goal: 'Transcribe the contents of video test_video.mp4 by watching it in VLC player
+    (located in Download) and writing the sequence of strings shown on each frame
+    to the text file test_note_ozfg.md in Markor as a comma separated list. For example,
+    if the first frame shows the text "edna" and the second frame shows the text "pineapple",
+    then the text file should contains only the following text: "edna, pineapple".'
+  initialize:
+  - command: rm -f /sdcard/Documents/Markor/test_note_ozfg.md 2>/dev/null || true
+  - command: pm grant net.gsantner.markor android.permission.WRITE_EXTERNAL_STORAGE
+      2>/dev/null || true
+  - command: mkdir -p /sdcard/Documents/Markor 2>/dev/null || true
+  - command: adb push fastaget/meta/assets/test_video.mp4 /sdcard/Download/test_video.mp4
+  - command: adb push fastaget/meta/assets/noise_video_1.mp4 /sdcard/Download/noise_video_1.mp4
+  - command: adb push fastaget/meta/assets/noise_video_2.mp4 /sdcard/Download/noise_video_2.mp4
+  - command: adb push fastaget/meta/assets/noise_video_3.mp4 /sdcard/Download/noise_video_3.mp4
+  max_steps: 35
+  name: AW-MarkorTranscribeVideo
+  tags:
+  - H
+  - markor
+  - T5
+  verify:
+  - command: cat /sdcard/Documents/Markor/test_note_ozfg.md 2>/dev/null
+    expect_re: ^Alice[\s\S]*Ava[\s\S]*Isabella$
+- goal: Is the note titled 'Test Recipe kam' in the Joplin app marked as a todo item?
+    Respond with either 'True' if it is a todo or 'False' if not.
+  max_steps: 6
+  name: AW-NotesIsTodo
+  tags:
+  - E
+  - joplin
+  - T4
+  verify:
+  - command: dumpsys activity activities | grep topResumedActivity
+    expect: ''
+    expect_re: .
+    not_contain: ''
+- goal: How many attendees were present in the meeting titled 'Test Recipe dyt' in
+    the Joplin app? Express your answer as just a single number.
+  max_steps: 9
+  name: AW-NotesMeetingAttendeeCount
+  tags:
+  - E
+  - joplin
+  - T4
+  verify:
+  - command: dumpsys activity activities | grep topResumedActivity
+    expect: ''
+    expect_re: .
+    not_contain: ''
+- goal: What quantity of salt do I need for the recipe 'Test Recipe gae' in the Joplin
+    app? Express your answer in the format <amount> <unit> without using abbreviations.
+  max_steps: 6
+  name: AW-NotesRecipeIngredientCount
+  tags:
+  - E
+  - joplin
+  - T4
+  verify:
+  - command: dumpsys activity activities | grep topResumedActivity
+    expect: ''
+    expect_re: .
+    not_contain: ''
+- goal: How many to-dos do I have in the 'Personal' folder in the Joplin app? Express
+    your answer as just a single number.
+  max_steps: 10
+  name: AW-NotesTodoItemCount
+  tags:
+  - M
+  - joplin
+  - T4
+  verify:
+  - command: dumpsys activity activities | grep topResumedActivity
+    expect: ''
+    expect_re: .
+    not_contain: ''
+- goal: Open the Settings app (com.android.settings). Clear any pop-ups that may appear
+    by granting all permissions that are required.
+  max_steps: 6
+  name: AW-OpenAppTaskEval
+  tags:
+  - E
+  - generic
+  - T1
+  verify:
+  - command: dumpsys activity activities | grep topResumedActivity
+    expect: ''
+    expect_re: settings
+    not_contain: ''
+- goal: Add a favorite location marker for Times Square, New York in the OsmAnd maps
+    app.
+  max_steps: 12
+  name: AW-OsmAndFavorite
+  tags:
+  - M
+  - osmand
+  - T4
+  verify:
+  - command: dumpsys activity activities | grep topResumedActivity
+    expect: ''
+    expect_re: .
+    not_contain: ''
+- goal: Add a location marker for Times Square, New York in the OsmAnd maps app.
+  max_steps: 20
+  name: AW-OsmAndMarker
+  tags:
+  - H
+  - osmand
+  - T4
+  verify:
+  - command: dumpsys activity activities | grep topResumedActivity
+    expect: ''
+    expect_re: .
+    not_contain: ''
+- goal: Save a track with waypoints Ruggell, Liechtenstein, Bendern, Liechtenstein
+    in the OsmAnd maps app in the same order as listed.
+  max_steps: 40
+  name: AW-OsmAndTrack
+  tags:
+  - H
+  - osmand
+  - T4
+  verify:
+  - command: f=$(ls -t /storage/emulated/0/Android/data/net.osmand/files/tracks/*.gpx
+      2>/dev/null | head -1); [ -n "$f" ] && grep -cE 'lat="47\.2[3-6][0-9]*"' "$f"
+    expect_re: '[1-9]'
+    _note: 至少一个轨迹点在 Ruggell 纬度带 (47.23-47.26)
+  - command: f=$(ls -t /storage/emulated/0/Android/data/net.osmand/files/tracks/*.gpx
+      2>/dev/null | head -1); [ -n "$f" ] && grep -cE 'lat="47\.2[0-2][0-9]*"' "$f"
+    expect_re: '[1-9]'
+    _note: 至少一个轨迹点在 Bendern 纬度带 (47.20-47.22)
+- goal: 'Add the following recipes into the Broccoli app: {recipes}'
+  max_steps: 25
+  name: AW-RecipeAddMultipleRecipes
+  tags:
+  - M
+  - broccoli
+  - T4
+  verify:
+  - command: dumpsys activity activities | grep topResumedActivity
+    expect: ''
+    expect_re: .
+    not_contain: ''
+- goal: Add the recipes from recipes.jpg in Simple Gallery Pro to the Broccoli recipe
+    app.
+  max_steps: 26
+  name: AW-RecipeAddMultipleRecipesFromImage
+  tags:
+  - H
+  - broccoli
+  - T4
+  verify:
+  - command: dumpsys activity activities | grep topResumedActivity
+    expect: ''
+    expect_re: .
+    not_contain: ''
+- goal: Add the recipes from recipes.txt in Markor to the Broccoli recipe app.
+  max_steps: 40
+  name: AW-RecipeAddMultipleRecipesFromMarkor
+  tags:
+  - H
+  - broccoli
+  - T4
+  verify:
+  - command: dumpsys activity activities | grep topResumedActivity
+    expect: ''
+    expect_re: .
+    not_contain: ''
+- goal: Add the recipes from recipes.txt in Markor that take 30 to prepare into the
+    Broccoli recipe app.
+  max_steps: 40
+  name: AW-RecipeAddMultipleRecipesFromMarkor2
+  tags:
+  - H
+  - broccoli
+  - T4
+  verify:
+  - command: dumpsys activity activities | grep topResumedActivity
+    expect: ''
+    expect_re: .
+    not_contain: ''
+- goal: 'Add the following recipes into the Broccoli app:
+
+    Test Recipe: Ingredients - flour, water, salt'
+  max_steps: 25
+  name: AW-RecipeAddSingleRecipe
+  tags:
+  - E
+  - broccoli
+  - T4
+  verify:
+  - command: dumpsys activity activities | grep topResumedActivity
+    expect: ''
+    expect_re: .
+    not_contain: ''
+- goal: Delete all but one of any recipes in the Broccoli app that are exact duplicates,
+    ensuring at least one instance of each unique recipe remains
+  max_steps: 18
+  name: AW-RecipeDeleteDuplicateRecipes
+  tags:
+  - E
+  - broccoli
+  - T4
+  verify:
+  - command: dumpsys activity activities | grep topResumedActivity
+    expect: ''
+    expect_re: .
+    not_contain: ''
+- goal: Delete all but one of any recipes in the Broccoli app that are exact duplicates,
+    ensuring at least one instance of each unique recipe remains
+  max_steps: 22
+  name: AW-RecipeDeleteDuplicateRecipes2
+  tags:
+  - M
+  - broccoli
+  - T4
+  verify:
+  - command: dumpsys activity activities | grep topResumedActivity
+    expect: ''
+    expect_re: .
+    not_contain: ''
+- goal: Delete all but one of any recipes in the Broccoli app that are exact duplicates,
+    ensuring at least one instance of each unique recipe remains
+  max_steps: 25
+  name: AW-RecipeDeleteDuplicateRecipes3
+  tags:
+  - M
+  - broccoli
+  - T4
+  verify:
+  - command: dumpsys activity activities | grep topResumedActivity
+    expect: ''
+    expect_re: .
+    not_contain: ''
+- goal: 'Delete the following recipes from Broccoli app: Recipe A, Recipe B.'
+  max_steps: 15
+  name: AW-RecipeDeleteMultipleRecipes
+  tags:
+  - E
+  - broccoli
+  - T4
+  verify:
+  - command: dumpsys activity activities | grep topResumedActivity
+    expect: ''
+    expect_re: .
+    not_contain: ''
+- goal: Delete the recipes from Broccoli app that use salt in the directions.
+  max_steps: 40
+  name: AW-RecipeDeleteMultipleRecipesWithConstraint
+  tags:
+  - H
+  - broccoli
+  - T4
+  verify:
+  - command: dumpsys activity activities | grep topResumedActivity
+    expect: ''
+    expect_re: .
+    not_contain: ''
+- goal: 'Delete the following recipes from Broccoli app: Recipe A, Recipe B.'
+  max_steps: 25
+  name: AW-RecipeDeleteMultipleRecipesWithNoise
+  tags:
+  - M
+  - broccoli
+  - T4
+  verify:
+  - command: dumpsys activity activities | grep topResumedActivity
+    expect: ''
+    expect_re: .
+    not_contain: ''
+- goal: 'Delete the following recipes from Broccoli app: Recipe A, Recipe B.'
+  max_steps: 15
+  name: AW-RecipeDeleteSingleRecipe
+  tags:
+  - E
+  - broccoli
+  - T4
+  verify:
+  - command: dumpsys activity activities | grep topResumedActivity
+    expect: ''
+    expect_re: .
+    not_contain: ''
+- goal: 'Delete the following recipes from Broccoli app: Recipe A, Recipe B.'
+  max_steps: 15
+  name: AW-RecipeDeleteSingleWithRecipeWithNoise
+  tags:
+  - E
+  - broccoli
+  - T4
+  verify:
+  - command: dumpsys activity activities | grep topResumedActivity
+    expect: ''
+    expect_re: .
+    not_contain: ''
+- goal: 'Create a playlist in Retro Music titled "Test Playlist jwt" with the following
+    songs, in order: Song A, Song B, Song C'
+  max_steps: 24
+  name: AW-RetroCreatePlaylist
+  tags:
+  - M
+  - retro_music
+  - T4
+  verify:
+  - command: sqlite3 /data/data/code.name.monkey.retromusic/databases/playlist.db
+      "SELECT se.title FROM PlaylistEntity pe JOIN SongEntity se ON pe.playlist_id
+      = se.playlist_creator_id WHERE pe.playlist_name = 'Test Playlist jwt' ORDER
+      BY se.song_key;"
+    expect_re: ^[^\n]*Morning Vibes[^\n]*\n[^\n]*Summer Breeze[^\n]*\n[^\n]*Night
+      Drive[^\n]*$
+  initialize:
+  - command: mkdir -p /sdcard/Music 2>/dev/null || true
+  - command: adb push fastaget/meta/assets/'Morning Vibes.mp3' '/sdcard/Music/Morning
+      Vibes.mp3'
+  - command: adb push fastaget/meta/assets/'Summer Breeze.mp3' '/sdcard/Music/Summer
+      Breeze.mp3'
+  - command: adb push fastaget/meta/assets/'Night Drive.mp3' '/sdcard/Music/Night
+      Drive.mp3'
+  - command: adb push fastaget/meta/assets/'Rock Anthem.mp3' '/sdcard/Music/Rock Anthem.mp3'
+  - command: adb push fastaget/meta/assets/'Jazz Cafe.mp3' '/sdcard/Music/Jazz Cafe.mp3'
+  - command: adb push fastaget/meta/assets/'Chill Beats.mp3' '/sdcard/Music/Chill
+      Beats.mp3'
+  - command: adb push fastaget/meta/assets/'Lost in Echo.mp3' '/sdcard/Music/Lost
+      in Echo.mp3'
+  - command: adb push fastaget/meta/assets/'Dark Horse.mp3' '/sdcard/Music/Dark Horse.mp3'
+  - command: adb push fastaget/meta/assets/'Piano Concerto.mp3' '/sdcard/Music/Piano
+      Concerto.mp3'
+  - command: adb push fastaget/meta/assets/'City Lights.mp3' '/sdcard/Music/City Lights.mp3'
+  - command: adb push fastaget/meta/assets/'Guitar Solo.mp3' '/sdcard/Music/Guitar
+      Solo.mp3'
+  - command: adb push fastaget/meta/assets/'Electric Dreams.mp3' '/sdcard/Music/Electric
+      Dreams.mp3'
+  - command: adb push fastaget/meta/assets/'Violin Duet.mp3' '/sdcard/Music/Violin
+      Duet.mp3'
+  - command: adb push fastaget/meta/assets/'Opera Highlights.mp3' '/sdcard/Music/Opera
+      Highlights.mp3'
+  - command: adb push fastaget/meta/assets/'Wind Ensemble.mp3' '/sdcard/Music/Wind
+      Ensemble.mp3'
+  - command: am broadcast -a android.intent.action.MEDIA_SCANNER_SCAN_FILE -d file:///storage/emulated/0/Music
+      2>/dev/null || true
+  - command: am force-stop code.name.monkey.retromusic 2>/dev/null || true
+  - command: sqlite3 /data/data/code.name.monkey.retromusic/databases/playlist.db
+      "DELETE FROM PlaylistEntity; DELETE FROM SongEntity;" 2>/dev/null || true
+  - command: sqlite3 /data/data/code.name.monkey.retromusic/databases/music_playback_state.db
+      "DELETE FROM playing_queue;" 2>/dev/null || true
+- goal: Add the following songs, in order, Song A, Song B, Song C to my playing queue
+    in Retro music.
+  max_steps: 15
+  name: AW-RetroPlayingQueue
+  tags:
+  - E
+  - retro_music
+  - T4
+  verify:
+  - command: sqlite3 /data/data/code.name.monkey.retromusic/databases/music_playback_state.db
+      "SELECT title FROM playing_queue;"
+    expect_re: ^[^\n]*Morning Vibes[^\n]*\n[^\n]*Summer Breeze[^\n]*\n[^\n]*Night
+      Drive[^\n]*$
+  initialize:
+  - command: mkdir -p /sdcard/Music 2>/dev/null || true
+  - command: adb push fastaget/meta/assets/'Morning Vibes.mp3' '/sdcard/Music/Morning
+      Vibes.mp3'
+  - command: adb push fastaget/meta/assets/'Summer Breeze.mp3' '/sdcard/Music/Summer
+      Breeze.mp3'
+  - command: adb push fastaget/meta/assets/'Night Drive.mp3' '/sdcard/Music/Night
+      Drive.mp3'
+  - command: adb push fastaget/meta/assets/'Rock Anthem.mp3' '/sdcard/Music/Rock Anthem.mp3'
+  - command: adb push fastaget/meta/assets/'Jazz Cafe.mp3' '/sdcard/Music/Jazz Cafe.mp3'
+  - command: adb push fastaget/meta/assets/'Chill Beats.mp3' '/sdcard/Music/Chill
+      Beats.mp3'
+  - command: adb push fastaget/meta/assets/'Lost in Echo.mp3' '/sdcard/Music/Lost
+      in Echo.mp3'
+  - command: adb push fastaget/meta/assets/'Dark Horse.mp3' '/sdcard/Music/Dark Horse.mp3'
+  - command: adb push fastaget/meta/assets/'Piano Concerto.mp3' '/sdcard/Music/Piano
+      Concerto.mp3'
+  - command: adb push fastaget/meta/assets/'City Lights.mp3' '/sdcard/Music/City Lights.mp3'
+  - command: adb push fastaget/meta/assets/'Guitar Solo.mp3' '/sdcard/Music/Guitar
+      Solo.mp3'
+  - command: adb push fastaget/meta/assets/'Electric Dreams.mp3' '/sdcard/Music/Electric
+      Dreams.mp3'
+  - command: adb push fastaget/meta/assets/'Violin Duet.mp3' '/sdcard/Music/Violin
+      Duet.mp3'
+  - command: adb push fastaget/meta/assets/'Opera Highlights.mp3' '/sdcard/Music/Opera
+      Highlights.mp3'
+  - command: adb push fastaget/meta/assets/'Wind Ensemble.mp3' '/sdcard/Music/Wind
+      Ensemble.mp3'
+  - command: am broadcast -a android.intent.action.MEDIA_SCANNER_SCAN_FILE -d file:///storage/emulated/0/Music
+      2>/dev/null || true
+  - command: am force-stop code.name.monkey.retromusic 2>/dev/null || true
+  - command: sqlite3 /data/data/code.name.monkey.retromusic/databases/playlist.db
+      "DELETE FROM PlaylistEntity; DELETE FROM SongEntity;" 2>/dev/null || true
+  - command: sqlite3 /data/data/code.name.monkey.retromusic/databases/music_playback_state.db
+      "DELETE FROM playing_queue;" 2>/dev/null || true
+- goal: Create a playlist in Retro Music titled "Test Playlist ped" with a duration
+    between 45 and 50 minutes using the provided songs.
+  max_steps: 28
+  name: AW-RetroPlaylistDuration
+  tags:
+  - M
+  - retro_music
+  - T4
+  verify:
+  - command: sqlite3 /data/data/code.name.monkey.retromusic/databases/playlist.db
+      "SELECT SUM(se.duration) FROM PlaylistEntity pe JOIN SongEntity se ON pe.playlist_id
+      = se.playlist_creator_id WHERE pe.playlist_name = 'Test Playlist ped';"
+    expect_re: ^(2[7-9][0-9]{5}|3000000)$
+  initialize:
+  - command: mkdir -p /sdcard/Music 2>/dev/null || true
+  - command: adb push fastaget/meta/assets/'Morning Vibes.mp3' '/sdcard/Music/Morning
+      Vibes.mp3'
+  - command: adb push fastaget/meta/assets/'Summer Breeze.mp3' '/sdcard/Music/Summer
+      Breeze.mp3'
+  - command: adb push fastaget/meta/assets/'Night Drive.mp3' '/sdcard/Music/Night
+      Drive.mp3'
+  - command: adb push fastaget/meta/assets/'Rock Anthem.mp3' '/sdcard/Music/Rock Anthem.mp3'
+  - command: adb push fastaget/meta/assets/'Jazz Cafe.mp3' '/sdcard/Music/Jazz Cafe.mp3'
+  - command: adb push fastaget/meta/assets/'Chill Beats.mp3' '/sdcard/Music/Chill
+      Beats.mp3'
+  - command: adb push fastaget/meta/assets/'Lost in Echo.mp3' '/sdcard/Music/Lost
+      in Echo.mp3'
+  - command: adb push fastaget/meta/assets/'Dark Horse.mp3' '/sdcard/Music/Dark Horse.mp3'
+  - command: adb push fastaget/meta/assets/'Piano Concerto.mp3' '/sdcard/Music/Piano
+      Concerto.mp3'
+  - command: adb push fastaget/meta/assets/'City Lights.mp3' '/sdcard/Music/City Lights.mp3'
+  - command: adb push fastaget/meta/assets/'Guitar Solo.mp3' '/sdcard/Music/Guitar
+      Solo.mp3'
+  - command: adb push fastaget/meta/assets/'Electric Dreams.mp3' '/sdcard/Music/Electric
+      Dreams.mp3'
+  - command: adb push fastaget/meta/assets/'Violin Duet.mp3' '/sdcard/Music/Violin
+      Duet.mp3'
+  - command: adb push fastaget/meta/assets/'Opera Highlights.mp3' '/sdcard/Music/Opera
+      Highlights.mp3'
+  - command: adb push fastaget/meta/assets/'Wind Ensemble.mp3' '/sdcard/Music/Wind
+      Ensemble.mp3'
+  - command: am broadcast -a android.intent.action.MEDIA_SCANNER_SCAN_FILE -d file:///storage/emulated/0/Music
+      2>/dev/null || true
+  - command: am force-stop code.name.monkey.retromusic 2>/dev/null || true
+  - command: sqlite3 /data/data/code.name.monkey.retromusic/databases/playlist.db
+      "DELETE FROM PlaylistEntity; DELETE FROM SongEntity;" 2>/dev/null || true
+  - command: sqlite3 /data/data/code.name.monkey.retromusic/databases/music_playback_state.db
+      "DELETE FROM playing_queue;" 2>/dev/null || true
+- goal: 'Create a playlist in Retro Music titled "Test Playlist fet" with the following
+    songs, in order: Song A, Song B, Song C. Then export the playlist to the Downloads
+    directory on the device.'
+  max_steps: 45
+  name: AW-RetroSavePlaylist
+  tags:
+  - H
+  - retro_music
+  - T4
+  verify:
+  - command: sqlite3 /data/data/code.name.monkey.retromusic/databases/playlist.db
+      "SELECT se.title FROM PlaylistEntity pe JOIN SongEntity se ON pe.playlist_id
+      = se.playlist_creator_id WHERE pe.playlist_name = 'Test Playlist fet' ORDER
+      BY se.song_key;"
+    expect_re: ^[^\n]*Rock Anthem[^\n]*\n[^\n]*Jazz Cafe[^\n]*\n[^\n]*Chill Beats[^\n]*$
+  - command: test -f "/sdcard/Download/Test Playlist fet.m3u" && echo FOUND
+    expect: FOUND
+  initialize:
+  - command: rm -f "/sdcard/Download/Test Playlist fet.m3u" 2>/dev/null || true
+  - command: mkdir -p /sdcard/Music 2>/dev/null || true
+  - command: adb push fastaget/meta/assets/'Morning Vibes.mp3' '/sdcard/Music/Morning
+      Vibes.mp3'
+  - command: adb push fastaget/meta/assets/'Summer Breeze.mp3' '/sdcard/Music/Summer
+      Breeze.mp3'
+  - command: adb push fastaget/meta/assets/'Night Drive.mp3' '/sdcard/Music/Night
+      Drive.mp3'
+  - command: adb push fastaget/meta/assets/'Rock Anthem.mp3' '/sdcard/Music/Rock Anthem.mp3'
+  - command: adb push fastaget/meta/assets/'Jazz Cafe.mp3' '/sdcard/Music/Jazz Cafe.mp3'
+  - command: adb push fastaget/meta/assets/'Chill Beats.mp3' '/sdcard/Music/Chill
+      Beats.mp3'
+  - command: adb push fastaget/meta/assets/'Lost in Echo.mp3' '/sdcard/Music/Lost
+      in Echo.mp3'
+  - command: adb push fastaget/meta/assets/'Dark Horse.mp3' '/sdcard/Music/Dark Horse.mp3'
+  - command: adb push fastaget/meta/assets/'Piano Concerto.mp3' '/sdcard/Music/Piano
+      Concerto.mp3'
+  - command: adb push fastaget/meta/assets/'City Lights.mp3' '/sdcard/Music/City Lights.mp3'
+  - command: adb push fastaget/meta/assets/'Guitar Solo.mp3' '/sdcard/Music/Guitar
+      Solo.mp3'
+  - command: adb push fastaget/meta/assets/'Electric Dreams.mp3' '/sdcard/Music/Electric
+      Dreams.mp3'
+  - command: adb push fastaget/meta/assets/'Violin Duet.mp3' '/sdcard/Music/Violin
+      Duet.mp3'
+  - command: adb push fastaget/meta/assets/'Opera Highlights.mp3' '/sdcard/Music/Opera
+      Highlights.mp3'
+  - command: adb push fastaget/meta/assets/'Wind Ensemble.mp3' '/sdcard/Music/Wind
+      Ensemble.mp3'
+  - command: am broadcast -a android.intent.action.MEDIA_SCANNER_SCAN_FILE -d file:///storage/emulated/0/Music
+      2>/dev/null || true
+  - command: am force-stop code.name.monkey.retromusic 2>/dev/null || true
+  - command: sqlite3 /data/data/code.name.monkey.retromusic/databases/playlist.db
+      "DELETE FROM PlaylistEntity; DELETE FROM SongEntity;" 2>/dev/null || true
+  - command: sqlite3 /data/data/code.name.monkey.retromusic/databases/music_playback_state.db
+      "DELETE FROM playing_queue;" 2>/dev/null || true
+- goal: Copy test_note_ewvv.md in DCIM and save a copy with the same name in Download
+  initialize:
+  - command: mkdir -p /sdcard/DCIM /sdcard/Download && echo test > /sdcard/DCIM/test_note_ewvv.md
+  max_steps: 16
+  name: AW-SaveCopyOfReceiptTaskEval
+  tags:
+  - H
+  - T1
+  verify:
+  - command: ls /sdcard/Download/ 2>/dev/null
+    expect: ''
+    expect_re: test_note_ewvv.md
+    not_contain: ''
+- goal: In Simple Calendar Pro, create a calendar event on 2026-07-17 at 14h with
+    the title 'Test Meeting' and the description 'Automated test event'. The event
+    should last for 60 mins.
+  max_steps: 40
+  name: AW-SimpleCalendarAddOneEvent
+  tags:
+  - H
+  - calendar
+  - T3
+  verify:
+  - command: dumpsys activity activities | grep topResumedActivity
+    expect: ''
+    expect_re: calendar
+    not_contain: ''
+- goal: In Simple Calendar Pro, create a calendar event in two weeks from today at
+    14h with the title 'Test Meeting' and the description 'Automated test event'.
+    The event should last for 60 mins.
+  max_steps: 20
+  name: AW-SimpleCalendarAddOneEventInTwoWeeks
+  tags:
+  - M
+  - calendar
+  - T3
+  verify:
+  - command: dumpsys activity activities | grep topResumedActivity
+    expect: ''
+    expect_re: calendar
+    not_contain: ''
+- goal: In Simple Calendar Pro, create a calendar event for this Sunday at 14h with
+    the title 'Test Meeting' and the description 'Automated test event'. The event
+    should last for 60 mins.
+  max_steps: 30
+  name: AW-SimpleCalendarAddOneEventRelativeDay
+  tags:
+  - E
+  - calendar
+  - T3
+  verify:
+  - command: dumpsys activity activities | grep topResumedActivity
+    expect: ''
+    expect_re: calendar
+    not_contain: ''
+- goal: In Simple Calendar Pro, create a calendar event for tomorrow at 14h with the
+    title 'Test Meeting' and the description 'Automated test event'. The event should
+    last for 60 mins.
+  max_steps: 30
+  name: AW-SimpleCalendarAddOneEventTomorrow
+  tags:
+  - E
+  - calendar
+  - T3
+  verify:
+  - command: dumpsys activity activities | grep topResumedActivity
+    expect: ''
+    expect_re: calendar
+    not_contain: ''
+- goal: In Simple Calendar Pro, create a recurring calendar event titled 'Test Meeting'
+    starting on 2026-07-17 at 14h. The event recurs {repeat_rule}, forever, and lasts
+    for 60 minutes each occurrence. The event description should be 'Automated test
+    event'.
+  max_steps: 30
+  name: AW-SimpleCalendarAddRepeatingEvent
+  tags:
+  - E
+  - calendar
+  - T3
+  verify:
+  - command: dumpsys activity activities | grep topResumedActivity
+    expect: ''
+    expect_re: calendar
+    not_contain: ''
+- goal: Do I have any events 2026-07-17 in Simple Calendar Pro? Answer with the titles
+    only. If there are multiples titles, format your answer in a comma separated list.
+  max_steps: 12
+  name: AW-SimpleCalendarAnyEventsOnDate
+  tags:
+  - E
+  - calendar
+  - T4
+  verify:
+  - command: dumpsys activity activities | grep topResumedActivity
+    expect: ''
+    expect_re: calendar
+    not_contain: ''
+- goal: In Simple Calendar Pro, delete all the calendar events on 2026-07-17
+  initialize:
+  - command: content delete --uri content://com.android.calendar/events 2>/dev/null
+      || true
+  max_steps: 15
+  name: AW-SimpleCalendarDeleteEvents
+  tags:
+  - E
+  - calendar
+  - T3
+  verify:
+  - command: dumpsys activity activities | grep topResumedActivity
+    expect: ''
+    expect_re: calendar
+    not_contain: ''
+- goal: In Simple Calendar Pro, delete all events scheduled for this Sunday.
+  initialize:
+  - command: content delete --uri content://com.android.calendar/events 2>/dev/null
+      || true
+  max_steps: 12
+  name: AW-SimpleCalendarDeleteEventsOnRelativeDay
+  tags:
+  - M
+  - calendar
+  - T3
+  verify:
+  - command: dumpsys activity activities | grep topResumedActivity
+    expect: ''
+    expect_re: calendar
+    not_contain: ''
+- goal: In Simple Calendar Pro, delete the calendar event on 2026-07-17 at 14h with
+    the title 'Test Meeting'
+  initialize:
+  - command: content delete --uri content://com.android.calendar/events 2>/dev/null;
+      content insert --uri content://com.android.calendar/events --bind title:s:OldEvent
+      --bind dtstart:i:1600000000000 --bind dtend:i:1600003600000 --bind calendar_id:i:1
+      2>/dev/null || true
+  max_steps: 15
+  name: AW-SimpleCalendarDeleteOneEvent
+  tags:
+  - E
+  - calendar
+  - T3
+  verify:
+  - command: dumpsys activity activities | grep topResumedActivity
+    expect: ''
+    expect_re: calendar
+    not_contain: ''
+- goal: What is on my schedule for 2026-07-17 at 14:00 in Simple Calendar Pro? Answer
+    with the titles only. If there are multiples titles, format your answer in a comma
+    separated list.
+  max_steps: 6
+  name: AW-SimpleCalendarEventOnDateAtTime
+  tags:
+  - M
+  - calendar
+  - T4
+  verify:
+  - command: dumpsys activity activities | grep topResumedActivity
+    expect: ''
+    expect_re: calendar
+    not_contain: ''
+- goal: What events do I have in the next week in Simple Calendar Pro? Answer with
+    the titles only. If there are multiples titles, format your answer in a comma
+    separated list.
+  max_steps: 9
+  name: AW-SimpleCalendarEventsInNextWeek
+  tags:
+  - E
+  - calendar
+  - T4
+  verify:
+  - command: dumpsys activity activities | grep topResumedActivity
+    expect: ''
+    expect_re: calendar
+    not_contain: ''
+- goal: Do I have any events between 10:00 and 8pm 2026-07-17 in Simple Calendar Pro?
+    Answer with the titles only. If there are multiples titles, format your answer
+    in a comma separated list.
+  max_steps: 6
+  name: AW-SimpleCalendarEventsInTimeRange
+  tags:
+  - E
+  - calendar
+  - T4
+  verify:
+  - command: dumpsys activity activities | grep topResumedActivity
+    expect: ''
+    expect_re: calendar
+    not_contain: ''
+- goal: What events do I have 2026-07-17 in Simple Calendar Pro? Answer with the titles
+    only. If there are multiple titles, format your answer as a comma separated list.
+  max_steps: 8
+  name: AW-SimpleCalendarEventsOnDate
+  tags:
+  - M
+  - calendar
+  - T4
+  verify:
+  - command: dumpsys activity activities | grep topResumedActivity
+    expect: ''
+    expect_re: calendar
+    not_contain: ''
+- goal: What is my first event after 14:00 2026-07-17 in Simple Calendar Pro? Answer
+    with the titles only. If there are multiples titles, format your answer in a comma
+    separated list.
+  max_steps: 6
+  name: AW-SimpleCalendarFirstEventAfterStartTime
+  tags:
+  - E
+  - calendar
+  - T4
+  verify:
+  - command: dumpsys activity activities | grep topResumedActivity
+    expect: ''
+    expect_re: calendar
+    not_contain: ''
+- goal: What is the location of my Test Recipe bsq event in Simple Calendar Pro? Answer
+    with the location only.
+  max_steps: 12
+  name: AW-SimpleCalendarLocationOfEvent
+  tags:
+  - E
+  - calendar
+  - T4
+  verify:
+  - command: dumpsys activity activities | grep topResumedActivity
+    expect: ''
+    expect_re: calendar
+    not_contain: ''
+- goal: What is my next upcoming event in Simple Calendar Pro? Answer with the title
+    only. If there are multiples titles, format your answer in a comma separated list.
+  max_steps: 12
+  name: AW-SimpleCalendarNextEvent
+  tags:
+  - E
+  - calendar
+  - T4
+  verify:
+  - command: dumpsys activity activities | grep topResumedActivity
+    expect: ''
+    expect_re: calendar
+    not_contain: ''
+- goal: When is my next meeting with Alice Smith in Simple Calendar Pro? Express your
+    answer in the format <month name> <day> <year> <hour in 24-hour format>:<minutes>.
+  max_steps: 10
+  name: AW-SimpleCalendarNextMeetingWithPerson
+  tags:
+  - M
+  - calendar
+  - T4
+  verify:
+  - command: dumpsys activity activities | grep topResumedActivity
+    expect: ''
+    expect_re: calendar
+    not_contain: ''
+- goal: Create a new drawing in Simple Draw Pro. Name it test_note_ufvu.md. Save it
+    in the Pictures folder within the sdk_gphone_x86_64 storage area.
+  max_steps: 25
+  name: AW-SimpleDrawProCreateDrawing
+  tags:
+  - E
+  - draw
+  - T5
+- goal: 'Reply to 555-0100 with message: Hello from automated test in Simple SMS Messenger'
+  initialize:
+  - command: adb emu sms send 5550100 "Test message" 2>/dev/null; sleep 1 || true
+  max_steps: 20
+  name: AW-SimpleSmsReply
+  tags:
+  - E
+  - sms
+  - T3
+  verify:
+  - command: content query --uri content://sms 2>/dev/null | grep body
+    min_lines: 2
+- goal: 'Reply to the most recent text message using Simple SMS Messenger with message:
+    Hello from automated test'
+  initialize:
+  - command: content query --uri content://sms 2>/dev/null | grep -c body > /dev/null
+      || adb emu sms send 5550100 "init" 2>/dev/null; sleep 1
+  max_steps: 10
+  name: AW-SimpleSmsReplyMostRecent
+  tags:
+  - M
+  - sms
+  - T3
+  verify:
+  - command: content query --uri content://sms 2>/dev/null | grep body
+    min_lines: 1
+- goal: Resend the message I just sent to Alice Smith in Simple SMS Messenger
+  initialize:
+  - command: content query --uri content://sms 2>/dev/null | grep -c body > /dev/null
+      || adb emu sms send 5550100 "init" 2>/dev/null; sleep 1
+  max_steps: 12
+  name: AW-SimpleSmsResend
+  tags:
+  - M
+  - sms
+  - T3
+  verify:
+  - command: content query --uri content://sms 2>/dev/null | grep body
+    min_lines: 1
+- goal: 'Send a text message using Simple SMS Messenger to 555-0100 with message:
+    Hello from automated test'
+  initialize:
+  - command: content delete --uri content://sms 2>/dev/null || true
+  max_steps: 25
+  name: AW-SimpleSmsSend
+  tags:
+  - M
+  - sms
+  - T3
+  verify:
+  - command: content query --uri content://sms 2>/dev/null | grep body
+    expect: ''
+    expect_re: ''
+    min_lines: 1
+    not_contain: ''
+- goal: Send a message to 555-0100 with the clipboard content in Simple SMS Messenger
+  initialize:
+  - command: content query --uri content://sms 2>/dev/null | grep -c body > /dev/null
+      || adb emu sms send 5550100 "init" 2>/dev/null; sleep 1
+  max_steps: 15
+  name: AW-SimpleSmsSendClipboardContent
+  tags:
+  - E
+  - sms
+  - T3
+  verify:
+  - command: content query --uri content://sms 2>/dev/null | grep body
+    min_lines: 1
+- goal: Text the address of the event to Alice Smith (555-0100) that Bob Jones just
+    sent me in Simple SMS Messenger
+  initialize:
+  - command: content delete --uri content://sms 2>/dev/null || true
+  - command: sqlite3 /data/data/com.android.providers.contacts/databases/contacts2.db
+      "DELETE FROM data WHERE raw_contact_id IN (SELECT _id FROM raw_contacts WHERE
+      display_name LIKE 'Alice%'); DELETE FROM raw_contacts WHERE display_name LIKE
+      'Alice%'; INSERT OR IGNORE INTO accounts (account_name, account_type) VALUES
+      ('local','local'); INSERT INTO raw_contacts (account_id, deleted, display_name,
+      display_name_alt, display_name_source, sort_key, sort_key_alt, sync1) VALUES
+      ((SELECT _id FROM accounts WHERE account_name='local'),0,'Alice Smith','Alice
+      Smith',30,'Alice Smith','Alice Smith','local'); INSERT INTO contacts (name_raw_contact_id,
+      has_phone_number) VALUES ((SELECT MAX(_id) FROM raw_contacts), 1); INSERT INTO
+      data (raw_contact_id, mimetype_id, is_primary, data1, data2, data_sync1) VALUES
+      ((SELECT MAX(_id) FROM raw_contacts), 7, 1, 'Alice', 'Smith', 'Alice Smith');
+      INSERT INTO data (raw_contact_id, mimetype_id, is_primary, data1, data2, data3,
+      data_sync1) VALUES ((SELECT MAX(_id) FROM raw_contacts), 5, 1, '555-0100', 2,
+      '555-0100', '555-0100'); UPDATE raw_contacts SET contact_id=(SELECT MAX(_id)
+      FROM contacts) WHERE display_name='Alice Smith'; INSERT OR IGNORE INTO visible_contacts
+      (_id) VALUES ((SELECT MAX(_id) FROM contacts)); INSERT OR IGNORE INTO default_directory
+      (_id) VALUES ((SELECT MAX(_id) FROM contacts));" 2>/dev/null || true
+  - command: adb emu sms send 5550200 '123 Main St Girdwood, AK, 99587' 2>/dev/null
+      || true
+  - command: sleep 0.5
+  max_steps: 18
+  name: AW-SimpleSmsSendReceivedAddress
+  tags:
+  - M
+  - sms
+  - T3
+  verify:
+  - command: content query --uri content://sms 2>/dev/null | grep body
+    min_lines: 1
+- goal: How many Running activities did I do this week in the OpenTracks app? Express
+    your answer as a single integer.
+  max_steps: 9
+  name: AW-SportsTrackerActivitiesCountForWeek
+  tags:
+  - E
+  - opentracks
+  - T4
+  verify:
+  - command: dumpsys activity activities | grep topResumedActivity
+    expect: ''
+    expect_re: .
+    not_contain: ''
+- goal: What activities did I do 2026-07-17 in the OpenTracks app? Answer with the
+    category only. If there are multiples categories, format your answer in a comma
+    separated list.
+  max_steps: 20
+  name: AW-SportsTrackerActivitiesOnDate
+  tags:
+  - H
+  - opentracks
+  - T4
+  verify:
+  - command: dumpsys activity activities | grep topResumedActivity
+    expect: ''
+    expect_re: .
+    not_contain: ''
+- goal: How long was my Running activity 2026-07-17 in the OpenTracks app? Express
+    your answer in minutes as a single integer.
+  max_steps: 15
+  name: AW-SportsTrackerActivityDuration
+  tags:
+  - E
+  - opentracks
+  - T4
+  verify:
+  - command: dumpsys activity activities | grep topResumedActivity
+    expect: ''
+    expect_re: .
+    not_contain: ''
+- goal: What was the longest distance covered in a Running activity in the OpenTracks
+    app this week? Express your answer in meters as a single integer.
+  max_steps: 6
+  name: AW-SportsTrackerLongestDistanceActivity
+  tags:
+  - E
+  - opentracks
+  - T4
+  verify:
+  - command: dumpsys activity activities | grep topResumedActivity
+    expect: ''
+    expect_re: .
+    not_contain: ''
+- goal: What was the total distance covered for Running activities in the OpenTracks
+    app from {start_date} to {end_date}? Express your answer in meters as a single
+    integer.
+  max_steps: 22
+  name: AW-SportsTrackerTotalDistanceForCategoryOverInterval
+  tags:
+  - H
+  - opentracks
+  - T4
+  verify:
+  - command: dumpsys activity activities | grep topResumedActivity
+    expect: ''
+    expect_re: .
+    not_contain: ''
+- goal: What was the total duration of Running activities in the OpenTracks app this
+    week? Express your answer in minutes as a single integer.
+  max_steps: 16
+  name: AW-SportsTrackerTotalDurationForCategoryThisWeek
+  tags:
+  - H
+  - opentracks
+  - T4
+  verify:
+  - command: dumpsys activity activities | grep topResumedActivity
+    expect: ''
+    expect_re: .
+    not_contain: ''
+- goal: Turn bluetooth off.
+  initialize:
+  - command: svc bluetooth enable
+  max_steps: 6
+  name: AW-SystemBluetoothTurnOff
+  tags:
+  - E
+  - system
+  - T1
+  verify:
+  - command: settings get global bluetooth_on
+    expect: '0'
+    expect_re: ''
+    not_contain: ''
+- goal: Turn bluetooth off.
+  max_steps: 6
+  name: AW-SystemBluetoothTurnOffVerify
+  tags:
+  - E
+  - system
+  - T1
+  verify:
+  - command: settings get global bluetooth_on
+    expect: '0'
+    expect_re: ''
+    not_contain: ''
+- goal: Turn bluetooth on.
+  initialize:
+  - command: svc bluetooth disable
+  max_steps: 6
+  name: AW-SystemBluetoothTurnOn
+  tags:
+  - E
+  - system
+  - T1
+  verify:
+  - command: settings get global bluetooth_on
+    expect: '1'
+    expect_re: ''
+    not_contain: ''
+- goal: Turn bluetooth on.
+  max_steps: 6
+  name: AW-SystemBluetoothTurnOnVerify
+  tags:
+  - E
+  - system
+  - T1
+  verify:
+  - command: settings get global bluetooth_on
+    expect: '1'
+    expect_re: ''
+    not_contain: ''
+- goal: Turn brightness to the max value.
+  initialize:
+  - command: settings put system screen_brightness 1
+  max_steps: 9
+  name: AW-SystemBrightnessMax
+  tags:
+  - E
+  - system
+  - T1
+  verify:
+  - command: settings get system screen_brightness
+    expect: '255'
+    expect_re: ''
+    not_contain: ''
+- goal: Turn brightness to the max value.
+  max_steps: 6
+  name: AW-SystemBrightnessMaxVerify
+  tags:
+  - E
+  - system
+  - T1
+  verify:
+  - command: settings get system screen_brightness
+    expect: ''
+    expect_re: ^2[0-9]{2}$|^255$
+    not_contain: ''
+- goal: Turn brightness to the min value.
+  initialize:
+  - command: settings put system screen_brightness 255
+  max_steps: 9
+  name: AW-SystemBrightnessMin
+  tags:
+  - E
+  - system
+  - T1
+  verify:
+  - command: settings get system screen_brightness
+    expect: ''
+    expect_re: ^[0-9]|[1][0-5]?\$
+    not_contain: ''
+- goal: Turn brightness to the min value.
+  max_steps: 9
+  name: AW-SystemBrightnessMinVerify
+  tags:
+  - E
+  - system
+  - T1
+  verify:
+  - command: settings get system screen_brightness
+    expect: ''
+    expect_re: ^[0-9]$|^1[0-5]?$
+    not_contain: ''
+- goal: 'Open Clipper app (ca.zgrs.clipper) and copy the text: test clipboard content'
+  initialize:
+  - command: pm grant ca.zgrs.clipper android.permission.READ_EXTERNAL_STORAGE 2>/dev/null
+      || true
+  max_steps: 20
+  name: AW-SystemCopyToClipboard
+  tags:
+  - E
+  - system
+  - T2
+  verify:
+  - command: dumpsys activity broadcasts 2>/dev/null | grep -A1 clipper.set | grep
+      text
+    expect_re: test
+- goal: Turn wifi off.
+  initialize:
+  - command: svc wifi enable
+  max_steps: 9
+  name: AW-SystemWifiTurnOff
+  tags:
+  - E
+  - system
+  - T1
+  verify:
+  - command: settings get global wifi_on
+    expect: '0'
+    expect_re: ''
+    not_contain: ''
+- goal: Turn wifi off.
+  initialize:
+  - command: svc wifi disable
+  max_steps: 9
+  name: AW-SystemWifiTurnOffVerify
+  tags:
+  - E
+  - system
+  - T1
+  verify:
+  - command: settings get global wifi_on
+    expect: '0'
+    expect_re: ''
+    not_contain: ''
+- goal: Turn wifi on.
+  initialize:
+  - command: svc wifi disable
+  max_steps: 9
+  name: AW-SystemWifiTurnOn
+  tags:
+  - E
+  - system
+  - T1
+  verify:
+  - command: settings get global wifi_on
+    expect: ''
+    expect_re: '[12]'
+    not_contain: ''
+- goal: Turn wifi on.
+  initialize:
+  - command: svc wifi enable
+  max_steps: 9
+  name: AW-SystemWifiTurnOnVerify
+  tags:
+  - E
+  - system
+  - T1
+  verify:
+  - command: settings get global wifi_on
+    expect: ''
+    expect_re: '[12]'
+    not_contain: ''
+- goal: Which tasks have I completed for 2026-07-17 in Tasks app? Answer with the
+    titles only. If there are multiples titles, format your answer in a comma separated
+    list.
+  max_steps: 10
+  name: AW-TasksCompletedTasksForDate
+  tags:
+  - M
+  - tasks
+  - T4
+  verify:
+  - command: dumpsys activity activities | grep topResumedActivity
+    expect: ''
+    expect_re: .
+    not_contain: ''
+- goal: How many tasks do I have due next week in Tasks app? Express your answer as
+    a single integer.
+  max_steps: 12
+  name: AW-TasksDueNextWeek
+  tags:
+  - M
+  - tasks
+  - T4
+  verify:
+  - command: dumpsys activity activities | grep topResumedActivity
+    expect: ''
+    expect_re: .
+    not_contain: ''
+- goal: What tasks do I have due 2026-07-17 in Tasks app? Answer with the titles only.
+    If there are multiples titles, format your answer in a comma separated list.
+  max_steps: 6
+  name: AW-TasksDueOnDate
+  tags:
+  - E
+  - tasks
+  - T4
+  verify:
+  - command: dumpsys activity activities | grep topResumedActivity
+    expect: ''
+    expect_re: .
+    not_contain: ''
+- goal: What are my high priority tasks in Tasks app? Answer with the titles only.
+    If there are multiples titles, format your answer in a comma separated list.
+  max_steps: 4
+  name: AW-TasksHighPriorityTasks
+  tags:
+  - M
+  - tasks
+  - T4
+  verify:
+  - command: dumpsys activity activities | grep topResumedActivity
+    expect: ''
+    expect_re: .
+    not_contain: ''
+- goal: Which tasks with high priority are due 2026-07-17 in the Tasks app? Answer
+    with the title only. If there are multiples titles, format your answer in a comma
+    separated list.
+  max_steps: 10
+  name: AW-TasksHighPriorityTasksDueOnDate
+  tags:
+  - M
+  - tasks
+  - T4
+  verify:
+  - command: dumpsys activity activities | grep topResumedActivity
+    expect: ''
+    expect_re: .
+    not_contain: ''
+- goal: What incomplete tasks do I have still have to do by 2026-07-17 in Tasks app?
+    Answer with the titles only. If there are multiples titles, format your answer
+    in a comma separated list.
+  max_steps: 6
+  name: AW-TasksIncompleteTasksOnDate
+  tags:
+  - E
+  - tasks
+  - T4
+  verify:
+  - command: dumpsys activity activities | grep topResumedActivity
+    expect: ''
+    expect_re: .
+    not_contain: ''
+- goal: Turn off WiFi, then enable bluetooth
+  initialize:
+  - command: svc wifi enable; svc bluetooth disable
+  max_steps: 10
+  name: AW-TurnOffWifiAndTurnOnBluetooth
+  tags:
+  - M
+  - system
+  - T3
+  verify:
+  - command: settings get global wifi_on
+    expect: '0'
+    expect_re: ''
+    not_contain: ''
+  - command: settings get global bluetooth_on
+    expect: '1'
+    expect_re: ''
+    not_contain: ''
+- goal: Turn on Wifi, then open the Settings app (com.android.settings). Clear any
+    pop-ups that may appear by granting all permissions that are required.
+  initialize:
+  - command: svc wifi disable
+  max_steps: 13
+  name: AW-TurnOnWifiAndOpenApp
+  tags:
+  - E
+  - system
+  - T3
+  verify:
+  - command: settings get global wifi_on
+    expect: ''
+    expect_re: '[12]'
+    not_contain: ''
+- goal: 'Create a playlist titled "Test Playlist wjj" with the following files in
+    VLC (located in Internal Memory/VLCVideos), in order: {files}'
+  max_steps: 25
+  name: AW-VlcCreatePlaylist
+  tags:
+  - M
+  - vlc
+  - T4
+  verify:
+  - command: sqlite3_cat:/data/data/org.videolan.vlc/app_db/vlc_media.db::SELECT Media.filename
+      FROM PlaylistMediaRelation INNER JOIN Playlist ON Playlist.id_playlist = PlaylistMediaRelation.playlist_id
+      INNER JOIN Media ON Media.id_media = PlaylistMediaRelation.media_id WHERE Playlist.name
+      = 'Test Playlist wjj' ORDER BY PlaylistMediaRelation.position;
+    expect_re: ^[^\n]*test_video_1\.mp4[^\n]*\n[^\n]*test_video_2\.mp4[^\n]*\n[^\n]*test_video_3\.mp4[^\n]*$
+  initialize:
+  - command: am force-stop org.videolan.vlc 2>/dev/null || true
+  - command: rm -f /data/data/org.videolan.vlc/app_db/vlc_media.db 2>/dev/null ||
+      true
+  - command: mkdir -p /sdcard/VLCVideos 2>/dev/null || true
+  - command: rm -f /sdcard/VLCVideos/*.mp4 2>/dev/null || true
+  - command: adb push fastaget/meta/assets/test_video_1.mp4 /sdcard/VLCVideos/test_video_1.mp4
+  - command: adb push fastaget/meta/assets/test_video_2.mp4 /sdcard/VLCVideos/test_video_2.mp4
+  - command: adb push fastaget/meta/assets/test_video_3.mp4 /sdcard/VLCVideos/test_video_3.mp4
+  - command: adb push fastaget/meta/assets/other_video_1.mp4 /sdcard/VLCVideos/other_video_1.mp4
+  - command: adb push fastaget/meta/assets/other_video_2.mp4 /sdcard/VLCVideos/other_video_2.mp4
+- goal: 'Create a playlist titled "Playlist Alpha mor" with the following files in
+    VLC, in order: {files1}. And then, Create a playlist titled "Playlist Beta vnx"
+    with the following files in VLC (located in Internal Memory/VLCVideos), in order:
+    {files1}'
+  max_steps: 30
+  name: AW-VlcCreateTwoPlaylists
+  tags:
+  - M
+  - vlc
+  - T4
+  verify:
+  - command: sqlite3_cat:/data/data/org.videolan.vlc/app_db/vlc_media.db::SELECT Media.filename
+      FROM PlaylistMediaRelation INNER JOIN Playlist ON Playlist.id_playlist = PlaylistMediaRelation.playlist_id
+      INNER JOIN Media ON Media.id_media = PlaylistMediaRelation.media_id WHERE Playlist.name
+      = 'Playlist Alpha mor' ORDER BY PlaylistMediaRelation.position;
+    expect_re: ^[^\n]*demo_1\.mp4[^\n]*\n[^\n]*demo_2\.mp4[^\n]*$
+  - command: sqlite3_cat:/data/data/org.videolan.vlc/app_db/vlc_media.db::SELECT Media.filename
+      FROM PlaylistMediaRelation INNER JOIN Playlist ON Playlist.id_playlist = PlaylistMediaRelation.playlist_id
+      INNER JOIN Media ON Media.id_media = PlaylistMediaRelation.media_id WHERE Playlist.name
+      = 'Playlist Beta vnx' ORDER BY PlaylistMediaRelation.position;
+    expect_re: ^[^\n]*demo_3\.mp4[^\n]*\n[^\n]*demo_4\.mp4[^\n]*$
+  initialize:
+  - command: am force-stop org.videolan.vlc 2>/dev/null || true
+  - command: rm -f /data/data/org.videolan.vlc/app_db/vlc_media.db 2>/dev/null ||
+      true
+  - command: mkdir -p /sdcard/VLCVideos 2>/dev/null || true
+  - command: rm -f /sdcard/VLCVideos/*.mp4 2>/dev/null || true
+  - command: adb push fastaget/meta/assets/demo_1.mp4 /sdcard/VLCVideos/demo_1.mp4
+  - command: adb push fastaget/meta/assets/demo_2.mp4 /sdcard/VLCVideos/demo_2.mp4
+  - command: adb push fastaget/meta/assets/demo_3.mp4 /sdcard/VLCVideos/demo_3.mp4
+  - command: adb push fastaget/meta/assets/demo_4.mp4 /sdcard/VLCVideos/demo_4.mp4
+meta:
+  fast_combo:
+  - AW-SystemWifiTurnOff
+  - AW-SystemBrightnessMax
+  - AW-SystemBluetoothTurnOn
+  - AW-SystemCopyToClipboard
+  - AW-CameraTakePhoto
+  - AW-MarkorCreateNote
+  - AW-FilesDeleteFile
+  - AW-OpenAppTaskEval
+  - AW-ClockStopWatchRunning
+  - AW-ClockTimerEntry
+  - AW-ContactsNewContactDraft
+  - AW-ExpenseAddSingle
+  - AW-ContactsAddContact
+  - AW-SimpleSmsSend
+  - AW-SimpleCalendarAddOneEvent
+  - AW-TurnOffWifiAndTurnOnBluetooth
+  - AW-MarkorCreateNoteAndSms
+  - AW-SimpleCalendarEventsOnDate
+  - AW-TasksDueOnDate
+  - AW-RetroCreatePlaylist
+  - AW-OsmAndFavorite
+  - AW-SimpleDrawProCreateDrawing
+  - AW-AudioRecorderRecordAudio
+  - AW-BrowserDraw
+  source: AndroidWorld task_metadata.json
+  tier_descriptions:
+    T1: shell 命令直接验证
+    T2: Activity/UI 元素验证
+    T3: Content Provider 验证
+    T4: 应用内复杂状态验证（需 setup）
+    T5: 媒体文件验证（困难）
+  total_cases: 116

@@ -1,0 +1,32 @@
+## §4 操作模式
+
+### 模式 1: 列表管理(CRUD) | #pull-on: create,add,delete,edit,新建,添加,删除,编辑,列表
+- 创建: FAB→表单→✓→列表出现新条目
+- 编辑: tap→修改→back(自动保存)或✓
+- 删除: long_press→菜单→Delete
+- 验证: 条目数±1
+
+### 模式 2: Tab 导航 | #pull-on: tab,switch,切换,tab,标签
+- navigate_to(tab="名称")→observe 确认
+- Clock: Timer/Stopwatch/Alarm; Camera: Photo/Video
+
+### 模式 3: 单步操作 | #pull-on: toggle,switch,capture,录制,拍照,开关
+- tap 按钮→observe→完成
+- 媒体: 同按钮开始/停止; 开关: settings get 确认; 搜索: type+key(enter)+wait
+
+### 模式 4: 信息查询 | #pull-on: query,view,check,list,查看,查询,有哪些
+- launch→observe→读屏幕/查数据→查到即停
+- 禁止继续探索
+
+### 模式 5: 搜索输入 | #pull-on: type,search,find,input,搜索,输入,查找
+- TYPE→tap suggestion（人类 6.8% 连续操作），TYPE→ENTER 仅 2.2%
+- 优先 tap 搜索建议列表中的 TEXT，不要直接按 ENTER
+- 搜索词 8-15 字符即可，不需要完整名称
+- 搜索栏是页面第一个 TEXT 元素，ICON_MAGNIFYING_GLASS 是备选入口
+- 无结果: 重 tap 搜索栏聚焦 → 缩短搜索词 → 检查键盘是否弹出
+
+### 模式 6: 元素交互策略 | #pull-on: tap,click,element,点击,选择,找不到
+- TEXT 标签优先于 ICON 图标（人类 67% 操作 TEXT，33% 操作 ICON）
+- 同名元素选 y 最大的（最新出现的）；TEXT+ICON 组合点 TEXT 不点 ICON
+- NavigationBar 图标例外：ICON_NAV_BAR_CIRCLE(home)/RECT(recents) 可直接点
+- 元素不响应: 试相邻 TEXT → 微 scroll → ICON_X 关弹窗（勿假设元素存在）

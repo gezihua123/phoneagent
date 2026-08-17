@@ -1,0 +1,50 @@
+# AITW Operations Knowledge Base → canonical source: mobile_primer.txt
+# Source: full_episodes.json — 1,128 episodes, 7,908 human demo steps
+# Generated: 2026-07-31 | Last merged: 2026-07-31
+#
+# 此文件为参考文档。运行时注入的规范化知识在 mobile_primer.txt。
+# 本文档保留完整统计数据，供后续 prompt 调优查阅。
+
+## 数据摘要
+
+| 分类 | Episode | 平均步 | TAP% | SWIPE% | TYPE% | HOME% |
+|------|---------|--------|------|--------|-------|-------|
+| Chrome/Search | 283 | 6.3 | 52 | 9 | 16 | 3 |
+| General/Other | 202 | 6.9 | 47 | 19 | 11 | 4 |
+| Shopping | 159 | 5.8 | 54 | 16 | 8 | 2 |
+| System Settings | 116 | 7.5 | 48 | 27 | 3 | 6 |
+| Play Store | 108 | 9.9 | 60 | 14 | 12 | 5 |
+| Chrome | 105 | 6.0 | 58 | 14 | 6 | 3 |
+| Maps | 36 | 7.1 | 54 | 17 | 5 | 6 |
+| Gmail | 32 | 9.9 | 59 | 20 | 3 | 6 |
+| Calendar | 23 | 7.5 | 50 | 30 | 2 | 3 |
+| Photos/Camera | 22 | 9.0 | 49 | 27 | 4 | 7 |
+| Clock | 21 | 7.0 | 55 | 20 | 2 | 6 |
+| Phone/Contacts | 13 | 7.1 | 45 | 20 | 11 | 5 |
+| Others | 8 | - | - | - | - | - |
+| **Total/Mean** | **1,128** | **7.0** | **52.7** | **16.6** | **9.5** | **4.0** |
+
+## 关键比率
+
+| 指标 | 数据 |
+|------|------|
+| TEXT : ICON 交互比 | 67 : 33 |
+| TYPE→TAP : TYPE→ENTER | 463 : 147 (3.1:1) |
+| SWIPE→TAP (scroll-then-tap) | 10.5% of all action pairs |
+| HOME 使用率 | 88% of episodes |
+| BACK 使用率 | 1.2% of all actions |
+| TAP→TAP→TAP 链 | 最常见的 3 步模式 (33% of bigrams) |
+| 中位步数 | 6 (P25=3, P75=9) |
+
+## 高频 UI 元素
+
+| 元素 | 操作数 | 含义 |
+|------|--------|------|
+| ICON_NAV_BAR_RECT | 196 | Android nav bar (recents) |
+| ICON_THREE_DOTS | 86 | Overflow menu ⋮ |
+| ICON_X | 87 | Close/dismiss |
+| ICON_V_BACKWARD | 66 | On-screen back arrow |
+| ICON_NAV_BAR_CIRCLE | 37 | Home button |
+| ICON_MAGNIFYING_GLASS | 22 | Search |
+| ICON_THREE_BARS | 21 | Hamburger menu ☰ |
+| ICON_PLUS (+) | 11 | Add/create FAB |

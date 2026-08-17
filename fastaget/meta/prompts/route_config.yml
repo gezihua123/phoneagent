@@ -1,0 +1,109 @@
+# Prompt 路由配置——goal 关键词 → task type → 触发词
+# 修改路由只改此文件，不改 Python 代码（宪法第一条：不硬编码场景知识）
+# kb 已合并为 3 个文件：apps(启动#k) + tasks(启动#k) + ui(转向#pull-on)
+# operation_modes/components/accessibility/_universal 已合并进 ui.txt
+
+task_types:
+  install:
+    keywords: [install, uninstall, 安装, 卸载]
+    wanted_triggers: [scroll, list, find, type, search, input, tap, click, element]
+
+  camera:
+    keywords: [camera, photo, 拍照, record, 录像]
+    wanted_triggers: [camera, capture, media, record]
+
+  toggle:
+    keywords: [turn on, turn off, enable, disable, toggle, switch,
+               wifi, bluetooth, 蓝牙, brightness, 亮度, airplane,
+               飞行模式, hotspot, dnd, battery saver, 省电]
+    wanted_triggers: [toggle, switch, navigate, tab]
+
+  delete:
+    keywords: [delete, remove, clear, 删除]
+    wanted_triggers: [delete, edit, menu]
+
+  search:
+    keywords: [search, find, look up, query, 搜索, 查找, 查询]
+    wanted_triggers: [type, search, find, input, browser, scroll, list]
+
+  compose:
+    keywords: [compose, write an email, write a message, send, reply,
+               短信, message, email, 邮件, gmail]
+    wanted_triggers: [type, input, form, create, add, navigate, send]
+
+  create:
+    keywords: [create, add, new, set up, 新建, 添加, 创建]
+    wanted_triggers: [create, add, new, form, input, navigate]
+
+  navigate:
+    keywords: [navigate, go to, open, browse, 导航, 打开]
+    wanted_triggers: [tab, switch, navigate, element, scroll, find, observe]
+
+  default:
+    keywords: []
+    wanted_triggers: [scroll, list, find, tap, click, element, type, search, navigate]
+
+# 通用触发词（所有 task type 都注入）
+universal_triggers: [stuck, 停滞, 卡住, verify, complete, 检查, 验证, stale_tap,
+                     error, popup, 弹窗, 权限, crash, timeout, 超时, retry]
+
+# 后期轮次（>6）追加的恢复触发词
+late_triggers: [error, menu, delete, edit, back, observe,
+                empty, element, tap, click, scroll]
+
+# 启动注入文件（#k 块，goal 关键词匹配）
+# *_rag = AITW 71.4万人类演示episode统计生成的英文RAG (2026-08-17, builder/build_prompts.py)
+startup_blocks: [apps, apps_rag, tasks, tasks_rag]
+
+# 转向注入文件（#pull-on 块，turn 3/6/9 注入，所有 task type 共用）
+steering_files: [ui, ui_rag]
+
+# ── 错误类型 → 恢复建议映射（ErrorReflection 加载）──
+error_types:
+  - type: stale_index
+    match_keywords: [stale index, available indices, index]
+    pattern_label: Repeated same-index failure (UI tree changed, index stale)
+    recovery_hints:
+      - observe to refresh screen then reselect by index
+      - switch to tap_by_text(text=...) for text matching
+      - switch to tap(x, y) for coordinate tapping
+
+  - type: element_not_found
+    match_keywords: [not found, not on screen, visible labels]
+    pattern_label: Target element persistently not found
+    recovery_hints:
+      - use scroll_to_find to locate target
+      - switch keywords and re-match (partial match)
+      - check if in the correct app/page; may need back or launch
+
+  - type: device_error
+    match_keywords: [phonefast, device, daemon, connection, timeout]
+    pattern_label: Device connection error
+    recovery_hints:
+      - wait(2) for device recovery then retry
+      - device_status to check connection
+      - switch tool or approach to bypass device issue
+
+  - type: shell_failed
+    match_keywords: [shell, command, permission denied]
+    pattern_label: Shell command execution failed
+    recovery_hints:
+      - check command syntax and parameters
+      - switch to UI approach (launch -> tap -> type)
+      - confirm command is available on this device/ROM
+
+  - type: out_of_bounds
+    match_keywords: [越界, 坐标, out of bounds, invalid coordinate]
+    pattern_label: Coordinate out of bounds
+    recovery_hints:
+      - observe to re-locate elements
+      - check if element bounds are valid
+      - switch to index or text matching
+
+  - type: unknown
+    match_keywords: []
+    pattern_label: Consecutive tool failures
+    recovery_hints:
+      - observe to re-check current state
+      - switch tool or approach
+      - if unable to progress, complete(success=false)

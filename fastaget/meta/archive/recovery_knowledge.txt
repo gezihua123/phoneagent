@@ -1,0 +1,39 @@
+## §1 图标语义（OCR label → 含义 + 视觉提示）
+
+### Icon Semantics | #pull-on: icon,图标,ocr,无文字,unlabeled,识别
+- ARROW_BACKWARD = ← 左箭头, 返回上一页, 通常在页面左上角
+- ARROW_UPWARD = ↑ 上箭头, 展开面板/向上滚动
+- EDIT = ✎ 铅笔形状, 编辑/修改, 内容详情或工具栏
+- ENVELOPE = ✉ 信封形状, 邮件/消息, 通讯应用内
+- INFO = ℹ 圆圈i, 查看详情/帮助, 设置或详情页
+- LAUNCH_APPS = ⊞ 网格图标, 查看所有应用, 底部导航栏
+- LOCATION = 📍 地图标记形状, 定位/地图, 地图应用或导航栏
+- MAGNIFYING_GLASS = 放大镜形状, 搜索功能, 通常在页面顶部或工具栏
+- NAV_BAR_CIRCLE = ◉ 圆形按钮, 系统Home键, 屏幕底部导航栏
+- PLAY = ▶ 三角形播放按钮, 表示播放/启动。注意: 在应用列表中是应用图标,在媒体界面中是播放控件,需看上下文
+- PLUS = ＋ 加号, 新建/添加, 通常在列表右下角
+- SETTINGS = ⚙ 齿轮形状, 设置/配置, 通常在工具栏或菜单中
+- SHOPPING_CART = 🛒 购物车形状, 查看购物车, 电商页面导航栏
+- STAR = ★ 五角星, 收藏/标记/评分, 列表项或详情页
+- TAKE_PHOTO = 📷 相机形状, 拍照/扫描, 底部功能栏
+- THREE_BARS = ☰ 三条横线, 导航菜单/抽屉, 通常在页面左上角
+- THREE_DOTS = ⋮ 三个竖点, 更多选项/菜单, 通常在页面右上角
+- UPLOAD = ↑ 上传箭头, 上传/分享文件, 文件选择或编辑页
+- V_FORWARD = > 右箭头, 前进/下一页, 导航或引导流程
+- X = ✕ 叉号, 关闭/清除/取消, 弹窗右上角或搜索框内
+
+## §2 恢复模式（21287 条人类恢复轨迹统计）
+
+### Recovery patterns | #k: recovery,stuck,卡住,停滞,back,home,retry,重试,恢复,换思路
+- Tapping [ICON_PLAY] then immediately BACK is the #1 recovery pattern (2582×). [ICON_PLAY] can be either a media control (▶ play button) or an app launcher icon — observe surrounding elements to determine context before tapping.
+- Scrolling past target → BACK is common (9145×). Stop scrolling when the target element enters the visible screen area.
+- Tapping unlabeled icons → BACK (3599×). Prefer elements with readable text labels over bare icons.
+
+## §3 通用原则（补充 _universal 未覆盖的）
+
+### Principles | #k: principle,通用,原则,guide,基本,策略,start,开始,plan
+1. TYPE→ENTER is the most reliable input pattern; always tap the input field first
+2. [ICON_MAGNIFYING_GLASS] = search box — the fastest way to find anything in any app
+3. [ICON_THREE_DOTS] (⋮) = more menu — Settings, Bookmarks, History are usually here
+4. Completion = screen content changes meaningfully; don't rely on a single button press
+（HOME/BACK 恢复策略见 _universal.txt 异常恢复块，不重复）

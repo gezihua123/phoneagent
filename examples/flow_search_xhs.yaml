@@ -1,0 +1,107 @@
+# 完整 flow：打开 Google Play → 搜索小红书 → 验证结果
+# 展示 precondition / flow / expect / teardown 完整闭环 + 条件分支 + loop
+name: google_play_search_xiaohongshu
+
+model: deepseek-v4-flash
+judge_model: deepseek-v4-flash
+
+tags: [search, install]
+
+params:
+  app_name: xiaohongshu
+  app_pkg: com.xingin.xiaohongshu
+
+# 前置条件：屏幕可用
+precondition:
+  - description: 屏幕可用且能看到元素
+    check: "{screen.has_element:any}"
+    judge: rule
+    severity: critical
+    wait: 3
+
+flow:
+  # 1. 打开 Google Play（autonomous：LLM 自主多步启动+等待加载）
+  - id: open_play
+    goal: 打开 Google Play 商店应用。如果不在 Google Play 首页，用 launch 启动 com.android.vending，然后 wait 等待加载完成
+    mode: autonomous
+    max_steps: 6
+    expect:
+      - description: 屏幕上出现 Google Play 相关内容（如 Games, Apps, 电影等标签）
+        check: "{screen.has_text:Google Play}"
+        judge: hybrid
+        severity: critical
+        wait: 5
+        hints: ["Google Play 商店首页", "Games", "Apps", "For you", "推荐"]
+
+  # 2. 找到搜索框并点击进入搜索界面（autonomous：搜索框可能是图标）
+  - id: tap_search
+    goal: 点击 Google Play 顶部的搜索图标或搜索框，进入搜索输入界面。搜索图标通常是个放大镜图标
+    mode: autonomous
+    max_steps: 6
+    branches:
+      - when: "{screen.has_text:Search}"
+        to: type_query
+      - when: "{screen.has_text:搜索}"
+        to: type_query
+      - when: default
+        to: tap_search_retry
+
+  # 3. 重试找搜索框
+  - id: tap_search_retry
+    goal: 重新观察屏幕，找到搜索入口。可能需要向上滑动屏幕看顶部，或点击放大镜图标
+    mode: autonomous
+    max_steps: 6
+    branches:
+      - when: "{screen.has_text:Search}"
+        to: type_query
+      - when: "{screen.has_text:搜索}"
+        to: type_query
+      - when: default
+        to: fail_end
+
+  # 4. 输入搜索词
+  - id: type_query
+    goal: 在搜索框输入搜索词 {var.app_name}，然后按 key(name="enter") 触发搜索
+    mode: autonomous
+    max_steps: 6
+    expect:
+      - description: 输入框显示了搜索词或已进入搜索结果
+        check: "{screen.has_text:xiaohongshu}"
+        judge: rule
+        severity: critical
+
+  # 5. 等待搜索结果加载
+  - id: wait_results
+    mode: wait
+    success_when: "{screen.has_text:小红书}"
+    timeout: 30
+    poll_interval: 3
+    on_timeout: fail_end
+    expect:
+      - description: 搜索结果中显示了小红书应用
+        check: "{screen.has_text:小红书}"
+        judge: rule
+        severity: critical
+
+  # 失败终止节点
+  - id: fail_end
+    goal: 任务无法完成，调用 complete 工具标记 success=false 结束
+    mode: guided
+
+# 用例级预期
+expect:
+  - description: 屏幕上能看到小红书的安装按钮或应用信息
+    check: "{screen.has_text:小红书}"
+    judge: hybrid
+    severity: critical
+    hints: ["小红书", "Install", "安装"]
+  - description: 没有出现错误提示
+    check: "{screen.not_has_text:Something went wrong}"
+    judge: rule
+    severity: warn
+
+# 清理：返回主页
+teardown:
+  - id: go_home
+    goal: 按 home 键回到桌面
+    mode: guided

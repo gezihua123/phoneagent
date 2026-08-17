@@ -1,0 +1,35 @@
+# 最小真机验证 flow：observe → assert 屏幕有元素 → home → assert 回到桌面
+name: real_verify_minimal
+
+model: deepseek-v4-flash
+judge_model: deepseek-v4-flash
+
+precondition:
+  - description: 屏幕有可交互元素
+    check: "{screen.has_element:any}"
+    judge: rule
+    severity: critical
+    wait: 3
+
+flow:
+  - id: observe_screen
+    goal: 观察当前屏幕并描述看到了什么
+    mode: guided
+    expect:
+      - description: 屏幕上有元素可见
+        check: "{screen.has_element:any}"
+        judge: rule
+        severity: critical
+
+  - id: go_home
+    goal: 按 home 键回到桌面
+    mode: guided
+
+expect:
+  - description: 当前在桌面或能看到应用列表
+    check: "{screen.has_text:Google}"
+    judge: hybrid
+    severity: warn
+    hints: ["Google 搜索框", "应用图标", "桌面"]
+
+teardown: []

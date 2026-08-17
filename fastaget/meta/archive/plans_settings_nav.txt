@@ -1,0 +1,29 @@
+# keywords: 应用, 应用列表, 应用管理, 权限, 隐私, 安全, 账户, 同步, 语言, 输入法, 日期, 时间, 开发者, 重置, 备份, 恢复, 所有应用
+
+## 任务类型：Settings 深层导航
+
+### ⚠️ 优先用 am start 直达，不要搜索！
+Settings 搜索常返回开发者选项子项误导。用 shell am start 一步直达目标页：
+
+```bash
+shell(command="am start -a android.settings.APPLICATION_SETTINGS")          # 应用管理/所有应用
+shell(command="am start -a android.settings.DEVELOPMENT_SETTINGS")          # 开发者选项
+shell(command="am start -a android.settings.LOCALE_SETTINGS")               # 语言
+shell(command="am start -a android.settings.DATE_SETTINGS")                 # 日期时间
+shell(command="am start -a android.settings.PRIVACY_SETTINGS")              # 隐私
+shell(command="am start -a android.settings.SECURITY_SETTINGS")             # 安全
+shell(command="am start -a android.settings.INPUT_METHOD_SETTINGS")         # 输入法
+shell(command="am start -a android.settings.ACCOUNT_SETTINGS")              # 账户
+shell(command="am start -a android.settings.BACKUP_AND_RESET_SETTINGS")     # 备份与重置
+```
+
+### 执行流程
+1. shell am start 打开目标设置页
+2. observe 确认进入 → 报告看到的信息
+3. assert(看到目标内容) → complete(success=true)
+
+### 反模式
+- ❌ launch Settings 后用搜索（搜索结果常返回开发者选项子项，误导）
+- ❌ 反复 scroll + tap 搜索建议
+- ❌ 进入不相关子菜单 → 越走越远
+- ✅ shell am start 一步直达目标页

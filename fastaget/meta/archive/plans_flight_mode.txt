@@ -1,0 +1,18 @@
+# keywords: 飞行模式, 飞行, airplane, flight mode
+
+## ⚠️ 不要 launch Settings！直接用 shell！
+
+飞行模式在快捷面板中，accessibility 不可见。shell 直调：
+
+```bash
+# 1. 先检查当前状态
+shell(command="settings get global airplane_mode_on")
+
+# 2. 如果已是目标状态 → 直接 complete
+# 3. 否则切换：
+#    开启: shell(command="settings put global airplane_mode_on 1")
+#    关闭: shell(command="settings put global airplane_mode_on 0")
+# 4. 验证: shell get → assert → complete
+```
+
+**关键：必须先 get 检查状态，已处目标状态则直接 complete。不要重复 toggle。**

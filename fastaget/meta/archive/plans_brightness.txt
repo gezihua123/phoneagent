@@ -1,0 +1,21 @@
+# keywords: 亮度, brightness
+
+## ⚠️ 不要 launch Settings！直接用 shell！
+
+Settings 的亮度 slider 在 accessibility 中不可见。唯一方法是 shell：
+
+```bash
+# 调最大亮度 (0-255)
+shell(command="settings put system screen_brightness 255")
+
+# 调最小亮度
+shell(command="settings put system screen_brightness 1")
+
+# 验证
+shell(command="settings get system screen_brightness")
+```
+
+**先检查再操作**：
+1. shell get 当前亮度值
+2. 如已是目标值 → 直接 complete
+3. 否则 shell put 调节 → shell get 验证 → assert → complete
