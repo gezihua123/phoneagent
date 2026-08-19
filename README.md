@@ -6,6 +6,10 @@
 
 Agent 只接收自然语言 goal，自主决策：观察屏幕 → 调用工具 → 循环，直至完成任务或触顶步数。设备交互走 [phonefast](https://github.com/gezihua123/phonefast) 执行器，评测判定与 Agent 执行**硬隔离**——成功率永远以设备端独立验证为准，而非 Agent 自报。
 
+## 演示
+
+![fastagent 演示](docs/fastagent.gif)
+
 ## 特性
 
 - **纯 goal 驱动** — 入参只有自然语言，无步骤/坐标/包名注入，Agent 自主规划
