@@ -3,7 +3,9 @@
 直连 phonefast daemon 的 Unix Socket（换行分隔 JSON-RPC），消除每次 subprocess.run
 的 fork+exec 开销。单步设备交互从 ~80ms（subprocess）降到 ~10ms（socket）。
 
-socket 路径约定：/tmp/phonefast-<uid>-<serial>.sock
+socket 路径约定（新旧二进制兼容，_find_sockets 精确构造两候选）：
+  /tmp/phonefast-<uid>-<serial>.sock   旧版 per-serial daemon
+  /tmp/phonefast-<uid>.sock            新版统一 daemon
 daemon 为一请求一连接模式（每次响应后关闭连接），故每次调用新建 socket——
 Unix socket connect() 仅 ~0.1ms，远低于 subprocess 启动开销。
 
@@ -15,12 +17,24 @@ import json
 import os
 import socket
 import subprocess
+import tempfile
 import time
 from dataclasses import dataclass
 
 
 class PhonefastError(RuntimeError):
     """phonefast 调用失败（执行器层异常，交由自愈层捕获）。"""
+
+
+def _pid_alive(pid: int) -> bool:
+    """PID 是否存在（macOS/Linux 通用：signal 0 探测，不发实际信号）。"""
+    try:
+        os.kill(pid, 0)
+    except ProcessLookupError:
+        return False
+    except PermissionError:
+        return True  # 进程在，只是无权限发信号
+    return True
 
 
 @dataclass
@@ -151,21 +165,28 @@ class Phonefast:
         # L2：启动 daemon（后台模式）——始终绑定明确 serial
         binary = os.environ.get("PHONEFAST_BINARY", "phonefast")
         cmd = [binary, "daemon", "--serial", serial]
+        # launcher 输出落临时文件：起不来时（如 "daemon already running"）把真实
+        # 原因带回错误信息——DEVNULL 吞掉后只剩误导性的 "failed to start in time"
+        start_err_f = tempfile.TemporaryFile()
         try:
-            subprocess.Popen(
+            proc = subprocess.Popen(
                 cmd,
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
+                stdout=start_err_f,
+                stderr=subprocess.STDOUT,
             )
         except FileNotFoundError as e:
+            start_err_f.close()
             raise PhonefastError(f"phonefast binary not found: {binary}") from e
 
-        # 等待匹配 socket 出现（单调时钟，防 NTP 跳变误判）
+        # 等待匹配 socket 出现（单调时钟，防 NTP 跳变误判）。
+        # launcher 可能因 "already running" 立刻非零退出——但仍等满超时：
+        # 并发启动竞态下 socket 可能稍后才由胜出的那个进程绑上（此时退出是假阴性）。
         deadline = time.monotonic() + self._DAEMON_START_TIMEOUT
         mismatch = ""
         while time.monotonic() < deadline:
             for path in self._find_sockets():
                 if self._ping(path):
+                    start_err_f.close()
                     return path
                 mismatch = (
                     f"Existing daemon is bound to a device that does not match target serial={serial}; "
@@ -173,8 +194,13 @@ class Phonefast:
                     f"(will restart with --serial {serial})"
                 )
             time.sleep(self._DAEMON_POLL_INTERVAL)
+        start_err_f.seek(0)
+        start_err = start_err_f.read(self._SHELL_ERR_TRUNCATE).decode(errors="replace").strip()
+        start_err_f.close()
         if mismatch:
             raise PhonefastError(mismatch)
+        if start_err:
+            raise PhonefastError(f"phonefast daemon failed to start: {start_err}")
         raise PhonefastError("phonefast daemon failed to start in time; check the device connection")
 
     def restart_daemon(self) -> str:
@@ -186,18 +212,34 @@ class Phonefast:
         调用方（ctx.observe / Phonefast.observe）在 observe 失败时调用；
         eval 启动时也调一次防长跑退化。
 
+        死锁防线（2026-08 事故复盘）：① stop 必须带 --serial——旧版 per-serial
+        daemon 的 --stop 不带 serial 读通用 pidfile，永远 no-op；② **确认进程
+        已死才 unlink socket**——活 daemon 的 socket 被删后，新 daemon 被
+        "already running" 拒绝：进程活着、socket 没了，谁也连不上。
+        stop 没杀死时宁可抛错（socket 原样保留，旧 daemon 仍可连），也不制造幽灵态。
+
         必须重置 _socket_path/_warmed：_call 缓存旧 socket，重启后旧连接
         已失效（或新 daemon 尚未绑定），不重置会让重试连到死 socket——
         自愈永远失败。重置后下次 _call 走 _ensure_daemon 重新发现+等待就绪。
         """
         binary = os.environ.get("PHONEFAST_BINARY", "phonefast")
+        serial = self._resolve_serial()
+        stop_err = ""
         try:
-            subprocess.run(
-                [binary, "daemon", "--stop"],
-                capture_output=True, timeout=self._DAEMON_STOP_TIMEOUT,
+            r = subprocess.run(
+                [binary, "daemon", "--stop", "--serial", serial],
+                capture_output=True, text=True, timeout=self._DAEMON_STOP_TIMEOUT,
             )
-        except Exception:
-            pass  # stop 失败不阻塞：可能本就没有 daemon
+            if r.returncode != 0:
+                stop_err = (r.stderr or r.stdout or "").strip()
+        except Exception as e:
+            stop_err = str(e)
+        if self._daemon_alive():
+            detail = f": {stop_err}" if stop_err else ""
+            raise PhonefastError(
+                f"daemon --stop did not kill the daemon{detail}; socket left untouched. "
+                f"Kill it manually (pkill -f daemon_worker) and retry"
+            )
         for path in self._find_sockets():
             try:
                 os.unlink(path)
@@ -206,6 +248,30 @@ class Phonefast:
         self._socket_path = None
         self._warmed = False
         return self._ensure_daemon()
+
+    def _daemon_alive(self) -> bool:
+        """daemon 进程是否仍存活——stop 后校验（活进程持有的 socket 不能 unlink）。
+
+        新旧 pidfile 都要查：新版统一 daemon 写 /tmp/phonefast-<uid>.pid，
+        旧版 per-serial daemon 写 /tmp/phonefast-<uid>-<serial>.pid。
+        pidfile 缺失/损坏时兜底：socket 还能 ping 通说明仍有进程持有。
+        """
+        uid = os.getuid()
+        pidfiles = [f"/tmp/phonefast-{uid}.pid"]
+        if self._serial:
+            pidfiles.append(f"/tmp/phonefast-{uid}-{self._serial}.pid")
+        for path in pidfiles:
+            try:
+                with open(path) as f:
+                    pid = int(f.read().strip() or "0")
+            except (OSError, ValueError):
+                continue
+            if pid > 0 and _pid_alive(pid):
+                return True
+        for path in self._find_sockets():
+            if self._ping(path):
+                return True
+        return False
 
     def _ping(self, path: str) -> bool:
         """探测 socket 可连且 daemon 绑定的设备与目标 serial 不冲突。

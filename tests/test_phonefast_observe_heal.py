@@ -107,7 +107,9 @@ def test_restart_daemon_resets_cached_socket(monkeypatch, pf):
     """重启必须清 _socket_path/_warmed——否则重试连到已失效的旧 socket，自愈白做。"""
     pf._socket_path = "/tmp/stale.sock"
     pf._warmed = True
-    monkeypatch.setattr(pf_mod.subprocess, "run", lambda *a, **k: None)
+    monkeypatch.setattr(pf_mod.subprocess, "run",
+                        lambda *a, **k: type("_R", (), {"returncode": 0})())
+    monkeypatch.setattr(pf, "_daemon_alive", lambda: False)
     monkeypatch.setattr(pf, "_find_sockets", lambda: [])
     ensured: list[str] = []
     monkeypatch.setattr(pf, "_ensure_daemon", lambda: ensured.append("fresh") or "/tmp/fresh.sock")
@@ -118,3 +120,32 @@ def test_restart_daemon_resets_cached_socket(monkeypatch, pf):
     assert pf._socket_path is None, "旧 socket 缓存必须清除"
     assert pf._warmed is False, "warm 标记必须重置，触发下次 _call 重新发现 daemon"
     assert ensured == ["fresh"]
+
+
+def test_restart_daemon_stop_passes_serial(monkeypatch, pf):
+    """daemon --stop 必须带 --serial——旧版 per-serial daemon 的 --stop 不带
+    serial 读通用 pidfile，永远 no-op（2026-08 死锁事故根因之一）。"""
+    stopped: list[list[str]] = []
+    monkeypatch.setattr(pf_mod.subprocess, "run", lambda cmd, **k: stopped.append(cmd)
+                        or type("_R", (), {"returncode": 0})())
+    monkeypatch.setattr(pf, "_daemon_alive", lambda: False)
+    monkeypatch.setattr(pf, "_find_sockets", lambda: [])
+    monkeypatch.setattr(pf, "_ensure_daemon", lambda: "/tmp/fresh.sock")
+
+    pf.restart_daemon()
+
+    assert stopped == [["phonefast", "daemon", "--stop", "--serial", "emulator-5554"]]
+
+
+def test_restart_daemon_never_unlinks_live_daemon_socket(monkeypatch, pf):
+    """stop 后进程仍存活 → 抛错且不 unlink——活 daemon 的 socket 被删会让
+    新 daemon 永远 'already running'（进程在、socket 无，谁也连不上）。"""
+    unlinked: list[str] = []
+    monkeypatch.setattr(pf_mod.subprocess, "run",
+                        lambda *a, **k: type("_R", (), {"returncode": 0})())
+    monkeypatch.setattr(pf, "_daemon_alive", lambda: True)
+    monkeypatch.setattr(pf_mod.os, "unlink", lambda p: unlinked.append(p))
+
+    with pytest.raises(PhonefastError, match="stop did not kill|alive|manually"):
+        pf.restart_daemon()
+    assert unlinked == [], "活 daemon 的 socket 不得 unlink"

@@ -136,6 +136,61 @@ def test_ensure_daemon_foreign_daemon_raises_actionable_error(monkeypatch):
         pf._ensure_daemon()
 
 
+def test_ensure_daemon_surfaces_launcher_error(monkeypatch, no_real_sockets):
+    """daemon 起不来时错误必须带回 launcher 真实输出（如 'already running'），
+    而不是误导性的 'failed to start in time'（2026-08 死锁事故根因之二：
+    DEVNULL 吞掉 launcher 输出，重启被拒的真实原因不可见）。"""
+    monkeypatch.setattr(Phonefast, "_DAEMON_START_TIMEOUT", 0.4)
+    monkeypatch.setattr(Phonefast, "_DAEMON_POLL_INTERVAL", 0.1)
+
+    def fake_popen(cmd, **kwargs):
+        # launcher 立刻失败退出，真实原因写在 stdout
+        kwargs["stdout"].write(b"daemon already running (pid 123)\n")
+        kwargs["stdout"].flush()
+        return type("_P", (), {})()
+
+    monkeypatch.setattr(pf_mod.subprocess, "Popen", fake_popen)
+    pf = Phonefast(serial=_SERIAL)
+
+    with pytest.raises(PhonefastError, match="already running"):
+        pf._ensure_daemon()
+
+
+# ---- _daemon_alive：stop 后进程存活性校验（活进程 socket 不得 unlink）----
+
+def test_daemon_alive_probes_new_and_legacy_pidfiles(monkeypatch):
+    """新旧两种 pidfile 都要查：新版统一 daemon 写 <uid>.pid，
+    旧版 per-serial daemon 写 <uid>-<serial>.pid；死 pid 走 socket 兜底。"""
+    fake_uid = 424242  # 避免与机器上真实 daemon 的 pidfile 冲突
+    new_pid = f"/tmp/phonefast-{fake_uid}.pid"
+    legacy_pid = f"/tmp/phonefast-{fake_uid}-{_SERIAL}.pid"
+    monkeypatch.setattr(pf_mod.os, "getuid", lambda: fake_uid)
+
+    pf = Phonefast(serial=_SERIAL)
+    monkeypatch.setattr(pf, "_find_sockets", lambda: [])
+    monkeypatch.setattr(pf_mod, "_pid_alive", lambda pid: pid == 31337)
+
+    try:
+        with open(new_pid, "w") as f:
+            f.write("31337")
+        assert pf._daemon_alive() is True, "新版 pidfile 存活必须识别"
+
+        os.unlink(new_pid)
+        with open(legacy_pid, "w") as f:
+            f.write("31337")
+        assert pf._daemon_alive() is True, "旧版 per-serial pidfile 存活必须识别"
+
+        with open(legacy_pid, "w") as f:
+            f.write("999")  # pid 已死
+        assert pf._daemon_alive() is False, "死 pid 且 socket 空 → 判定不存活"
+    finally:
+        for p in (new_pid, legacy_pid):
+            try:
+                os.unlink(p)
+            except OSError:
+                pass
+
+
 # ---- serial 公共访问口（脚本层复用解析结果，不重复 adb 探测逻辑）----
 
 def test_serial_property_returns_explicit():
